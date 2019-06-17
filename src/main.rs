@@ -1,9 +1,10 @@
 #![allow(dead_code)]
 
 extern crate num;
-#[macro_use]
 extern crate num_derive;
+extern crate enum_map;
 
+use enum_map::EnumMap;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -169,16 +170,22 @@ pub fn plural(names: Vec<&str>) -> Vec<&str> {
 /**
  * This function takes an vector of cards
  */
-fn poker_hand(hand: &[usize]) {
+fn poker_hand(hand: &[u8]) {
 
     /* */
+    {
+
+    let mut cardCounter = enum_map!();
+
     for card in hand {
 
-        
+        Order::to_order(card);
+
+
 
     }
 
-
+    }
 }
 
 fn main() {

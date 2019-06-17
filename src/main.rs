@@ -2,10 +2,16 @@
 /**
  * This function takes an vector of cards
  */
-fn poker_hand(table: &[usize]) {
+fn poker_hand(hand: &[usize]) {
+
+    fn color(card: &i8) ->  {
+
+    }
 
     /* */
-    for card in table {
+    for card in hand {
+
+
 
     }
 

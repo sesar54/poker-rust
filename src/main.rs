@@ -25,7 +25,7 @@ pub enum Score {
 
 impl Score {
 
-    pub fn as_str(&self, hand: ) -> vec<&str> {
+    pub fn as_str(&self, hand: &[u8]) -> vec<&str> {
 
         use Score::*;
 
@@ -44,12 +44,57 @@ impl Score {
         }
     }
 
+    pub fn nickname(&self, hand: &[u8]) -> &str {
+
+        match self {
+
+
+
+
+
+
+            Quads {
+
+
+
+
+
+            }
+
+
+
+        }
+
+
+    }
+
 }
 
-pub enum SizeOf {
+pub enum Collapse {
     Order = 13, /* Skipping wildcard */
     Suit = 4,
 }
+
+impl Collapse {
+
+    pub fn to_order(&self, hand: &[u8]) -> Vec<u8> {
+
+        let mut new_hand = Vec::new();
+        new_hand.clone_from_slice(hand);
+
+        for card in &mut new_hand {
+
+            *card %= *self as u8;
+
+        }
+
+        return new_hand;
+
+    }
+
+
+}
+
 
 #[derive(FromPrimitive)]
 pub enum Order {
@@ -127,6 +172,18 @@ impl Order {
 
             }
         }
+    }
+
+    pub fn to_hand(hand: &Vec<Order>) -> Vec<u8> {
+
+        let mut new_hand = Vec::new();
+
+        for card in hand {
+            new_hand.push(card )
+        }
+
+
+
     }
 
 }
@@ -218,7 +275,6 @@ pub fn plural(names: Vec<&str>) -> Vec<&str> {
 
 }
 
-
 /**
  * This function takes an vector of cards
  */
@@ -226,8 +282,6 @@ fn poker_hand(hand: &[u8]) {
 
     /* */
     {
-
-    let mut cardCounter = enum_map!();
 
     for card in hand {
 

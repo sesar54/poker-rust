@@ -8,10 +8,52 @@ use enum_map::EnumMap;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+pub enum Score {
+
+    High        = 0,
+    Pair        = 1,
+    Pairx2      = 2,
+    Trips       = 3,
+    Straight    = 4,
+    Flush       = 5,
+    House       = 6,
+    Quads       = 7,
+    SF          = 8,
+    Five        = 9,
+
+}
+
+impl Score {
+
+    pub fn as_str(&self, hand: ) -> vec<&str> {
+
+        use Score::*;
+
+        match self {
+
+            High        => vec!("", ""),
+            Pair        => vec!("", ""),
+            Pairx2      => vec!("", ""),
+            Trips       => vec!("", ""),
+            Straight    => vec!("", ""),
+            Flush       => vec!("", ""),
+            House       => vec!("", ""),
+            Quads       => vec!("", ""),
+            SF          => vec!("", ""),
+
+        }
+    }
+
+}
+
+pub enum SizeOf {
+    Order = 13, /* Skipping wildcard */
+    Suit = 4,
+}
 
 #[derive(FromPrimitive)]
 pub enum Order {
-    A = 0,
+    OA = 0, /* Ace */
     O2 = 1,
     O3 = 2,
     O4 = 3,
@@ -20,62 +62,67 @@ pub enum Order {
     O7 = 6,
     O8 = 7,
     O9 = 8,
-    O10 = 9,
-    J = 10,
-    Q = 11,
-    K = 12,
-    Joker,
+    O1 = 9, /* Ten */
+    OJ = 10,
+    OQ = 11,
+    OK = 12,
+    WJ, /* Wildcard / Joker */
 
 }
 
 impl Order {
 
     pub fn as_str(&self) -> Vec<&str> {
+
+        use Order::*;
+
         match self {
             
-            &Order::A =>    vec!("ace",     "aces"),
-            &Order::O2 =>   vec!("two",     "twos", "deuce", "deuces"),
-            &Order::O3 =>   vec!("three",   "threes"),
-            &Order::O4 =>   vec!("four",    "fours"),
-            &Order::O5 =>   vec!("five",    "fives"),
-            &Order::O6 =>   vec!("six",     "sixes"),
-            &Order::O7 =>   vec!("seven",   "sevens"),
-            &Order::O8 =>   vec!("eight",   "eights"),
-            &Order::O9 =>   vec!("nine",    "nines"),
-            &Order::O10 =>  vec!("ten",     "tens",     "dime",     "dimes"),
-            &Order::J =>    vec!("jack",    "jacks",    "john",     "john"),
-            &Order::Q =>    vec!("queen",   "queens",   "dame",     "dames",    "lady", "ladies"),
-            &Order::K =>    vec!("king",    "kings",    "knight",   "knights"),
-            &Order::Joker =>vec!("joker",   "jokers",   "wildcard", "wildcards"),
+            &OA => vec!("ace",      "aces"),
+            &O2 => vec!("two",      "twos",     "deuce",    "deuces"),
+            &O3 => vec!("three",    "threes"),
+            &O4 => vec!("four",     "fours"),
+            &O5 => vec!("five",     "fives"),
+            &O6 => vec!("six",      "sixes"),
+            &O7 => vec!("seven",    "sevens"),
+            &O8 => vec!("eight",    "eights"),
+            &O9 => vec!("nine",     "nines"),
+            &O1 => vec!("ten",      "tens",     "dime",     "dimes"),
+            &OJ => vec!("jack",     "jacks",    "john",     "john"),
+            &OQ => vec!("queen",    "queens",   "dame",     "dames",    "lady", "ladies"),
+            &OK => vec!("king",     "kings",    "knight",   "knights"),
+            &WJ => vec!("joker",    "jokers",   "wildcard", "wildcards"),
 
         }
     }
 
     pub fn to_order(card: &u8) -> &Order {
+        
+        use Order::*;
 
         if card >= &(4 * 13) {
 
-            return &Order::Joker;
+            return &WJ;
 
         } else {
             match FromPrimitive::from_u8(card % 13) {
 
-                Some(Order::A) =>    &Order::A,
-                Some(Order::O2) =>   &Order::O2,
-                Some(Order::O3) =>   &Order::O3,
-                Some(Order::O4) =>   &Order::O4,
-                Some(Order::O5) =>   &Order::O5,
-                Some(Order::O6) =>   &Order::O6,
-                Some(Order::O7) =>   &Order::O7,
-                Some(Order::O8) =>   &Order::O8,
-                Some(Order::O9) =>   &Order::O9,
-                Some(Order::O10) =>  &Order::O10,
-                Some(Order::J) =>    &Order::J,
-                Some(Order::Q) =>    &Order::Q,
-                Some(Order::K) =>    &Order::K,
+                Some(OA) => &OA,
+                Some(O2) => &O2,
+                Some(O3) => &O3,
+                Some(O4) => &O4,
+                Some(O5) => &O5,
+                Some(O6) => &O6,
+                Some(O7) => &O7,
+                Some(O8) => &O8,
+                Some(O9) => &O9,
+                Some(O1) => &O1,
+                Some(OJ) => &OJ,
+                Some(OQ) => &OQ,
+                Some(OK) => &OK,
 
                 /* Unreachable */
-                Some(Order::Joker) => &Order::Joker,
+                Some(WJ) => &WJ,
                 None => panic!(),
 
             }
@@ -98,25 +145,30 @@ pub enum Suit {
 impl Suit {
 
     pub fn as_str(&self) -> Vec<&str> {
+
+        use Suit::*;
+
         match self {
 
-            Suit::C => vec!("club",    "clubs"),
-            Suit::D => vec!("diamond", "diamonds"),
-            Suit::H => vec!("heart",   "hearts"),
-            Suit::S => vec!("spade",   "spades"),
+            C => vec!("club",    "clubs"),
+            D => vec!("diamond", "diamonds"),
+            H => vec!("heart",   "hearts"),
+            S => vec!("spade",   "spades"),
 
         }
     }
 
     
     pub fn to_suit(card: &u8) -> &Suit {
+        
+        use Suit::*;
 
         match FromPrimitive::from_u8(card % 4) {
 
-            Some(Suit::C) => &Suit::C,
-            Some(Suit::D) => &Suit::D,
-            Some(Suit::H) => &Suit::H,
-            Some(Suit::S) => &Suit::S,
+            Some(C) => &C,
+            Some(D) => &D,
+            Some(H) => &H,
+            Some(S) => &S,
 
             /* Unreachable since (unsigned % 4) can only be equal to one enum */
             None => panic!(),

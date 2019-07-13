@@ -25,13 +25,13 @@ pub enum Score {
 
 impl Score {
 
-    pub fn as_str(&self, hand: &[u8]) -> vec<&str> {
+    pub fn as_str(&self, hand: &[u8]) -> Vec<&str> {
 
         use Score::*;
 
         match self {
 
-            High        => vec!("", ""),
+            High        => vec!("High Card", ""),
             Pair        => vec!("", ""),
             Pairx2      => vec!("", ""),
             Trips       => vec!("", ""),
@@ -178,10 +178,7 @@ impl Order {
 
         let mut new_hand = Vec::new();
 
-        for card in hand {
-            new_hand.push(card )
-        }
-
+        
 
 
     }

@@ -1,11 +1,5 @@
 #![allow (dead_code)]
 
-extern crate enum_map;
-#[macro_use]
-
-use enum_map::EnumMap;
-use std::collections::HashMap;
-
 /* Lets start with a hand and work downwards */ 
 struct Hand {
 
@@ -26,17 +20,24 @@ impl Hand {
 
 struct Card {
 
+    // (Ace=0, Two=1, ... , King=12, Joker>=13)
     rank: u8,
-    suit: Suit,
 
+    /* (Clubs=0, Diamonds=1, Hearts=2, Spades=3) */
+    suit: u8,
+
+}
+
+impl Card {
+    const RANK_SIZE: usize = 14;
+    const SUIT_SIZE: usize = 4;
 }
 
 
 pub struct Score {
 
     grade: u8,
-    r#type: HandType,
-    winning_hand: Vec<Card>,
+    hand: Hands,
 
 }
 
@@ -44,18 +45,40 @@ impl Score {
 
     fn new(cards: &Vec<Card>) -> Score {
 
-        /* Return tupple of Suit { High, Pair, TwoPair, Trips, House, Quads, Five } */
+        /* Return tuple of Suit { High, Pair, TwoPair, Trips, House, Quads, Five } */
         let pair: Score = {
 
-            //let mut rank_counter = EnumMap::new();
-            let mut rank_counter = HashMap::new();
+            let card_counter: [Card::RANK_SIZE; Vec{Hands}];
 
             for card in cards {
-                
+
+                card_counter[card.rank as usize] += 1;
+
             }
 
-            Score::new(cards: &Vec<Card>)
 
+            let mut pair_score = 0;
+
+            for card in &card_counter {
+
+                match card {
+
+                    5 => {pair_score = 5; return },
+
+
+                    /* Check for pair, two pair, full house */
+                    // 2 => ,
+
+                    /* High card,  */
+                    1 | 4 => 
+
+                }
+
+            }
+
+
+
+            Score::new(cards: &Vec<Card>)
 
         };
 
@@ -80,11 +103,10 @@ impl Score {
 
 }
 
-
+/*
 /* enum with implicit disciminator (Ace=0, ... , King=12, Joker=13),  */
-/* 
 enum Rank {
-    Ace,
+    Ace = 0,
     Two,
     Three,
     Four,
@@ -99,9 +121,9 @@ enum Rank {
     King,
     Joker,
 
-}
- */
+} */
 
+/* 
 mod Rank {
     const Ace   : u8 = 0;
     const Two   : u8 = 1;
@@ -117,32 +139,38 @@ mod Rank {
     const Queen : u8 = 11;
     const King  : u8 = 12;
     const Joker : u8 = 13;
-}
+} */
 
-
+/* 
 enum Suit {
 
     Clubs,
-    Diamons,
+    Diamonds,
     Hearts,
     Spades,
     
-}
+} */
 
 
 /* implicit discriminator, higher score is better (duh...) */
-enum HandType {
+struct Pair (Card, Card);
+struct Trips (Card, Card, Card);
 
-    High,
-    Pair,
-    TwoPair,
-    Trips,
-    Straight,
-    Flush,
-    House,
-    Quads,
-    StraighFlush,
-    Five,
+struct Five_Cards (Card, Card, Card, Card, Card);
+
+
+enum Hands {
+
+    HighCard(Card),
+    OnePair(Pair),
+    TwoPair(Pair, Pair),
+    TreePair(Trips),
+    Straight(Five_Cards),
+    Flush(Five_Cards),
+    House(Pair, Trips),
+    Quads(Card, Card, Card, Card),
+    StraightFlush(Five_Cards),
+    FivePair(Five_Cards),
 
 }
 

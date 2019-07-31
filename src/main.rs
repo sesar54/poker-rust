@@ -41,23 +41,18 @@ pub struct Score {
 
 }
 
+
+
 impl Score {
 
-    fn new(cards: &Vec<Card>) -> Score {
+    fn new(cards: Vec<&Card>) -> Score {
 
         /* Return tuple of Suit { High, Pair, TwoPair, Trips, House, Quads, Five } */
         let pair: Score = {
 
-            let card_counter: [Card::RANK_SIZE; Vec{Hands}];
+            cards.sort_by_cached_key(|c| c.rank);
 
-            for card in cards {
-
-                card_counter[card.rank as usize] += 1;
-
-            }
-
-
-            let mut pair_score = 0;
+            cards.split(|c| c.rank)
 
             for card in &card_counter {
 
@@ -153,24 +148,18 @@ enum Suit {
 
 
 /* implicit discriminator, higher score is better (duh...) */
-struct Pair (Card, Card);
-struct Trips (Card, Card, Card);
-
-struct Five_Cards (Card, Card, Card, Card, Card);
-
-
 enum Hands {
 
-    HighCard(Card),
-    OnePair(Pair),
-    TwoPair(Pair, Pair),
-    TreePair(Trips),
-    Straight(Five_Cards),
-    Flush(Five_Cards),
-    House(Pair, Trips),
-    Quads(Card, Card, Card, Card),
-    StraightFlush(Five_Cards),
-    FivePair(Five_Cards),
+    High            (Card),
+    Pair            (Card, Card),
+    TwoPair         ((Card, Card), (Card, Card)),
+    Trips           (Card, Card, Card),
+    Straight        (Card, Card, Card, Card, Card),
+    Flush           (Card, Card, Card, Card, Card),
+    House           ((Card, Card, Card), (Card, Card)),
+    Quads           (Card, Card, Card, Card),
+    StraightFlush   (Card, Card, Card, Card, Card),
+    FivePair        (Card, Card, Card, Card, Card),
 
 }
 

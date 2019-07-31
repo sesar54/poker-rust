@@ -42,7 +42,6 @@ pub struct Score {
 }
 
 
-
 impl Score {
 
     fn new(cards: Vec<&Card>) -> Score {
@@ -52,10 +51,15 @@ impl Score {
 
             cards.sort_by_cached_key(|c| c.rank);
 
-            cards.split(|c| c.rank)
+            let card_iter = cards.iter().peakable();
 
-            for card in &card_counter {
+            while true {
 
+
+
+
+
+                /* 
                 match card {
 
                     5 => {pair_score = 5; return },
@@ -67,7 +71,8 @@ impl Score {
                     /* High card,  */
                     1 | 4 => 
 
-                }
+                } 
+                */
 
             }
 
@@ -168,6 +173,14 @@ enum Hands {
 
 fn main() {
     
-    let h = Hand::new(vec!(Card{ rank: Rank::Ace, suit: Suit::Clubs }));
+    let hand = Hands::High(Card{rank: 5, suit: 2,});
+
+    match hand {
+        High(c) =>  
+    }
+
+    println!("{:?}", );
+
+    let h = Hand::new(vec!(Card{ rank: 1, suit: 3 }));
 
 }

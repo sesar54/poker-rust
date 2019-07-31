@@ -44,14 +44,33 @@ pub struct Score {
 
 impl Score {
 
-    fn new(cards: Vec<&Card>) -> Score {
+    fn new(cards: &Vec<&Card>) -> Score {
 
         /* Return tuple of Suit { High, Pair, TwoPair, Trips, House, Quads, Five } */
         let pair: Score = {
 
-            cards.sort_by_cached_key(|c| c.rank);
+            cards.sort_by_key(|c| c.rank);
 
-            let card_iter = cards.iter().peakable();
+
+            let card_iter = cards.iter();
+
+            while let Some(val) = card_iter.next() {
+
+                let pair_iter = card_iter.peekable();
+
+                while let Some(next_val) = pair_iter.peek() {
+                    
+                }
+
+
+
+
+
+            }
+
+
+
+            card_iter.peek();
 
             while true {
 
@@ -175,11 +194,6 @@ fn main() {
     
     let hand = Hands::High(Card{rank: 5, suit: 2,});
 
-    match hand {
-        High(c) =>  
-    }
-
-    println!("{:?}", );
 
     let h = Hand::new(vec!(Card{ rank: 1, suit: 3 }));
 

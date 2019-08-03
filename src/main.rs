@@ -10,14 +10,15 @@ struct Hand {
 
 impl Hand {
     fn new(cards: Vec<Card>) -> Hand {
+
         Hand {
             cards,
-            score: Score::new(&cards),
+            score: Score::new(cards.),
         }
     }
 }
 
-
+#[derive(Debug)]
 struct Card {
 
     // (Ace=0, Two=1, ... , King=12, Joker>=13)
@@ -36,71 +37,64 @@ impl Card {
 
 pub struct Score {
 
+    
     grade: u8,
-    hand: Hands,
 
 }
 
 
 impl Score {
 
-    fn new(cards: &Vec<&Card>) -> Score {
+    fn new(cards: Vec<&Card>) -> Score {
 
-        /* Return tuple of Suit { High, Pair, TwoPair, Trips, House, Quads, Five } */
-        let pair: Score = {
+        
+        
+        {
 
-            cards.sort_by_key(|c| c.rank);
+            let mut old_card = &cards[0];
+            let mut group_card = vec![vec![]];
 
+            for card in cards {
 
-            let card_iter = cards.iter();
+                
+                if old_card.rank == card.rank {
 
-            while let Some(val) = card_iter.next() {
+                    group_card.last_mut().unwrap().push(card);
 
-                let pair_iter = card_iter.peekable();
+                } else {
 
-                while let Some(next_val) = pair_iter.peek() {
-                    
+                    group_card.push(vec![card]);
+                    old_card = card;
+
                 }
 
-
-
-
-
             }
 
+            println!("Things {:?}", group_card);
+
+        }
+
+        Score{grade: 2 }
+
+        /* 
+        match card {
+
+            5 => {pair_score = 5; return },
 
 
-            card_iter.peek();
+            /* Check for pair, two pair, full house */
+            // 2 => ,
 
-            while true {
-
-
-
-
-
-                /* 
-                match card {
-
-                    5 => {pair_score = 5; return },
-
-
-                    /* Check for pair, two pair, full house */
-                    // 2 => ,
-
-                    /* High card,  */
+            /* High card,  */
+            1 | 4 => 
                     1 | 4 => 
+            1 | 4 => 
 
-                } 
-                */
-
-            }
-
+        } 
+        */
 
 
-            Score::new(cards: &Vec<Card>)
-
-        };
-
+        /*
         let straight: Score = {
 
         };
@@ -117,6 +111,8 @@ impl Score {
             winning_hand: ,
 
         }
+
+        */
 
     }
 
@@ -193,8 +189,6 @@ enum Hands {
 fn main() {
     
     let hand = Hands::High(Card{rank: 5, suit: 2,});
-
-
     let h = Hand::new(vec!(Card{ rank: 1, suit: 3 }));
 
 }

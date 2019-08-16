@@ -4,7 +4,8 @@
 struct Hand {
 
     cards: Vec<Card>,
-    score: Score,
+    r#type: Hands,
+    score: u8,
 
 }
 
@@ -13,7 +14,8 @@ impl Hand {
 
         Hand {
             cards,
-            score: Score::new(cards.),
+
+            let (type, score) = Score::new(cards),
         }
     }
 }
@@ -37,8 +39,8 @@ impl Card {
 
 pub struct Score {
 
-    
-    grade: u8,
+    r#type: Hands,
+    score: u8,
 
 }
 
@@ -46,8 +48,6 @@ pub struct Score {
 impl Score {
 
     fn new(cards: Vec<&Card>) -> Score {
-
-        
         
         {
 
@@ -74,7 +74,9 @@ impl Score {
 
         }
 
-        Score{grade: 2 }
+        let hand = Hands::High(1);
+
+        return Score{ r#type: hand,  score: 2 };
 
         /* 
         match card {

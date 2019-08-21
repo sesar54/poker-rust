@@ -5,8 +5,3 @@ authors = ["Nils Eriksson <nils.edvin.eriksson@outlook.com>"]
 edition = "2018"
 
 [dependencies]
-enum-methods = "0.0.8"
-num = "0.2.0"
-num-traits = "0.2"
-num-derive = "0.2"
-enum-map = "0.5.0"

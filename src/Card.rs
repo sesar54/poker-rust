@@ -1,6 +1,5 @@
 
-
-/* enum with implicit disciminator (Ace=0, ... , King=12, Joker=13),  */
+/* enum with implicit discriminator (Ace=0, ... , King=12, Joker=13),  */
 enum Value {
 
     Ace = 0,
@@ -47,7 +46,18 @@ impl Card {
 
 }
 
-/* implicit discriminator, higher score is better (duh...) */
+/*
+struct High            (Card::Card);
+struct Pair            (Card, Card);
+struct TwoPair         (Pair, Pair);
+struct Trips           (Card, Card, Card);
+struct Straight        (Card, Card, Card, Card, Card);
+struct Flush           (Card, Card, Card, Card, Card);
+struct House           (Trips, Pair);
+struct Quads           (Card,  Card,  Card,  Card);
+struct StraightFlush   (Card,  Card,  Card,  Card,  Card);
+struct FivePair        (Card,  Card,  Card,  Card,  Card);
+*/
 
 pub enum Rank {
 
@@ -117,8 +127,15 @@ impl Hand {
                  * matching in a special order
                  */
 
-                use std::collections::HashMap;
-                let mut map_cards: HashMap::<usize, Vec<Vec<&Card>>> = HashMap::new();
+                // TODO Dont forget to pick the best pair also!
+                
+                struct Pairing {
+                    
+                    FivePair: Vec<Rank::FivePair>,
+                    Quads: Vec<Rank::Quads>,
+
+
+                };
 
                 for c in grouped_cards {
 
@@ -134,8 +151,10 @@ impl Hand {
 
                     match len {
 
-                        5 => return Some(Rank::FivePair(*c[0], *c[1], *c[2], *c[3], *c[4])),
-                        4 => return Some(Rank::Quads(*c[0], *c[1], *c[2], *c[3])),
+                        5 => return 
+                        Some(Rank::FivePair(*c[0], *c[1], *c[2], *c[3], *c[4])),
+                        4 => return 
+                        Some(Rank::Quads(*c[0], *c[1], *c[2], *c[3])),
                         _ => {}
 
                     }
@@ -154,7 +173,7 @@ impl Hand {
                 
                 /* Check for house */
                 let trips_group = map_cards.get(&3);
-                let pair_group = map_cards.get(&2);t
+                let pair_group = map_cards.get(&2);
                 
                 if let Some(trips_group) = trips_group {
                     if let Some(pair_group) = pair_group {

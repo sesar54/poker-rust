@@ -15,6 +15,58 @@ pub enum Rank {
 
 }
 
+impl Rank {
+
+    fn ord (&self) -> u8 {
+
+        match self {
+            High            => 0,
+            Pair            => 1,
+            TwoPair         => 2,
+            Trips           => 3,
+            Straight        => 4,
+            Flush           => 5,
+            House           => 6,
+            Quads           => 7,
+            StraightFlush   => 8,
+            /* TODO */
+        }
+
+    }
+
+}
+
+impl Eq for Rank {
+
+    fn Eq
+
+}
+
+use std::cmp::Ordering;
+impl Ord for Rank {
+    fn cmp(&self, other: &Self) -> Ordering {
+
+        
+
+        let self_score = ord(self);
+        let other_score = ord(other);
+
+        /* Easy hand comparision */
+        if self_score > other_score {
+            return Ordering::Greater;
+
+        } else if self_score < other_score {
+            return Ordering::Less;
+
+        } else {
+            return Ordering::Equal;
+        }
+
+
+
+    }
+}
+
 /* A hand consist of all cards "in hand or private cards" and 
  * "on table or public cards". But the important thing is to value these cards.
  * 
@@ -216,6 +268,11 @@ impl Hand {
                 return None;
 
             }
+
+
+
+
+
 
             return None;
 

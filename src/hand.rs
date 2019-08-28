@@ -1,5 +1,7 @@
 use super::card::Card;
+use std::cmp::Ordering;
 
+#[derive(Eq)]
 pub enum Rank {
 
     High            (Card),
@@ -36,20 +38,11 @@ impl Rank {
 
 }
 
-impl Eq for Rank {
-
-    fn Eq
-
-}
-
-use std::cmp::Ordering;
 impl Ord for Rank {
     fn cmp(&self, other: &Self) -> Ordering {
 
-        
-
-        let self_score = ord(self);
-        let other_score = ord(other);
+        let self_score = Rank::ord(self);
+        let other_score = Rank::ord(other);
 
         /* Easy hand comparision */
         if self_score > other_score {
@@ -62,8 +55,24 @@ impl Ord for Rank {
             return Ordering::Equal;
         }
 
+    }
+}
 
+impl PartialOrd for Rank {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        return Some(self.cmp(other));
+    }
+}
 
+impl PartialEq for Rank {
+    fn eq(&self, other: &Self) -> bool {
+        if self.ord() == other.ord() {
+            return false;
+
+        } else {
+            return false;
+
+        }
     }
 }
 

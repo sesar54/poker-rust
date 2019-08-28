@@ -1,5 +1,6 @@
 
-/* enum with implicit discriminator (Ace=0, ... , King=12, Joker=13),  */
+/* enum used as i32 with implicit discriminator so (Ace=0, ... , King=12, Joker=13),  */
+#[derive(Copy, Clone)]
 enum Value {
 
     Ace = 0,
@@ -19,6 +20,7 @@ enum Value {
 
 }
 
+#[derive(Copy, Clone)]
 enum Suit {
 
     Clubs,
@@ -28,20 +30,56 @@ enum Suit {
     
 }
 
+use std::cmp::Ordering;
+
 #[derive(Copy, Clone)]
 pub struct Card {
 
     // (Ace=0, Two=1, ... , King=12, Joker>=13)
-    pub value: u8,
-
-    /* (Clubs=0, Diamonds=1, Hearts=2, Spades=3) */
-    pub suit: u8,
+    pub value: Value,
+    pub suit: Suit,
 
 }
 
-impl Card {
+impl Ord for Card {
+    fn cmp(&self, other: &Self) -> Ordering {
 
-    const VALUE_SIZE: usize = 14;
-    const SUIT_SIZE: usize = 4;
+        /* Compare by Value*/
+        if (self.value as u8) > (other.value as u8) {
+            return Ordering::Greater;
+        
+        } else if (self.value as u8) < (other.value as u8) {
+            return Ordering::Less;
 
+        } else {
+
+            /* Compare by Suit */
+            if (self.value as u8) > (other.value as u8) {
+                return Ordering::Greater;
+
+            } else if (self.value as u8) < (other.value as u8) {
+                return Ordering::Less;
+
+            } else if (self.value as u8) == (other.value as u8) {
+                return Ordering::Equal
+
+            }
+        }
+    }
+}
+
+impl PartialOrd for Card {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        return Some(self.cmp(other));
+    }
+}
+
+impl PartialEq for Card {
+    fn eq(&self, other: &Self) -> bool {
+        if self.value == other.value && self.suit == other.suit {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

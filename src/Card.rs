@@ -153,12 +153,31 @@ impl Hand {
 
                 
                 /* Check for house */
-                if let Some(groups) = map_cards.get(&3).and_then(f: F) {
-                    map_cards.
+                let trips_group = map_cards.get(&3);
+                let pair_group = map_cards.get(&2);t
+                
+                if let Some(trips_group) = trips_group {
+                    if let Some(pair_group) = pair_group {
+                        return trips_group pair_group
+
+                    } else {
+                        return trips_group
+
+                    }
+
+                } else if let Some(pair_group) = pair_group {
+                    if pair_group.len() >= 2 {
+                        return Rank::TwoPair
+                    
+                    } else {
+                        return Rank::Pair
+
+                    }
+
+                } else {
+                    return Rank::High
+
                 }
-
-
-                return None;
 
             }
 

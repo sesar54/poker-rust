@@ -1,10 +1,15 @@
 #![feature(drain_filter)]
 
 use super::card::Card;
-
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub enum Rank {
 
+/**
+ * A Rank consist of a number of cards in a specific configuration. They are
+ * sorted by the lowest value first and greatest value last (actually in what
+ * order they are written).
+ */
+pub enum Rank {
+    
     High            (Card),
     Pair            (Card,  Card),
     TwoPair         ((Card, Card),(Card,  Card)),
@@ -27,22 +32,22 @@ pub enum Rank {
  * part of our hand. Therefore the cards are slotted into enum struct "Rank".
  * Only the highest ranking cards are saved in it.
  */
-pub struct Hand {
+pub struct Hand<'a> {
 
-    pub cards: Vec<Card>,
-    rank: Rank,
+    pub cards: &'a [Card],
+    pub rank: Rank<'a>,
 
 }
 
-impl Hand {
+impl Hand<'_> {
 
     /**
      * Creating a new hand will cause all given cards to be automatically
      * evaluated into a rank
      */
-    pub fn new(cards: Vec<Card>) -> Hand {
+    pub fn new(cards: &[Card]) -> Hand {
 
-        let rank = Hand::ranking(cards.as_slice());
+        let rank = Hand::ranking(cards);
 
         match rank {
 
@@ -73,32 +78,6 @@ impl Hand {
             return None;
         }
 
-        /* Holds a sorted 2d of cards sorted by their value, then suit */
-        let grouped_cards: Vec<Vec<&Card>>;
-
-        grouped_cards = || -> Vec<Vec<&Card>> {
-            
-            let mut old_card = cards[0];
-
-            let mut grouped_cards: Vec<Vec<&Card>> = Vec::new();
-
-            for card in cards {
-
-                if old_card.value == card.value {
-                    grouped_cards.last_mut().unwrap().push(&card);
-
-                } else {
-                    grouped_cards.push(vec![&card]);
-                    old_card = *card;
-
-                }
-
-            }
-
-            return grouped_cards;
-
-        }();
-
         /* Returns in order: Five of a kind, Quads, Full house, Two Pair
          * Pair, and lastly always a High card.      
          *                                                            
@@ -127,6 +106,32 @@ impl Hand {
                 Pair: Vec::new(),
                 High: Vec::new(),
             };
+
+
+            /* Holds a sorted 2d of cards sorted by their value */
+            let grouped_cards = || -> Vec<Vec<&Card>> {
+                
+                let mut old_card = cards[0];
+
+                let mut grouped_cards: Vec<Vec<&Card>> = Vec::new();
+
+                for card in cards {
+
+                    if old_card.value == card.value {
+                        grouped_cards.last_mut().unwrap().push(&card);
+
+                    } else {
+                        grouped_cards.push(vec![&card]);
+                        old_card = *card;
+
+                    }
+
+                }
+
+                return grouped_cards;
+
+            }();
+
 
             /* Notice that these enum structures are simple, taking in just 
              * cards in a linear fashion.
@@ -160,16 +165,16 @@ impl Hand {
                 return Some(_quads);
 
             /* In order; check if components in pair_cards is enough to 
-                * build:
-                *  House (else return Trips).
-                *  Two Pair (else return Pair).
-                * 
-                * If all fails return high card.
-                * 
-                * To build higher order enum we have to first break down the
-                * smaller enums. [ t0, t1, p0, ... p11 ] are card references
-                * originally from lesser enums
-                */
+             * build:
+             *  House (else return Trips).
+             *  Two Pair (else return Pair).
+             * 
+             * If all fails return high card.
+             * 
+             * To build higher order enum we have to first break down the
+             * smaller enums. [ t0, t1, p0, ... p11 ] are card references
+             * originally from lesser enums
+             */
             } else {
                 
                 let mut iter_pair = pair.Pair.into_iter().rev();
@@ -212,7 +217,7 @@ impl Hand {
         }();
 
         /* Return early else unwrap pair. If pair is None straight_flush will 
-         * also be None, therefore return early None.
+         * also be None, therefore return an early None.
          */
         match pair {
             
@@ -233,33 +238,68 @@ impl Hand {
         let straight_flush = || -> Option<Rank> {
 
             /* First check for straight cards */
-            let mut straight_cards: Vec<&Vec<&Card>> = Vec::new();
-            let mut last_val: u8 = 0;
+            let mut straight_cards: Vec<Vec<&Card>> = || -> Vec<Vec<&Card>> {
 
-            for card_set in grouped_cards {
-                let val = card_set[0].value;
+                let straight_cards: Vec<Vec<&Card>> = Vec::new();
+                
+                /* Lets see what happens if we don't initialize this */
+                let mut last_val: u8; 
 
-                if (val as u8) == last_val + 1 {
-                    straight_cards.push(&card_set);
+                /* Find coherent cards and group them together */
+                for card in cards {
 
-                } else {
-                    straight_cards.clear();
+                    let val = card.value as u8;
+
+                    if let Some(last_vec) = straight_cards.last() {
+                        if val == last_val || val == last_val + 1 {
+                            last_vec.push(card);
+
+                        /* 
+                        * We could check if the last vector isn't large enough
+                        * for a straight card here but we would still also need 
+                        * to check the last vector after this loop. The dry way 
+                        * is to filter all later. 
+                        
+                        } else if last_vec.len() < 5 {
+                            last_vec.clear();
+                        */
+
+                        /* Start a new series of cards */
+                        } else {
+                            straight_cards.push(vec![card]);
+
+                        }
+
+                    /* Create initial vector */
+                    } else {
+                        straight_cards.push(vec![card]);
+                    
+                    }
+
+                    last_val = val;
 
                 }
 
-                last_val = val as u8;
+                /* Filtering insufficient number of cards for all groupings */
+                straight_cards.drain_filter(|f| f.len() < 5);
 
-            }
+
+                /* Sort by last card in each sub vector */
+                straight_cards.sort_by_key(|f| f.last().unwrap());
+
+                return straight_cards;
+
+            }();
 
 
-            use std::collections::HashMap;
-            use super::card::Suit;
-
-            let mut flush_cards: HashMap<Suit, Vec<&Card>> = HashMap::new();
+            let mut flush_cards: Vec<&Vec<&Card>> = Vec::with_capacity(super::card::Suit::Size);
             
             for card in cards {
-                flush_cards[&card.suit].push(&card);
+                flush_cards[card.suit as usize].push(&card);
             }
+
+            /* Filtering insufficient number of cards for all groupings */
+            flush_cards.drain_filter(|f| f.len() < 5);
 
 
             if straight_cards.is_empty() {
@@ -283,9 +323,6 @@ impl Hand {
 
 
             }
-
-
-            println!("{:?}",straight_cards);
 
             return None;
 

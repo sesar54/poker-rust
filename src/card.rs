@@ -30,6 +30,10 @@ pub enum Suit {
     
 }
 
+impl Suit {
+    pub const Size: usize = 4;
+}
+
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Card {

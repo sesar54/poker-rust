@@ -6,9 +6,14 @@ mod card;
 fn main() {
     use hand::*;
     use card::Card;
+    use card::*;
+    use Suit::*;
+    use Value::*;
 
-    let rank = Rank::High(Card{value: 4, suit: 3});
-    let h = Hand::new(vec!(Card{value: 1, suit: 3 }));
+    let rank = Rank::High(Card{value: Ace, suit: Clubs});
+    let h = Hand::new(vec!(Card{value: Three, suit: Hearts}));
+
+    h.cards;
 
     //h.cards.push(Card{value:3,suit:6});
 

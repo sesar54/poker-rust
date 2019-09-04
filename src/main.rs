@@ -11,7 +11,10 @@ fn main() {
     use Value::*;
 
     let rank = Rank::High(Card{value: Ace, suit: Clubs});
-    let h = Hand::new(vec!(Card{value: Three, suit: Hearts}));
+
+    let cards = vec!(Card{value: Three, suit: Hearts});
+
+    let h = Hand::new(&cards);
 
     h.cards;
 

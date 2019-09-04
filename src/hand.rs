@@ -86,26 +86,14 @@ impl Hand<'_> {
          */                                                          
         let pair = || -> Option<Rank> {
 
-            /* Putting all cards into a struct. Based on how many of what
+            /* Based on how many of what
              * we can decide what type of cards we return.
              */
-            struct Pairing {
-    
-                Fives: Vec<Rank>,
-                Quads: Vec<Rank>,
-                Trips: Vec<Rank>,
-                Pair: Vec<Rank>,
-                High: Vec<Rank>,
-
-            };
-            
-            let mut pair = Pairing {
-                Fives: Vec::new(),
-                Quads: Vec::new(),
-                Trips: Vec::new(),
-                Pair: Vec::new(),
-                High: Vec::new(),
-            };
+            let mut pair_Fives = Vec::new();
+            let mut pair_Quads = Vec::new();
+            let mut pair_Trips = Vec::new();
+            let mut pair_Pair = Vec::new();
+            let mut pair_High = Vec::new();
 
 
             /* Holds a sorted 2d of cards sorted by their value */
@@ -140,15 +128,15 @@ impl Hand<'_> {
             for c in grouped_cards {
                 match c.len() {
                     5 =>
-                    pair.Fives.push(FivePair(*c[0],*c[1],*c[2],*c[3],*c[4])),
+                    pair_Fives.push(FivePair(*c[0],*c[1],*c[2],*c[3],*c[4])),
                     4 => 
-                    pair.Quads.push(Quads(*c[0],*c[1],*c[2],*c[3])),
+                    pair_Quads.push(Quads(*c[0],*c[1],*c[2],*c[3])),
                     3 => 
-                    pair.Trips.push(Trips(*c[0],*c[1],*c[2])),
+                    pair_Trips.push(Trips(*c[0],*c[1],*c[2])),
                     2 =>
-                    pair.Pair.push(Pair(*c[0],*c[1])),
+                    pair_Pair.push(Pair(*c[0],*c[1])),
                     1 =>
-                    pair.High.push(High(*c[0])),
+                    pair_High.push(High(*c[0])),
                     0 => panic!(),
                     //TODO
                     _ => (),
@@ -158,10 +146,10 @@ impl Hand<'_> {
 
             /* Simply return five or four pairs as they are scored highest */
 
-            if let Some(_five_pair) = pair.Fives.pop() {
+            if let Some(_five_pair) = pair_Fives.pop() {
                 return Some(_five_pair);
             
-            } else if let Some(_quads) = pair.Quads.pop() {
+            } else if let Some(_quads) = pair_Quads.pop() {
                 return Some(_quads);
 
             /* In order; check if components in pair_cards is enough to 
@@ -177,9 +165,9 @@ impl Hand<'_> {
              */
             } else {
                 
-                let mut iter_pair = pair.Pair.into_iter().rev();
+                let mut iter_pair = pair_Pair.into_iter().rev();
 
-                let _trips = pair.Trips.last();
+                let _trips = pair_Trips.last();
                 let _pair0 = iter_pair.next();
 
                 /* House or Trips */

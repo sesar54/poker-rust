@@ -1,5 +1,3 @@
-#![feature(drain_filter)]
-
 use super::card::Card;
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 
@@ -35,7 +33,7 @@ pub enum Rank {
 pub struct Hand<'a> {
 
     pub cards: &'a [Card],
-    pub rank: Rank<'a>,
+    pub rank: Rank,
 
 }
 
@@ -191,7 +189,7 @@ impl Hand<'_> {
                     }
 
                 /* High Card */
-                } else if let Some(_high) = pair.High.pop() {
+                } else if let Some(_high) = pair_High.pop() {
                     return Some(_high);
 
                 /* All failed somehow. The given vector must be empty */
@@ -269,8 +267,8 @@ impl Hand<'_> {
                 }
 
                 /* Filtering insufficient number of cards for all groupings */
-                straight_cards.drain_filter(|f| f.len() < 5);
-
+                //straight_cards.drain_filter(|f| f.len() < 5);
+                straight_cards.retain(|f| f.len() >= 5);
 
                 /* Sort by last card in each sub vector */
                 straight_cards.sort_by_key(|f| f.last().unwrap());
@@ -287,7 +285,9 @@ impl Hand<'_> {
             }
 
             /* Filtering insufficient number of cards for all groupings */
-            flush_cards.drain_filter(|f| f.len() < 5);
+            flush_cards.retain(|f| f.len() >= 5);
+
+            flush_cards
 
 
             if straight_cards.is_empty() {
@@ -296,11 +296,9 @@ impl Hand<'_> {
 
                 } else {
                     
-                    for (_, cards) in flush_cards {
+                    for cards in flush_cards {
                         if cards.len() >= 5 {
                             
-
-
                         } 
 
                     }

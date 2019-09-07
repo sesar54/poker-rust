@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 /** enum used as i32 with implicit discriminator so (Ace=0, ... , King=12, Joker=13),  */
 pub enum Value {
     Ace = 0,
@@ -19,7 +19,7 @@ pub enum Value {
     Joker,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Suit {
     Clubs,
     Diamonds,
@@ -31,11 +31,26 @@ impl Suit {
     pub const SIZE: usize = 4;
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Card {
     // (Ace=0, Two=1, ... , King=12, Joker>=13)
     pub value: Value,
     pub suit: Suit,
+}
+
+#[macro_export]
+/** First argument: Value, Second argument: Suit */
+macro_rules! card {
+    ( $val:expr, $suit:expr ) => {{
+        use crate::card::Value::*;
+        use crate::card::Suit::*;
+
+        let card = super::Card {
+            value: $val,
+            suit: $suit,
+        };
+        card
+    }};
 }
 
 #[cfg(test)]
@@ -44,10 +59,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn check_order() {
+    fn check_build() {
+        let card0 = Card {
+            value: Value::Eight,
+            suit: Suit::Diamonds,
+        };
 
-        assert!(Value::Ace < Value::Eight);
+        let card1 = card!(Eight, Diamonds);
+
+        assert_eq!(card0, card1);
     }
 
+    #[test]
+    fn check_order() {
+        assert!(Value::Ace < Value::Eight);
+    }
 
 }

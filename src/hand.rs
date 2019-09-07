@@ -29,12 +29,12 @@ pub enum Rank {
  * part of our hand. Therefore the cards are slotted into enum struct "Rank".
  * Only the highest ranking cards are saved in it.
  */
-pub struct Hand<'a> {
-    pub cards: &'a [Card],
+pub struct Hand {
+    pub cards: Vec<Card>,
     pub rank: Rank,
 }
 
-impl Hand<'_> {
+impl Hand {
     /**
      * Creating a new hand will cause all given cards to be automatically
      * evaluated into a rank
@@ -45,7 +45,7 @@ impl Hand<'_> {
         match rank {
             Some(rank) => {
                 return Hand {
-                    cards: cards,
+                    cards: cards.to_owned(),
                     rank: rank,
                 }
             }
@@ -79,7 +79,7 @@ impl Hand<'_> {
          * This code gives none if slice has length 0. This is considered very
          *  erroneous
          */
-        let pair = || -> Option<Rank> {
+        let pair = {
             /* Based on how many of what
              * we can decide what type of cards we return.
              */
@@ -104,7 +104,7 @@ impl Hand<'_> {
                     }
                 }
 
-                return grouped_cards;
+                grouped_cards
             }();
 
             /* Notice that these enum structures are simple, taking in just
@@ -127,9 +127,9 @@ impl Hand<'_> {
             /* Simply return five or four pairs as they are scored highest */
 
             if let Some(_five_pair) = pair_fives.pop() {
-                return Some(_five_pair);
+                Some(_five_pair)
             } else if let Some(_quads) = pair_quads.pop() {
-                return Some(_quads);
+                Some(_quads)
 
             /* In order; check if components in pair_cards is enough to
              * build:
@@ -151,29 +151,29 @@ impl Hand<'_> {
                 /* House or Trips */
                 if let Some(Rank::Trips(t0, t1, t2)) = _trips {
                     if let Some(Pair(p0, p1)) = _pair0 {
-                        return Some(House((*t0, *t1, *t2), (p0, p1)));
+                        Some(House((*t0, *t1, *t2), (p0, p1)))
                     } else {
-                        return Some(Trips(*t0, *t1, *t2));
+                        Some(Trips(*t0, *t1, *t2))
                     }
 
                 /* TwoPair or pair */
                 } else if let Some(Pair(p00, p01)) = _pair0 {
                     if let Some(Pair(p10, p11)) = iter_pair.next() {
-                        return Some(TwoPair((p00, p01), (p10, p11)));
+                        Some(TwoPair((p00, p01), (p10, p11)))
                     } else {
-                        return Some(Pair(p00, p01));
+                        Some(Pair(p00, p01))
                     }
 
                 /* High Card */
                 } else if let Some(_high) = pair_highs.pop() {
-                    return Some(_high);
+                    Some(_high)
 
                 /* All failed somehow. The given vector must be empty */
                 } else {
-                    return None;
+                    None
                 }
             }
-        }();
+        };
 
         /* Return early else unwrap pair. If pair is None straight_flush will
          * also be None, therefore return an early None.
@@ -270,4 +270,45 @@ impl Hand<'_> {
     }
 
     pub fn update(&self, cards: Vec<Card>) {}
+}
+
+#[macro_export]
+macro_rules! hand {
+    ( $( $card:expr ),* ) => {
+        {
+            use crate::card;
+            let mut cards = Vec::new();
+            $(
+                cards.push($card);
+            )*
+            super::Hand::new(&cards)
+        }
+    };
+    ( $( $val:expr, $suit:expr ),* ) => {{
+        {
+
+            use crate::card;
+            use crate::hand::Hand;
+
+            hand!(
+                $(
+                    card!($val, $suit),
+                )*
+            )
+        }
+    }}
+}
+
+#[cfg(test)]
+mod test {
+
+    #[test]
+    fn check_hand() {
+        let hand0 = hand!(card!(Ace, Spades), card!(King, Hearts));
+        // let hand1 = hand!((Three, Diamonds),(Queen, Clubs));
+
+        // assert_ne!(hand0, hand1);
+
+    }
+
 }

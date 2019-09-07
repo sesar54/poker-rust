@@ -192,7 +192,7 @@ impl Hand {
          */
         let straight_flush = || -> Option<Rank> {
             /* First check for straight cards */
-            let straight_cards = || -> Vec<Vec<&Card>> {
+            let straight_cards = {
                 let mut straight_cards: Vec<Vec<&Card>> = Vec::new();
                 /* Lets see what happens if we don't initialize this */
                 let mut last_val = super::card::Value::Ace;
@@ -235,8 +235,8 @@ impl Hand {
 
                 //straight_cards.sort_by_key(|f| f.last().unwrap());
 
-                return straight_cards;
-            }();
+                straight_cards
+            };
 
             let mut flush_cards: Vec<Vec<&Card>> = Vec::with_capacity(super::card::Suit::SIZE);
             for card in cards {

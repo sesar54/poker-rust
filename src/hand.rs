@@ -224,20 +224,21 @@ impl Hand<'_> {
         let straight_flush = || -> Option<Rank> {
 
             /* First check for straight cards */
-            let mut straight_cards: Vec<Vec<&Card>> = || -> Vec<Vec<&Card>> {
+            let straight_cards = || -> Vec<Vec<&Card>> {
 
-                let straight_cards: Vec<Vec<&Card>> = Vec::new();
+                let mut straight_cards: Vec<Vec<&Card>> = Vec::new();
                 
                 /* Lets see what happens if we don't initialize this */
-                let mut last_val: u8; 
+                let mut last_val = super::card::Value::Ace;
 
                 /* Find coherent cards and group them together */
                 for card in cards {
 
-                    let val = card.value as u8;
+                    let val = card.value;
 
-                    if let Some(last_vec) = straight_cards.last() {
-                        if val == last_val || val == last_val + 1 {
+                    if let Some(last_vec) = straight_cards.last_mut() {
+                        if val == last_val || val as u8 == last_val as u8 + 1 {
+
                             last_vec.push(card);
 
                         /* 
@@ -267,28 +268,26 @@ impl Hand<'_> {
                 }
 
                 /* Filtering insufficient number of cards for all groupings */
-                //straight_cards.drain_filter(|f| f.len() < 5);
                 straight_cards.retain(|f| f.len() >= 5);
 
                 /* Sort by last card in each sub vector */
-                straight_cards.sort_by_key(|f| f.last().unwrap());
+                straight_cards.sort();
 
+                //straight_cards.sort_by_key(|f| f.last().unwrap());
+                
                 return straight_cards;
 
             }();
 
 
-            let mut flush_cards: Vec<&Vec<&Card>> = Vec::with_capacity(super::card::Suit::Size);
+            let mut flush_cards: Vec<Vec<&Card>> = Vec::with_capacity(super::card::Suit::Size);
             
             for card in cards {
-                flush_cards[card.suit as usize].push(&card);
+                flush_cards[card.suit as usize].push(card);
             }
 
             /* Filtering insufficient number of cards for all groupings */
             flush_cards.retain(|f| f.len() >= 5);
-
-            flush_cards
-
 
             if straight_cards.is_empty() {
                 if flush_cards.is_empty() {

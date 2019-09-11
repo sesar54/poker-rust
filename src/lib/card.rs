@@ -1,9 +1,9 @@
-#![allow(dead_code)]
+use std::fmt;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 /** enum used as i32 with implicit discriminator so (Ace=0, ... , King=12, Joker=13),  */
 pub enum Value {
-    Ace = 0,
+    Ace,
     Two,
     Three,
     Four,
@@ -36,6 +36,13 @@ pub struct Card {
     // (Ace=0, Two=1, ... , King=12, Joker>=13)
     pub value: Value,
     pub suit: Suit,
+}
+
+impl fmt::Display for Card {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?} of {:?}", self.value, self.suit)
+    }
+
 }
 
 #[macro_export]

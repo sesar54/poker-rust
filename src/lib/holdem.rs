@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+mod holdem;
+
 use super::card::Card;
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 

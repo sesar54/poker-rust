@@ -1,8 +1,4 @@
 #![allow(dead_code)]
-
-mod holdem;
-
-use super::card::Card;
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 
 /**
@@ -197,7 +193,7 @@ impl Hand {
             let straight_cards = {
                 let mut straight_cards: Vec<Vec<&Card>> = Vec::new();
                 /* Lets see what happens if we don't initialize this */
-                let mut last_val = super::card::Value::Ace;
+                let mut last_val = Value::Ace;
 
                 /* Find coherent cards and group them together */
                 for card in cards {
@@ -240,7 +236,7 @@ impl Hand {
                 straight_cards
             };
 
-            let mut flush_cards: Vec<Vec<&Card>> = Vec::with_capacity(super::card::Suit::SIZE);
+            let mut flush_cards: Vec<Vec<&Card>> = Vec::with_capacity(Suit::SIZE);
             for card in cards {
                 flush_cards[card.suit as usize].push(card);
             }
@@ -311,6 +307,92 @@ mod test {
 
         // assert_ne!(hand0, hand1);
 
+    }
+
+}
+
+use std::fmt;
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+/** enum used as i32 with implicit discriminator so (Ace=0, ... , King=12, Joker=13),  */
+pub enum Value {
+    Ace,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+    Jack,
+    Queen,
+    King,
+    Joker,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Suit {
+    Clubs,
+    Diamonds,
+    Hearts,
+    Spades,
+}
+
+impl Suit {
+    pub const SIZE: usize = 4;
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Card {
+    // (Ace=0, Two=1, ... , King=12, Joker>=13)
+    pub value: Value,
+    pub suit: Suit,
+}
+
+impl fmt::Display for Card {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?} of {:?}", self.value, self.suit)
+    }
+
+}
+
+#[macro_export]
+/** First argument: Value, Second argument: Suit */
+macro_rules! card {
+    ( $val:expr, $suit:expr ) => {{
+        use crate::card::Value::*;
+        use crate::card::Suit::*;
+
+        let card = super::Card {
+            value: $val,
+            suit: $suit,
+        };
+        card
+    }};
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn check_build() {
+        let card0 = Card {
+            value: Value::Eight,
+            suit: Suit::Diamonds,
+        };
+
+        let card1 = card!(Eight, Diamonds);
+
+        assert_eq!(card0, card1);
+    }
+
+    #[test]
+    fn check_order() {
+        assert!(Value::Ace < Value::Eight);
     }
 
 }

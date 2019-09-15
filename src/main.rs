@@ -1,7 +1,3 @@
-use poker::*;
-use Suit::*;
-use Value::*;
-
 #[allow(dead_code)]
 #[allow(unused_variables)]
 

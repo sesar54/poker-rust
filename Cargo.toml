@@ -1,6 +1,15 @@
 [package]
 name = "poker"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Nils Eriksson <nils.edvin.eriksson@outlook.com>"]
 edition = "2018"
 
+[lib]
+name = "holdem"
+path = "src/holdem.rs"
+version = "0.0.1"
+
+[[bin]]
+name = "poker_game"
+path = "src/bin/main.rs"
+version = "0.0.1"

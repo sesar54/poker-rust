@@ -195,7 +195,7 @@ impl Hand {
             let straight_cards = {
                 let mut straight_cards: Vec<Vec<&Card>> = Vec::new();
                 /* Lets see what happens if we don't initialize this */
-                let mut last_val = super::card::Value::Ace;
+                let mut last_val = Value::Ace;
 
                 /* Find coherent cards and group them together */
                 for card in cards {
@@ -238,7 +238,7 @@ impl Hand {
                 straight_cards
             };
 
-            let mut flush_cards: Vec<Vec<&Card>> = Vec::with_capacity(super::card::Suit::SIZE);
+            let mut flush_cards: Vec<Vec<&Card>> = Vec::with_capacity(Suit::SIZE);
             for card in cards {
                 flush_cards[card.suit as usize].push(card);
             }

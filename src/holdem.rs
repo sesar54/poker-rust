@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use super::card::Card;
+use cargo::card::Card;
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 
 /**
@@ -79,7 +79,7 @@ impl Hand {
          * This code gives none if slice has length 0. This is considered very
          *  erroneous
          */
-        let pair = {
+        let pair = (||{
             /* Based on how many of what
              * we can decide what type of cards we return.
              */
@@ -173,7 +173,7 @@ impl Hand {
                     None
                 }
             }
-        };
+        })();
 
         /* Return early else unwrap pair. If pair is None straight_flush will
          * also be None, therefore return an early None.
@@ -190,7 +190,7 @@ impl Hand {
          * It's expected that one hand might not fit into any Rank stated,
          * unlike fn pair().
          */
-        let straight_flush = || -> Option<Rank> {
+        let straight_flush = (||{
             /* First check for straight cards */
             let straight_cards = {
                 let mut straight_cards: Vec<Vec<&Card>> = Vec::new();
@@ -259,7 +259,7 @@ impl Hand {
             }
 
             return None;
-        }();
+        })();
 
         /* Compare and return a rank */
         if let Some(straight_flush) = straight_flush {

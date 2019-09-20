@@ -1,5 +1,7 @@
-#[crate_id="holdem"];
-#[crate_type="lib"];
-
-pub mod holdem;
-pub mod card;
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}

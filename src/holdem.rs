@@ -1,11 +1,6 @@
 #![allow(dead_code)]
 
-<<<<<<< HEAD
-use super::card::*;
-
-=======
 use cargo::card::Card;
->>>>>>> 93ab65ea69bfe89992d716c3d9e63bf185337add
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 
 /**

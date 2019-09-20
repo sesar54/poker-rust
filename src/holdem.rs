@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
-use super::card::Card;
+use super::card::*;
+
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 
 /**

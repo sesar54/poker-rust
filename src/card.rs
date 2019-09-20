@@ -47,7 +47,7 @@ impl fmt::Display for Card {
 
 #[macro_export]
 /** First argument: Value, Second argument: Suit */
-macro_rules! card {
+macro_rules! Card {
     ( $val:expr, $suit:expr ) => {{
         use crate::card::Value::*;
         use crate::card::Suit::*;
@@ -75,6 +75,9 @@ mod tests {
         let card1 = card!(Eight, Diamonds);
 
         assert_eq!(card0, card1);
+    
+        println!("Test");
+        
     }
 
     #[test]

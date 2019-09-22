@@ -1,6 +1,5 @@
-#![allow(dead_code)]
+use crate::card::*;
 
-use cargo::card::Card;
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 
 /**
@@ -79,10 +78,12 @@ impl Hand {
          * This code gives none if slice has length 0. This is considered very
          *  erroneous
          */
-        let pair = (||{
+        let pair = {
+
             /* Based on how many of what
              * we can decide what type of cards we return.
              */
+
             let mut pair_fives = Vec::new();
             let mut pair_quads = Vec::new();
             let mut pair_trips = Vec::new();
@@ -173,7 +174,9 @@ impl Hand {
                     None
                 }
             }
-        })();
+
+        };
+        
 
         /* Return early else unwrap pair. If pair is None straight_flush will
          * also be None, therefore return an early None.
@@ -182,6 +185,7 @@ impl Hand {
             Some(Rank::FivePair(..)) | None => return pair,
             _ => (),
         }
+
         let pair = pair.unwrap();
 
         /* Returns in order: either Straight, Flush, Straight Flush,
@@ -190,10 +194,11 @@ impl Hand {
          * It's expected that one hand might not fit into any Rank stated,
          * unlike fn pair().
          */
-        let straight_flush = (||{
+        let straight_flush = {
             /* First check for straight cards */
             let straight_cards = {
                 let mut straight_cards: Vec<Vec<&Card>> = Vec::new();
+                
                 /* Lets see what happens if we don't initialize this */
                 let mut last_val = Value::Ace;
 
@@ -246,20 +251,21 @@ impl Hand {
             /* Filtering insufficient number of cards for all groupings */
             flush_cards.retain(|f| f.len() >= 5);
 
+            /*
             if straight_cards.is_empty() {
                 if flush_cards.is_empty() {
-                    return None;
+                    None
                 } else {
                     for cards in flush_cards {
                         if cards.len() >= 5 {}
                     }
 
-                    return None;
+                    None
                 }
-            }
+            }*/
 
-            return None;
-        })();
+            None
+        };
 
         /* Compare and return a rank */
         if let Some(straight_flush) = straight_flush {
@@ -274,6 +280,7 @@ impl Hand {
 
 #[macro_export]
 macro_rules! hand {
+
     ( $( $card:expr ),* ) => {
         {
             use crate::card;
@@ -284,19 +291,7 @@ macro_rules! hand {
             super::Hand::new(&cards)
         }
     };
-    ( $( $val:expr, $suit:expr ),* ) => {{
-        {
-
-            use crate::card;
-            use crate::hand::Hand;
-
-            hand!(
-                $(
-                    card!($val, $suit),
-                )*
-            )
-        }
-    }}
+    
 }
 
 #[cfg(test)]
@@ -305,9 +300,8 @@ mod test {
     #[test]
     fn check_hand() {
         let hand0 = hand!(card!(Ace, Spades), card!(King, Hearts));
-        // let hand1 = hand!((Three, Diamonds),(Queen, Clubs));
 
-        // assert_ne!(hand0, hand1);
+        println!("{}", hand0);
 
     }
 

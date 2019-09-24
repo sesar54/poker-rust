@@ -1,39 +1,7 @@
 use crate::card::*;
+use crate::holdem::{Rank::*, *};
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
-
-/**
- * A Rank consist of a number of cards in a specific configuration. They are
- * sorted by the lowest value first and greatest value last (actually in what
- * order they are written).
- */
-pub enum Rank {
-    High(Card),
-    Pair(Card, Card),
-    TwoPair((Card, Card), (Card, Card)),
-    Trips(Card, Card, Card),
-    Straight(Card, Card, Card, Card, Card),
-    Flush(Card, Card, Card, Card, Card),
-    House((Card, Card, Card), (Card, Card)),
-    Quads(Card, Card, Card, Card),
-    StraightFlush(Card, Card, Card, Card, Card),
-    FivePair(Card, Card, Card, Card, Card),
-}
-
-/**
- * A hand consist of all cards "in hand or private cards" and
- * "on table or public cards". But the important thing is to value these cards.
- *
- * If we value our cards, chances are that some are worthless but they are
- * part of our hand. Therefore the cards are slotted into enum struct "Rank".
- * Only the highest ranking cards are saved in it.
- */
-pub struct Hand {
-    pub cards: Vec<Card>,
-    pub rank: Rank,
-}
-
-impl Hand {
+impl crate::holdem::Hand {
     /**
      * Creating a new hand will cause all given cards to be automatically
      * evaluated into a rank
@@ -111,7 +79,6 @@ impl Hand {
             /* Notice that these enum structures are simple, taking in just
              * cards in a linear fashion.
              */
-            use Rank::*;
             for c in grouped_cards {
                 match c.len() {
                     5 => pair_fives.push(FivePair(*c[0], *c[1], *c[2], *c[3], *c[4])),
@@ -276,31 +243,3 @@ impl Hand {
     pub fn update(&self, cards: Vec<Card>) {}
 }
 
-#[macro_export]
-macro_rules! hand {
-
-    ( $( $card:expr ),* ) => {
-        {
-            use crate::card;
-            let mut cards = Vec::new();
-            $(
-                cards.push($card);
-            )*
-            super::Hand::new(&cards)
-        }
-    };
-    
-}
-
-#[cfg(test)]
-mod test {
-
-    #[test]
-    fn check_hand() {
-        let hand0 = hand!(card!(Ace, Spades), card!(King, Hearts));
-
-        println!("{}", hand0);
-
-    }
-
-}

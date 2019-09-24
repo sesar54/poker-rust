@@ -181,12 +181,10 @@ impl Hand {
         /* Return early else unwrap pair. If pair is None straight_flush will
          * also be None, therefore return an early None.
          */
-        match pair {
+        let pair = match pair {
             Some(Rank::FivePair(..)) | None => return pair,
-            _ => (),
-        }
-
-        let pair = pair.unwrap();
+            Some(pair) => pair,
+        };
 
         /* Returns in order: either Straight, Flush, Straight Flush,
          * or None.

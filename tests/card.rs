@@ -1,8 +1,7 @@
 #[cfg(test)]
-mod tests {
-
-    use poker_lib::card::{Value::*, Suit::*, *};
-    use poker_lib::macros;
+mod test {
+    
+    use poker_lib::{card::{Value::*, Suit::*, *}, *};
 
     #[test]
     fn check_build() {

@@ -7,7 +7,7 @@ mod test {
 
         let hand0 = hand!(card!(Ace, Spades), card!(King, Hearts));
 
-        //println!("{}", hand0);
+        println!("{}", hand0);
 
     }
 

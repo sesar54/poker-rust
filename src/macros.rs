@@ -10,6 +10,7 @@
 
 #[macro_export]
 macro_rules! card {
+
     ( $val:expr, $suit:expr ) => {{
 
         use $crate::card::{ Suit::*, Value::*, Card };
@@ -22,6 +23,7 @@ macro_rules! card {
         card
 
     }};
+    
 }
 
 

@@ -59,7 +59,7 @@ impl crate::holdem::Hand {
             let mut pair_highs = Vec::new();
 
             /* Holds a sorted 2d of cards sorted by their value */
-            let grouped_cards = || -> Vec<Vec<&Card>> {
+            let grouped_cards = {
                 let mut old_card = cards[0];
 
                 let mut grouped_cards: Vec<Vec<&Card>> = vec![Vec::new()];
@@ -74,7 +74,7 @@ impl crate::holdem::Hand {
                 }
 
                 grouped_cards
-            }();
+            };
 
             /* Notice that these enum structures are simple, taking in just
              * cards in a linear fashion.

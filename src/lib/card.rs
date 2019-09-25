@@ -1,18 +1,10 @@
-pub mod holdem;
-
-mod deck;
-
 #[macro_use]
-pub mod macros;
+mod r#impl;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Card {
     pub value: Value,
     pub suit: Suit,
-}
-
-pub struct Deck {
-    pub card_deck: Vec<Card>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -42,4 +34,10 @@ pub enum Value {
     King,
     Joker,
 }
+
+
+
+
+
+
 

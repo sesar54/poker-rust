@@ -1,8 +1,5 @@
-use crate::card::Card;
-
-#[macro_use]
 mod hand;
-mod deck;
+use crate::card::Card;
 
 /**
  * A hand consist of all cards "in hand or private cards" and
@@ -17,11 +14,6 @@ pub struct Hand {
     pub rank: Rank,
 }
 
-
-pub struct Deck {
-    pub card_deck: Vec<Card>,
-
-}
 
 /**
  * A Rank consist of a number of cards in a specific configuration. They are
@@ -41,5 +33,4 @@ pub enum Rank {
     StraightFlush(Card, Card, Card, Card, Card),
     FivePair(Card, Card, Card, Card, Card),
 }
-
 

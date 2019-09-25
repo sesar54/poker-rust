@@ -1,8 +1,8 @@
 
-use crate::card::Card;
+use crate::Card;
 
 #[allow(dead_code)]
-impl crate::holdem::Deck {
+impl crate::Deck {
 
     fn pop(mut self) -> Option<Card> {
         self.card_deck.pop()

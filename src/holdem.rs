@@ -1,5 +1,5 @@
 mod hand;
-use crate::card::Card;
+use crate::Card;
 
 /**
  * A hand consist of all cards "in hand or private cards" and
@@ -13,7 +13,6 @@ pub struct Hand {
     pub cards: Vec<Card>,
     pub rank: Rank,
 }
-
 
 /**
  * A Rank consist of a number of cards in a specific configuration. They are
@@ -33,4 +32,3 @@ pub enum Rank {
     StraightFlush(Card, Card, Card, Card, Card),
     FivePair(Card, Card, Card, Card, Card),
 }
-

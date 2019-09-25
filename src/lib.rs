@@ -1,6 +1,6 @@
 pub mod holdem;
 
-mod deck;
+mod r#impl;
 
 #[macro_use]
 pub mod macros;
@@ -23,7 +23,6 @@ pub enum Suit {
     Spades,
 }
 
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 /** enum used as i32 with implicit discriminator so (Ace=0, ... , King=12, Joker=13),  */
 pub enum Value {
@@ -42,4 +41,3 @@ pub enum Value {
     King,
     Joker,
 }
-

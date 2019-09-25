@@ -1,4 +1,4 @@
-use crate::card::*;
+use crate::{Value::*, Suit::*, Card};
 use crate::holdem::{Rank::*, *};
 
 impl crate::holdem::Hand {
@@ -165,7 +165,7 @@ impl crate::holdem::Hand {
                 let mut straight_cards: Vec<Vec<&Card>> = Vec::new();
                 
                 /* Lets see what happens if we don't initialize this */
-                let mut last_val = Value::Ace;
+                let mut last_val = Ace;
 
                 /* Find coherent cards and group them together */
                 for card in cards {
@@ -208,7 +208,7 @@ impl crate::holdem::Hand {
                 straight_cards
             };
 
-            let mut flush_cards: Vec<Vec<&Card>> = Vec::with_capacity(Suit::SIZE);
+            let mut flush_cards: Vec<Vec<&Card>> = Vec::with_capacity(crate::Suit::SIZE);
             for card in cards {
                 flush_cards[card.suit as usize].push(card);
             }

@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod test {
     
-    use poker_lib::{card::{Value::*, Suit::*, *}, *};
-
+    use lib::{Value::*, Suit::*, *};
+    
     #[test]
     fn check_build() {
 

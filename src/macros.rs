@@ -23,7 +23,6 @@ macro_rules! card {
     
 }
 
-
 #[macro_export]
 macro_rules! hand {
 

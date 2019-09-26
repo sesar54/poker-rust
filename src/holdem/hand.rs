@@ -60,6 +60,7 @@ impl crate::holdem::Hand {
 
             /* Holds a sorted 2d of cards sorted by their value */
             let grouped_cards = {
+
                 let mut old_card = cards[0];
 
                 let mut grouped_cards: Vec<Vec<&Card>> = vec![Vec::new()];
@@ -163,9 +164,20 @@ impl crate::holdem::Hand {
 
             /* First check for straight cards */
             /* There can only ever be  */
-            let straight_cards: [Vec::<&Card>; 2] = {
+            let straight_cards = {
 
-                let mut straight_cards: [Vec<&Card>; 2];
+                /*
+                 * This container will hold any series of cards 
+                 */
+                let mut straight_cards = Vec::<Vec<&Card>>::new();
+
+                let vec: Vec<&Card> = vec![];
+
+                for card in cards {
+
+                    clump(vec, card, |c: Card| c.value);
+
+                }
                 
                 /* Lets see what happens if we don't initialize this */
                 let mut last_val = Ace;
@@ -175,6 +187,7 @@ impl crate::holdem::Hand {
                     let val = card.value;
 
                     if let Some(last_vec) = straight_cards.last_mut() {
+
                         if val == last_val || val as u8 == last_val as u8 + 1 {
                             last_vec.push(card);
 
@@ -233,6 +246,7 @@ impl crate::holdem::Hand {
             }*/
 
             None
+
         };
 
         /* Compare and return a rank */
@@ -241,6 +255,7 @@ impl crate::holdem::Hand {
         } else {
             return Some(pair);
         }
+
     }
 
     pub fn update(&self, cards: Vec<Card>) {}

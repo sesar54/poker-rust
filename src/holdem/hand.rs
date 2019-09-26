@@ -172,12 +172,8 @@ impl crate::holdem::Hand {
                 let mut straight_cards = Vec::<Vec<&Card>>::new();
 
                 let vec: Vec<&Card> = vec![];
-
-                for card in cards {
-
-                    clump(vec, card, |c: Card| c.value);
-
-                }
+                
+                vec.
                 
                 /* Lets see what happens if we don't initialize this */
                 let mut last_val = Ace;

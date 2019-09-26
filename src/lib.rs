@@ -11,27 +11,27 @@ pub struct Card {
     pub suit: Suit,
 }
 
-pub fn clump<T,F,E> (slice: &mut Vec<T>, value: T, func: F) -> bool
-    where 
-        F: Fn(&T) -> E, 
-        E: PartialEq, 
+pub fn clump<T,F,E> (slice: &[T], func: F) -> Vec::<&[T]>
+    where
+        F: Fn(&T) -> E,
+        E: PartialEq,
+
 {
 
-    if let Some(first_value) = slice.first() {
-        if func(first_value) == func(&value) {
-            
-            slice.push(value);
-            return true;
+    let trail = slice.iter();
 
-        }
+    if let trail_test = func(trail.next()) {
 
-    } else {
-        slice.push(value);
-        return true;
+    };
+
+    let last_test = func(trail);
+
+    for &item in slice {
+
+        let test = func(item);
 
     }
 
-    return false;
 
 }
 

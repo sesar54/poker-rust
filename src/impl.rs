@@ -19,11 +19,9 @@ impl Into<u8> for Card {
 }
 
 impl Deck {
-
     fn pop(mut self) -> Option<Card> {
         self.card_deck.pop()
     }
-
 }
 
 impl Suit {

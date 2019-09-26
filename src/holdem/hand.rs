@@ -160,9 +160,12 @@ impl crate::holdem::Hand {
          * unlike fn pair().
          */
         let straight_flush = {
+
             /* First check for straight cards */
-            let straight_cards = {
-                let mut straight_cards: Vec<Vec<&Card>> = Vec::new();
+            /* There can only ever be  */
+            let straight_cards: [Vec::<&Card>; 2] = {
+
+                let mut straight_cards: [Vec<&Card>; 2];
                 
                 /* Lets see what happens if we don't initialize this */
                 let mut last_val = Ace;

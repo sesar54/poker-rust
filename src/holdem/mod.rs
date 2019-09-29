@@ -1,7 +1,8 @@
-mod hand;
 use crate::Card;
+use crate::holdem::Rank::*;
 
-pub use crate::holdem::Rank::*;
+mod hand;
+mod rank;
 
 /**
  * A hand consist of all cards "in hand or private cards" and

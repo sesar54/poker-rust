@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::*;
 use holdem::*;
 
@@ -253,4 +255,10 @@ impl Hand {
     }
 
     pub fn update(&self, cards: Vec<Card>) {}
+}
+
+impl fmt::Display for Hand {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.cards)
+    }
 }

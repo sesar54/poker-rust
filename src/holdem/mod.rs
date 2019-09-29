@@ -1,6 +1,8 @@
 mod hand;
 use crate::Card;
 
+pub use crate::holdem::Rank::*;
+
 /**
  * A hand consist of all cards "in hand or private cards" and
  * "on table or public cards". But the important thing is to value these cards.

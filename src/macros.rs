@@ -8,7 +8,7 @@
 #[macro_export]
 macro_rules! card {
 
-    ( $val:expr, $suit:expr ) => {{
+    ( $val:expr, $suit:expr ) => {
 
         use $crate::{ Suit::*, Value::*, Card };
 
@@ -19,7 +19,7 @@ macro_rules! card {
 
         card
 
-    }};
+    };
     
 }
 
@@ -37,4 +37,26 @@ macro_rules! hand {
         }
     };
     
+}
+
+#[macro_export]
+macro_rules! clump {
+    ( $elem:expr, *, $func:expr) => {
+        let clump = Clump::new($func($elem), $func);
+
+        $(
+            clump.push($elem);
+        )*
+
+    };
+}
+
+#[cfg(test)]
+mod test {
+
+    #[test]
+    fn clump() {
+        clump!(2, 4, |g| g);
+    }
+
 }

@@ -1,7 +1,5 @@
 #[cfg(test)]
-mod test {
-    
-    use lib::{Value::*, Suit::*, *};
+mod card {
     
     #[test]
     fn check_build() {

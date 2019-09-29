@@ -1,7 +1,7 @@
-use crate::{Value::*, Suit::*, Card};
-use crate::holdem::{Rank::*, *};
+use crate::*;
+use holdem::*;
 
-impl crate::holdem::Hand {
+impl Hand {
     /**
      * Creating a new hand will cause all given cards to be automatically
      * evaluated into a rank
@@ -173,8 +173,6 @@ impl crate::holdem::Hand {
 
                 let vec: Vec<&Card> = vec![];
                 
-                vec.
-                
                 /* Lets see what happens if we don't initialize this */
                 let mut last_val = Ace;
 
@@ -256,4 +254,3 @@ impl crate::holdem::Hand {
 
     pub fn update(&self, cards: Vec<Card>) {}
 }
-

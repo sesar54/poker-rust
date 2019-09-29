@@ -1,6 +1,5 @@
-use crate::*;
+use crate::{Card, Suit, Value};
 use std::fmt;
-
 
 /// ```
 /// let card = card!(Ace, Spades);
@@ -18,11 +17,6 @@ impl Into<u8> for Card {
     }
 }
 
-impl Deck {
-    fn pop(mut self) -> Option<Card> {
-        self.card_deck.pop()
-    }
-}
 
 impl Suit {
     pub const SIZE: usize = 4;
@@ -33,6 +27,7 @@ impl fmt::UpperHex for Suit {
         write!(f, "{:X}", *self as u8)
     }
 }
+
 
 impl fmt::UpperHex for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

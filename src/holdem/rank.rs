@@ -2,13 +2,13 @@ use std::fmt;
 use std::borrow::Cow;
 
 use crate::card::*;
-use crate::holdem::{Rank, Rank::*};
+use crate::holdem::{Rank, RankInner::*};
 
 impl fmt::Display for Rank {
     
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 
-        match *self {
+        match self.0 {
 
             High(..) =>             write!(f, "Highcard"),
             Pair(..) =>             write!(f, "Pair"),
@@ -28,37 +28,88 @@ impl fmt::Display for Rank {
     }
 }
 
+// TODO Write error messages
 impl Rank {
+    
+    pub fn High(card: Card) -> Result<Rank, &'static str> {
+        
+        if card == card {
+            Ok(Rank(High(card)))
+        
+        } else {
+            Err("")
+
+        }
+        
+    }
+
+    pub fn Pair(card0: Card, card1: Card) -> Result<Rank, &'static str> {
+
+        if card0.value == card1.value {
+            // Quicksort so first card is the smaller card 
+            let (card0,card1) = {
+                if card0.suit > card1.suit {
+                    (card1, card0)
+                } else {
+                    (card0, card1)
+                }
+            };
+
+            Ok(Rank(Pair(card0,card1)))
+
+        } else {
+            Err("")
+
+        }
+    }
+
+    pub fn Trips(card0: Card, card1: Card, card2: Card) -> Result<Rank, &'static str> {
+
+        if card0.value == card1.value && card1.value == card2.value {
+
+            (card0, card1, card2).sort();
+
+            Ok(Rank(Trips(card0,card1,card3)))
+
+        } else {
+            Err("")
+        }
+
+    }
+
+    fn tuple_sort_2<T>(e0: T, e1: T) -> (T, T)
+    where T: std::cmp::PartialOrd {
+
+        if e0 > e1 {
+            (e1, e0)
+        } else {
+            (e0, e1)
+        }
+
+    }
+
+    fn tuple_sort_3<T>(e0: T, e1: T, e2: T) -> (T, T, T)
+    where T: std::cmp::PartialOrd {
+
+        let (e0, e1) = Rank::tuple_sort_2(e0, e1);
+        let (e1, e2) = Rank::tuple_sort_2(e1, e2);
+        let (e2, e0) = Rank::tuple_sort_2(e2, e0);
+
+        (e0, e1, e2)
+
+    }
+
+    fn _tuple_sort<T>()
 
     fn new(cards: &mut [Card]) -> Result<Rank, &str> {
 
         let err = "Can't create a rank of {:?}";
 
         match cards.len() {
-            
-            0 =>
-                Err("Can't c")
-
-            1 => 
-                Ok(High(cards[0])),
-
-            2 => 
-                if cards[0].value == cards[1].value {
-                    cards.sort_by_key(|c| c.suit);
-                    Ok(Pair(cards[0],cards[1]))
-                } else {
-                    Err("test")
-                }
 
             3 => 
                 // Check if Trips compatable
-                if cards[0].value == cards[1].value 
-                && cards[1].value == cards[2].value {
-                    cards.sort_by_key(|c| c.suit);
-                    Ok(Trips(cards[0],cards[1],cards[3]))
-                } else {
-                    Err("")
-                }
+                
                 
             4 => 
                 // Check if TwoPair compatable

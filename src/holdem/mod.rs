@@ -1,5 +1,4 @@
 use crate::Card;
-use crate::holdem::Rank::*;
 
 mod hand;
 mod rank;
@@ -23,14 +22,17 @@ pub struct Hand {
  * order they are written).
  */
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub enum Rank {
+pub struct Rank(RankInner);
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+enum RankInner {
     High(Card),
     Pair(Card, Card),
     TwoPair((Card, Card), (Card, Card)),
     Trips(Card, Card, Card),
     Straight(Card, Card, Card, Card, Card),
     Flush(Card, Card, Card, Card, Card),
-    House((Card, Card, Card), (Card, Card)),
+    House((Card, Card), (Card, Card, Card)),
     Quads(Card, Card, Card, Card),
     StraightFlush(Card, Card, Card, Card, Card),
     FivePair(Card, Card, Card, Card, Card),

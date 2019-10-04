@@ -37,10 +37,11 @@ macro_rules! ok_rank {
     };
 }
 
-type ResRank = Result<Rank, &'static str>;
+pub mod RankBuilder {
 
-
-impl Rank {
+    use crate::card::Card;
+    use crate::holdem::{Rank, RankInner};
+    type ResRank = Result<Rank, &'static str>;
 
     pub fn High(card: Card) -> ResRank {
 
@@ -101,8 +102,8 @@ impl Rank {
 
 
     pub fn Straight
-        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card) ->
-        ResRank {
+        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card)
+        -> ResRank {
 
         #![feature(is_sorted)]
         let arr = [
@@ -128,8 +129,8 @@ impl Rank {
     }
 
     pub fn Flush
-        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card) ->
-        ResRank {
+        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card)
+        -> ResRank {
 
         let arr = [
             card0.suit as u8,
@@ -154,8 +155,8 @@ impl Rank {
     }
 
     pub fn House
-        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card) ->
-        ResRank {
+        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card)
+        -> ResRank {
 
         let pairTup = |p| match p {RankInner::Pair(x, y) => (x, y)};
         let tripTup = |t| match t {RankInner::Trips(x, y, z) => (x, y, z)};
@@ -190,8 +191,8 @@ impl Rank {
     }
 
     pub fn StraightFlush
-        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card) ->
-        ResRank {
+        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card)
+        -> ResRank {
 
         let tup = (
             RankInner::Straight(card0, card1, card2, card3, card4),
@@ -208,12 +209,12 @@ impl Rank {
 mod tests {
 
     use crate::*;
-    use crate::holdem::{ Rank, Rank::* };
+    use crate::holdem::RankBuilder::*;
 
     #[test]
     fn display() {
         println!("{}", High(card!()));
-        println!("{}", Rank::Pair(card!(),card!()))
+        println!("{}", Pair(card!(),card!()))
 
     }
 

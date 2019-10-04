@@ -1,11 +1,15 @@
 use std::fmt;
 
 use crate::card::*;
-use crate::holdem::{Rank, RankInner::*};
+use crate::holdem::{Rank, RankInner};
 
 impl fmt::Display for Rank {
 
+
+
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+
+        use RankInner::*;
 
         match self.0 {
 
@@ -40,20 +44,20 @@ impl Rank {
 
     pub fn High(card: Card) -> ResRank {
 
-        ok_rank!(High(card))
+        ok_rank!(RankInner::High(card))
 
     }
 
-    pub fn Pair(card: (Card, Card)) -> ResRank {
+    pub fn Pair(card0: Card, card1: Card) -> ResRank {
 
-        if card.0.value != card.1.value {
+        if card0.value != card1.value {
             Err("Not pair")
 
-        } else if card.0 > card.1 {
+        } else if card0 > card1 {
             Err("Unordered")
 
         } else {
-            ok_rank!(Pair(card.0, card.1))
+            ok_rank!(RankInner::Pair(card0, card1))
 
         }
     }
@@ -61,73 +65,78 @@ impl Rank {
     /**
      * This one will go with a bang
      */
-    pub fn TwoPair(card: (Card, Card, Card, Card)) -> ResRank {
+    pub fn TwoPair(card0: Card, card1: Card, card2: Card, card3: Card)
+        -> ResRank {
 
-        let pairTup = |p| match p {
-            Pair(x, y) => (x, y)
-        };
+        let pairTup = |p| match p {RankInner::Pair(x, y) => (x, y)};
 
-        let pair0 = pairTup(Pair(card.0, card.1));
-        let pair1 = pairTup(Pair(card.2, card.3));
+        let pair0 = pairTup(RankInner::Pair(card0, card1));
+        let pair1 = pairTup(RankInner::Pair(card2, card3));
 
         if pair0 > pair1 {
             Err("Unordered")
 
         } else {
-            ok_rank!(TwoPair((pair0.0, pair0.1), (pair1.0, pair1.1)))
+            ok_rank!(RankInner::TwoPair((pair0.0, pair0.1), (pair1.0, pair1.1)))
 
         }
 
 
     }
 
-    pub fn Trips(card: (Card, Card, Card)) -> ResRank {
+    pub fn Trips(card0: Card, card1: Card, card2: Card) -> ResRank {
 
-        if card.0.value != card.1.value || card.1.value != card.2.value {
+        if card0.value != card1.value || card1.value != card2.value {
             Err("Not Trips")
 
-        } else if card.0 > card.1 || card.1 > card.2 {
+        } else if card0 > card1 || card1 > card2 {
             Err("Unordered")
 
         } else {
-            ok_rank!(Trips(card.0, card.1, card.2))
+            ok_rank!(RankInner::Trips(card0, card1, card2))
 
         }
 
     }
 
 
-    pub fn Straight(card: (Card, Card, Card, Card, Card)) -> ResRank {
+    pub fn Straight
+        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card) ->
+        ResRank {
 
         #![feature(is_sorted)]
         let arr = [
-            card.0.value as u8,
-            card.1.value as u8,
-            card.2.value as u8,
-            card.3.value as u8,
-            card.4.value as u8,
+            card0.value as u8,
+            card1.value as u8,
+            card2.value as u8,
+            card3.value as u8,
+            card4.value as u8,
         ];
 
 
         if arr[0] != arr[4] + 4 {
             Err("Not Straight")
 
+        //} else if arr.is_sorted() { //TODO Wait until stable
+        //    Err("Unordered")
+
         } else {
-            ok_rank!(Straight(card.0, card.1, card.2, card.3, card.4))
+            ok_rank!(RankInner::Straight(card0, card1, card2, card3, card4))
 
         }
 
     }
 
-    pub fn Flush(card: (Card, Card, Card, Card, Card))
-    -> ResRank {
+    pub fn Flush
+        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card) ->
+        ResRank {
 
         let arr = [
-            card.0.suit as u8,
-            card.1.suit as u8,
-            card.2.suit as u8,
-            card.3.suit as u8,
-            card.4.suit as u8,
+            card0.suit as u8,
+            card1.suit as u8,
+            card2.suit as u8,
+            card3.suit as u8,
+            card4.suit as u8,
         ];
 
         /* See if they are all the same */
@@ -138,26 +147,23 @@ impl Rank {
         //    Err("Unordered")
 
         } else {
-            ok_rank!(Flush(card.0, card.1, card.2, card.3, card.4))
+            ok_rank!(RankInner::Flush(card0, card1, card2, card3, card4))
 
         }
 
     }
 
-    pub fn House(card: ((Card, Card), (Card, Card, Card))) -> ResRank {
+    pub fn House
+        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card) ->
+        ResRank {
 
-        let pairTup = |p| match p {
-            Pair(x, y) => (x, y),
-        };
+        let pairTup = |p| match p {RankInner::Pair(x, y) => (x, y)};
+        let tripTup = |t| match t {RankInner::Trips(x, y, z) => (x, y, z)};
 
-        let tripTup = |t| match t {
-            Trips(x, y, z) => (x, y, z)
-        };
+        let pair = pairTup(RankInner::Pair(card0, card1));
+        let trips = tripTup(RankInner::Trips(card2, card3, card4));
 
-        let pair = pairTup(Pair((card.0).0, (card.0).1));
-        let trips = tripTup(Trips((card.1).0, (card.1).1, (card.1).2));
-
-        ok_rank!(House((pair.0, pair.1), (trips.0, trips.1, trips.2)))
+        ok_rank!(RankInner::House((pair.0, pair.1), (trips.0, trips.1, trips.2)))
 
     }
 
@@ -177,58 +183,22 @@ impl Rank {
         //    Err("Unordered")
 
         } else {
-            ok_rank!(Quads(card.0, card.1, card.2, card.3))
+            ok_rank!(RankInner::Quads(card.0, card.1, card.2, card.3))
 
         }
 
     }
 
-    pub fn StraightFlush(card: (Card, Card, Card, Card, Card)) -> ResRank {
+    pub fn StraightFlush
+        (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card) ->
+        ResRank {
 
-        if let Straight(..) = Straight(card.0, card.1, card.2, card.3, card.4)
-        }
+        let tup = (
+            RankInner::Straight(card0, card1, card2, card3, card4),
+            RankInner::Flush(card0, card1, card2, card3, card4),
+        );
 
-
-    }
-
-    fn new(cards: &mut [Card]) -> Result<Rank, &str> {
-
-        let err = "Can't create a rank of {:?}";
-
-        match cards.len() {
-
-            4 =>
-                // Check if TwoPair compatable
-                if cards[0].value == cards[1].value
-                && cards[2].value == cards[3].value {
-
-                    // Check if Quad compatable
-                    if cards[1].value == cards[2].value {
-                        cards.sort_by_key(|c| c.suit);
-                        Ok(Quads(cards[0], cards[1], cards[2], cards[3]))
-
-                    // Check if TwoPair is formatted correctly
-                    } else if cards[0].value < cards[2].value {
-                        let (left, right) = cards.split_at_mut(2);
-                        left.sort_by_key(|c| c.suit);
-                        right.sort_by_key(|c| c.suit);
-                        Ok(TwoPair((left[0], left[1]), (right[0], right[1])))
-
-                    } else {
-                        Err("")
-                    }
-
-
-                } else {
-                    Err("")
-                }
-
-            5 =>
-
-            _ => Err(""),
-        }
-
-
+        Err("Not")
 
     }
 

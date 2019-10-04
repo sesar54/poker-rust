@@ -37,6 +37,8 @@ macro_rules! ok_rank {
     };
 }
 
+/// TODO reverse rank so best card comes first as u8
+/// TODO reverse ranks so best rank comes first as u8
 pub mod RankBuilder {
 
     use crate::card::Card;
@@ -100,7 +102,7 @@ pub mod RankBuilder {
 
     }
 
-
+    /// TODO Ace rule
     pub fn Straight
         (card0: Card, card1: Card, card2: Card, card3: Card, card4: Card)
         -> ResRank {
@@ -168,13 +170,13 @@ pub mod RankBuilder {
 
     }
 
-    pub fn Quads(card: (Card, Card, Card, Card)) -> ResRank {
+    pub fn Quads(card0: Card, card1: Card, card2: Card, card3: Card) -> ResRank {
 
         let arr = [
-            card.0.value as u8,
-            card.1.value as u8,
-            card.2.value as u8,
-            card.3.value as u8,
+            card0.value as u8,
+            card1.value as u8,
+            card2.value as u8,
+            card3.value as u8,
         ];
 
         if arr.iter().min() != arr.iter().max() {
@@ -184,7 +186,7 @@ pub mod RankBuilder {
         //    Err("Unordered")
 
         } else {
-            ok_rank!(RankInner::Quads(card.0, card.1, card.2, card.3))
+            ok_rank!(RankInner::Quads(card0, card1, card2, card3))
 
         }
 
@@ -207,7 +209,7 @@ pub mod RankBuilder {
 
 #[cfg(test)]
 mod tests {
-
+/*
     use crate::*;
     use crate::holdem::RankBuilder::*;
 
@@ -217,5 +219,5 @@ mod tests {
         println!("{}", Pair(card!(),card!()))
 
     }
-
+*/
 }

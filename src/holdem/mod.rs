@@ -32,8 +32,8 @@ enum RankInner {
     Trips(Card, Card, Card),
     Straight(Card, Card, Card, Card, Card),
     Flush(Card, Card, Card, Card, Card),
-    House((Card, Card), (Card, Card, Card)),
+    House((Card, Card, Card), (Card, Card)),
     Quads(Card, Card, Card, Card),
     StraightFlush(Card, Card, Card, Card, Card),
-    FivePair(Card, Card, Card, Card, Card),
+    Fives(Card, Card, Card, Card, Card),
 }

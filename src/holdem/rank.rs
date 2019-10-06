@@ -214,18 +214,26 @@ pub mod RankBuilder {
     }
 
     pub fn StraightFlush
-        (straightFlush: (Card, Card, Card, Card, Card))
+        (SF: (Card, Card, Card, Card, Card))
         -> ResRank {
 
-        Straight(straightFlush)?;
-        Flush(straightFlush)?;
+        Straight(SF)?;
+
+        // Ace is always last in order for Flush()
+        if SF.0.value == Ace {
+            Flush((SF.1, SF.2, SF.3, SF.4, SF.0))?;
+
+        } else {
+            Flush(SF)?;
+
+        }
 
         ok_rank!(RankInner::StraightFlush(
-            straightFlush.0,
-            straightFlush.1,
-            straightFlush.2,
-            straightFlush.3,
-            straightFlush.4
+            SF.0,
+            SF.1,
+            SF.2,
+            SF.3,
+            SF.4
         ))
 
     }

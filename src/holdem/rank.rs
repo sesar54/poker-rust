@@ -18,7 +18,7 @@ impl fmt::Display for Rank {
             Flush(..) =>            write!(f, "Flush"),
             House(..) =>            write!(f, "Full house"),
             Quads(..) =>            write!(f, "Four of a kind"),
-            StraightFlush(.., card) => match card.value {
+            StraightFlush(card, ..) => match card.value {
                 _ =>                write!(f, "Straight flush"),
                 Ace =>              write!(f, "Royal flush"),
             }

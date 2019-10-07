@@ -13,5 +13,3 @@ pub mod clump;
 pub use card::{ Suit::*, Value::*, * };
 
 pub use clump::*;
-
-

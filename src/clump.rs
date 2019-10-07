@@ -10,22 +10,21 @@
  * ```
  */
 
-pub struct Clump<T,F,Q>
+pub struct Clump<T,C,Q>
     where 
-        F: Fn(&T) -> Q,
+        C: Fn(&T) -> Q,
         Q: PartialEq,
 {
 
-    pub quirk: Q,
-    pub check: F,
-    pub elems: Vec<T>
+    pub check: C,
+    pub elems: Vec<Vec<T>>
 
 }
 
 #[allow(dead_code)]
-impl<T,F,Q> Clump<T,F,Q> 
+impl<T,C,Q> Clump<T,C,Q> 
     where 
-        F: Fn(&T) -> Q,
+        C: Fn(&T) -> Q,
         Q: PartialEq,
 {
 
@@ -41,59 +40,61 @@ impl<T,F,Q> Clump<T,F,Q>
      * assert!(clump.elems.is_empty());
      * ```
      */
-    pub fn new (quirk: Q, check: F) -> Clump<T,F,Q> {
+    pub fn new (check: C) -> Clump<T,C,Q> {
         Clump {
-            quirk: quirk,
             check: check,
             elems: vec![],
         }
-
     }
 
     pub fn push(&mut self, elem: T) -> bool {
+
+        let last_elem = {
+            if let Some(vec) = self.elems.last() {
+                vec.last()
+
+            } else {
+                self.elems.push(vec![elem]);
+                return true;
+
+            }
         
-        if self.quirk == (self.check)(&elem) {
-            self.elems.push(elem);
-            return true;
+        };
+
+        if let Some(last_elem) = last_elem {
+            if (self.check)(last_elem) == (self.check)(&elem) {
+                self.push(elem);
+                
+            } else {
+                return false;
+
+            }
 
         } else {
-            return false;
+            self.elems.push(vec![elem]);
+
         }
 
+        return true;
+
     }
 
 }
 
+#[cfg(test)]
+mod test {
 
-/*
-pub fn clump<T,F,E> (slice: &[T], func: F) -> Vec::<&[T]>
-    where
-        F: Fn(&T) -> E,
-        E: PartialEq,
+    use crate::card::{Value::*, Suit::*, Card};
 
-{
+    #[test]
+    fn test() {
 
-    let foo = [ 1, 2, 2, 3, 2, 3, 3 ];
-    let bar = clump(&foo, |x| x);
+        let cards = vec!(card!(Ace, Spades), card!(Ace, Spades), card!(Two, Spades), card!(Ace, Spades), card!(Five, Spades), card!(Ace, Spades), card!(Ace, Spades));
 
-    assert_eq!(bar, [ {1}, {2, 2}, {3}, {2}, {3, 3} ]);
+        let clump = clump!(|c: &Card| c.value, cards);
 
+        println!("{:?}", clump.elems);
 
-
-    let trail = slice.iter();
-
-    if let trail_test = func(trail.next()) {
-
-    };
-
-    let last_test = func(trail);
-
-    for &item in slice {
-
-        let test = func(item);
 
     }
-
-
 }
-*/

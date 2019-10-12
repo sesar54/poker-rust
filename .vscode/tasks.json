@@ -24,6 +24,9 @@
                 "kind": "test",
                 "isDefault": true
             }
+        },
+        {
+            ""
         }
     ]
 }

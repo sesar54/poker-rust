@@ -3,6 +3,7 @@ use std::fmt;
 use crate::*;
 use holdem::*;
 
+/*
 impl Hand {
     /**
      * Creating a new hand will cause all given cards to be automatically
@@ -12,13 +13,13 @@ impl Hand {
         let rank = Hand::ranking(cards);
 
         match rank {
-            Some(rank) => {
+            Ok(rank) => {
                 return Hand {
                     cards: cards.to_owned(),
                     rank: rank,
                 }
             }
-            None => panic!(),
+            Err(e) => panic!(e),
         }
     }
 
@@ -32,19 +33,18 @@ impl Hand {
      *
      * If given a unsorted slice, the function cant guarantee the best result
      */
-    fn ranking(cards: &[Card]) -> Option<Rank> {
+    fn ranking(cards: &[Card]) -> Result<Rank, &'static str> {
         /*
-         * No hand supports zero card and cards must be sorted before ranking
+         *
          */
 
         if cards.is_empty() {
-            //|| !cards.is_sorted() {
-            return None;
+            Err("No cards were given");
         }
 
         /*
-         * Returns in order: Five of a kind, Quads, Full house, Two Pair
-         * Pair, and lastly always a High card.
+         * Returns any of: Five of a kind, Quads, Full house, Two Pair
+         * Pair, and  always a High card if nothing else matches.
          *
          * This code gives none if slice has length 0. This is considered very
          *  erroneous
@@ -67,7 +67,7 @@ impl Hand {
 
                 let mut old_card = cards[0];
 
-                let mut grouped_cards: Vec<Vec<&Card>> = vec![Vec::new()];
+                let mut grouped_cards: Vec<Vec<&Card>> = vec![vec![]];
 
                 for card in cards {
                     if old_card.value == card.value {
@@ -81,9 +81,10 @@ impl Hand {
                 grouped_cards
             };
 
-            /* Notice that these enum structures are simple, taking in just
+            /*
+             * Notice that these enum structures are simple, taking in just
              * cards in a linear fashion.
-             */
+             *
             for c in grouped_cards {
                 match c.len() {
                     5 => pair_fives.push(FivePair(*c[0], *c[1], *c[2], *c[3], *c[4])),
@@ -95,15 +96,15 @@ impl Hand {
                     //TODO
                     _ => (),
                 }
-            }
+            }*/
 
-            /* Simply return five or four pairs as they are scored highest */
+            /* Simply return five or four pairs as they are scored highest *
 
             if let Some(_five_pair) = pair_fives.pop() {
                 Some(_five_pair)
             } else if let Some(_quads) = pair_quads.pop() {
                 Some(_quads)
-
+            */
             /* In order; check if components in pair_cards is enough to
              * build:
              *  House (else return Trips).
@@ -121,24 +122,25 @@ impl Hand {
                 let _trips = pair_trips.last();
                 let _pair0 = iter_pair.next();
 
-                /* House or Trips */
+                /* House or Trips *
                 if let Some(Rank::Trips(t0, t1, t2)) = _trips {
                     if let Some(Pair(p0, p1)) = _pair0 {
                         Some(House((*t0, *t1, *t2), (p0, p1)))
                     } else {
                         Some(Trips(*t0, *t1, *t2))
                     }
-
-                /* TwoPair or pair */
+                */
+                /* TwoPair or pair *
                 } else if let Some(Pair(p00, p01)) = _pair0 {
                     if let Some(Pair(p10, p11)) = iter_pair.next() {
                         Some(TwoPair((p00, p01), (p10, p11)))
                     } else {
                         Some(Pair(p00, p01))
                     }
-
+                */
                 /* High Card */
-                } else if let Some(_high) = pair_highs.pop() {
+                //} else
+                if let Some(_high) = pair_highs.pop() {
                     Some(_high)
 
                 /* All failed somehow. The given vector must be empty */
@@ -153,10 +155,10 @@ impl Hand {
         /* Return early else unwrap pair. If pair is None straight_flush will
          * also be None, therefore return an early None.
          */
-        let pair = match pair {
-            Some(Rank::FivePair(..)) | None => return pair,
-            Some(pair) => pair,
-        };
+        //let pair = match pair {
+        //    Some(Rank::FivePair(..)) | None => return pair,
+        //    Some(pair) => pair,
+        //};
 
         /* Returns in order: either Straight, Flush, Straight Flush,
          * or None.
@@ -247,17 +249,19 @@ impl Hand {
 
         };
 
-        /* Compare and return a rank */
+        /* Compare and return a rank *
         if let Some(straight_flush) = straight_flush {
             return Some(std::cmp::max(pair, straight_flush));
         } else {
             return Some(pair);
-        }
+        }*/
+
+        panic!();
 
     }
 
     pub fn update(&self, cards: Vec<Card>) {}
-}
+}*/
 
 impl fmt::Display for Hand {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

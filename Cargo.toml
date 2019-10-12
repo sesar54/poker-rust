@@ -1,9 +1,9 @@
 [package]
-name = "ace-of-spades"
+name = "ace_of_spades"
 version = "0.0.1"
 authors = ["Nils Eriksson <nils.edvin.eriksson@outlook.com>"]
 edition = "2018"
 
 [lib]
-name = "lib"
+name = "dead_man"
 path = "src/lib.rs"

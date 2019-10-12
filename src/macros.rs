@@ -5,12 +5,15 @@
 /// > I don't share your greed, the only card I need is...
 /// 
 /// > The Ace of Spades
+
+pub use crate::card::{Card, Value::*, Suit::*};
+
 #[macro_export]
 macro_rules! card {
 
     () => {
 
-        Card {
+        crate::card::Card {
             value: Ace,
             suit: Spades,
         }
@@ -19,7 +22,7 @@ macro_rules! card {
 
     ( $val:expr, $suit:expr ) => {
 
-        Card {
+        crate::card::Card {
             value: $val,
             suit: $suit,
         };
@@ -41,4 +44,23 @@ macro_rules! hand {
         }
     };
     
+}
+
+#[macro_export]
+macro_rules! clump {
+    ($check:expr) => {
+        crate::Clump::new($check)
+    };
+
+    ($check:expr, $slice:expr) => {{
+
+        let mut clump = clump!($check);
+
+        for elem in $slice {
+            clump.push(elem);
+        }
+
+        clump
+
+    }};
 }

@@ -30,7 +30,7 @@ impl Hand {
      * If given a slice of length 0, there wont be a rank to return so None is
      * returned. This is considered very erroneous.
      *
-     * If given a unsorted slice, the function cant guarantee the best result  
+     * If given a unsorted slice, the function cant guarantee the best result
      */
     fn ranking(cards: &[Card]) -> Option<Rank> {
         /*
@@ -42,7 +42,8 @@ impl Hand {
             return None;
         }
 
-        /* Returns in order: Five of a kind, Quads, Full house, Two Pair
+        /*
+         * Returns in order: Five of a kind, Quads, Full house, Two Pair
          * Pair, and lastly always a High card.
          *
          * This code gives none if slice has length 0. This is considered very
@@ -50,7 +51,8 @@ impl Hand {
          */
         let pair = {
 
-            /* Based on how many of what
+            /*
+             * Based on how many of what
              * we can decide what type of cards we return.
              */
 
@@ -146,7 +148,7 @@ impl Hand {
             }
 
         };
-        
+
 
         /* Return early else unwrap pair. If pair is None straight_flush will
          * also be None, therefore return an early None.
@@ -169,12 +171,12 @@ impl Hand {
             let straight_cards = {
 
                 /*
-                 * This container will hold any series of cards 
+                 * This container will hold any series of cards
                  */
                 let mut straight_cards = Vec::<Vec<&Card>>::new();
 
                 let vec: Vec<&Card> = vec![];
-                
+
                 /* Lets see what happens if we don't initialize this */
                 let mut last_val = Ace;
 

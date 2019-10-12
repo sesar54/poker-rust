@@ -1,19 +1,18 @@
 
 /**
  * A vector but all elements share one quirk and th
- * 
+ *
  * It acts like a read only vector with a strict push rule.
- * 
+ *
  * # Example:
  * ```rust
- * 
+ *
  * ```
  */
 
-pub struct Clump<T,C,Q>
-    where 
-        C: Fn(&T) -> Q,
-        Q: PartialEq,
+pub struct Clump<T,C>
+    where
+        C: Fn(&T, &T) -> bool,
 {
 
     pub check: C,
@@ -22,17 +21,16 @@ pub struct Clump<T,C,Q>
 }
 
 #[allow(dead_code)]
-impl<T,C,Q> Clump<T,C,Q> 
-    where 
-        C: Fn(&T) -> Q,
-        Q: PartialEq,
+impl<T,C> Clump<T,C>
+    where
+        C: Fn(&T, &T) -> bool,
 {
 
     /**
      * Construct a new, empty `Clump<T,F,Q>`.
-     * 
-     * 
-     * 
+     *
+     *
+     *
      * # Example
      * ```
      * let clump = Clump(1, |x| x % 4);
@@ -40,7 +38,7 @@ impl<T,C,Q> Clump<T,C,Q>
      * assert!(clump.elems.is_empty());
      * ```
      */
-    pub fn new (check: C) -> Clump<T,C,Q> {
+    pub fn new (check: C) -> Clump<T,C> {
         Clump {
             check: check,
             elems: vec![],
@@ -58,13 +56,13 @@ impl<T,C,Q> Clump<T,C,Q>
                 return true;
 
             }
-        
+
         };
 
         if let Some(last_elem) = last_elem {
-            if (self.check)(last_elem) == (self.check)(&elem) {
+            if (self.check)(&elem, last_elem) {
                 self.push(elem);
-                
+
             } else {
                 return false;
 

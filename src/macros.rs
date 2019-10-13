@@ -1,9 +1,9 @@
 /// First argument: Value
-/// Second argument: Suit 
+/// Second argument: Suit
 /// As the saying goes:
-/// 
+///
 /// > I don't share your greed, the only card I need is...
-/// 
+///
 /// > The Ace of Spades
 
 pub use crate::card::{Card, Value::*, Suit::*};
@@ -28,7 +28,7 @@ macro_rules! card {
         };
 
     };
-    
+
 }
 
 #[macro_export]
@@ -43,24 +43,5 @@ macro_rules! hand {
             holdem::Hand::new(&cards)
         }
     };
-    
-}
 
-#[macro_export]
-macro_rules! clump {
-    ($check:expr) => {
-        crate::Clump::new($check)
-    };
-
-    ($check:expr, $slice:expr) => {{
-
-        let mut clump = clump!($check);
-
-        for elem in $slice {
-            clump.push(elem);
-        }
-
-        clump
-
-    }};
 }

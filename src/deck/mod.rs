@@ -1,6 +1,7 @@
 use crate::Card;
 mod r#impl;
 
+#[derive(Debug)]
 pub struct Deck {
-    pub card_deck: Vec<Card>,
+    inner_deck: Vec<Card>,
 }

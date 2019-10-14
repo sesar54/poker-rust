@@ -9,8 +9,7 @@
 #![warn(unused_attributes, unused_imports, unused_mut)] // missing_docs
 #![warn(renamed_and_removed_lints, stable_features, unused_allocation)]
 #![warn(unused_comparisons, bare_trait_objects, unused_must_use, const_err)]
-
-//#![forbid(unsafe_code)]
+#![forbid(unsafe_code)]
 
 // Help Modules
 #[macro_use]

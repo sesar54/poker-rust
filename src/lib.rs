@@ -1,6 +1,7 @@
 //! A library for poker games
 
 #![feature(drain_filter,exclusive_range_pattern)]
+#![feature(let_chains)]
 
 #![warn(unused_import_braces, unused_qualifications, trivial_casts)]
 #![warn(trivial_numeric_casts, private_in_public, variant_size_differences)]
@@ -9,7 +10,7 @@
 #![warn(renamed_and_removed_lints, stable_features, unused_allocation)]
 #![warn(unused_comparisons, bare_trait_objects, unused_must_use, const_err)]
 
-#![forbid(unsafe_code)]
+//#![forbid(unsafe_code)]
 
 // Help Modules
 #[macro_use]

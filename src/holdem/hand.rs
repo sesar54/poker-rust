@@ -31,7 +31,6 @@ impl Hand {
     /// If given a unsorted slice, the function will not work properly
 
     fn ranking(cards: &[Card]) -> Result<Rank, &'static str> {
-
         if cards.is_empty() {
             panic!();
             //Err("No cards were given");
@@ -43,7 +42,6 @@ impl Hand {
 
         let flush_cards = Hand::flushes_cards(cards);
 
-
         unimplemented!();
 
         /* Compare and return a rank *
@@ -52,27 +50,23 @@ impl Hand {
         } else {
             return Some(pair);
         }*/
-
     }
 
     fn pair_rank(cards: &[Card]) -> Result<Rank, &'static str> {
-
-       // cards.sort_by(|a: Card, b| a.)
+        // cards.sort_by(|a: Card, b| a.)
 
         let mut pairs: Vec<Vec<Card>> = Vec::new();
         let mut iter = cards.iter().cloned();
 
         let mut last_card = iter.next().unwrap();
-        pairs.push(vec!(last_card));
+        pairs.push(vec![last_card]);
 
         while let Some(card) = iter.next() {
             if last_card.value == card.value {
                 pairs.last_mut().unwrap().push(card);
-
             } else {
                 pairs.push(vec![card]);
                 last_card = card;
-
             }
         }
 
@@ -84,7 +78,7 @@ impl Hand {
             len @ 6..0xFF => {
                 let pair = &pair[len..];
                 Rank::Fives((pair[0], pair[1], pair[2], pair[3], pair[4]))
-            },
+            }
             5 => Rank::Fives((pair[0], pair[1], pair[2], pair[3], pair[4])),
             4 => Rank::Quads((pair[0], pair[1], pair[2], pair[3])),
             3 => Rank::Trips((pair[0], pair[1], pair[2])),
@@ -92,74 +86,164 @@ impl Hand {
             1 => Rank::High(pair[0]),
             _ => unreachable!(),
         }
+    }
+
+
+    /// Returns cards grouped together by neighbors
+    pub fn pair_cards(cards: &[Card]) -> Vec<Vec<&Card>> {
+        // Creates a sorted vector of references to cards
+        let cards = {
+            let mut vec: Vec<&Card> = Vec::new();
+
+            for card in cards {
+                vec.push(&card);
+            }
+
+            vec.sort_by_key(|c| c.value);
+            vec
+        };
+
+        println!("Cards sorted: {:#?}", cards);
+
+        // Value to be returned
+        let mut pairs: Vec<Vec<&Card>> = Vec::new();
+        // Main Sequence Generator
+        let mut iter = cards.iter().peekable();
+        let mut temp_vec: Vec<&Card> = Vec::new();
+        let mut prev_value = iter.peek().unwrap().value;
+
+        while let Some(card) = iter.next() {
+            if prev_value == card.value {
+                temp_vec.push(card);
+               
+            } else {
+                pairs.push(temp_vec);
+                temp_vec = vec![card];
+                prev_value = card.value;
+            }
+        }
+
+        pairs.push(temp_vec);
+        pairs
+
 
     }
 
-    fn straight_cards(cards: &[Card]) -> Vec<Vec<Card>> {
+    /// Returns cards grouped together by neighbors, in any clump size
+    /// If a King and an Ace is present in ```cards```
+    pub fn straight_cards(cards: &[Card]) -> Vec<Vec<&Card>> {
+        // Creates a sorted vector of references to cards
+        let cards = {
+            let mut vec: Vec<&Card> = Vec::new();
 
-        let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_value_first(b));
-
-        let mut iter = cards.iter().cloned();
-
-        let mut straights: Vec<Vec<Card>> = Vec::new();
-        let mut last_card = iter.next().unwrap();
-
-        straights.push(vec!(last_card));
-
-        while let Some(card) = iter.next() {
-
-            if last_card.value as u8 == card.value as u8 + 1 {
-                straights.last_mut().unwrap().push(card);
-
-            } else {
-                straights.push(vec![card]);
-                last_card = card;
-
+            for card in cards {
+                vec.push(&card);
             }
 
+            vec.sort();
+            //vec.sort_by_key(|c| c.value);
+            vec
+        };
+
+        println!("Cards sorted: {:#?}", cards);
+
+        // Value to be returned
+        let mut straights: Vec<Vec<&Card>> = Vec::new();
+        // Main Sequence Generator
+        let mut iter = cards.iter().peekable();
+        let mut temp_vec: Vec<&Card> = Vec::new();
+        let mut prev_value= iter.peek().unwrap().value;
+
+        while let Some(card) = iter.next() {
+            if prev_value == card.value 
+            || card.value as u8 == prev_value as u8 + 1 {
+                temp_vec.push(card);
+            } else {
+                straights.push(temp_vec);
+                temp_vec = vec![card];
+            }
+
+            prev_value = card.value;
         }
 
-        straights.drain_filter(|s| s.len() > 5);
+        straights.push(temp_vec);
+
+        // Ace rule (Not proven broadway)
+        if cards.last().unwrap().value == King {
+            if let Some(ace_maybe) = cards.first() {
+                if ace_maybe.value == Ace {
+                    let mut broadway = straights.last().unwrap().clone();
+
+                    broadway.push(ace_maybe);
+                    straights.push(broadway);
+                }
+            }
+        }
+
         straights
 
     }
 
-    fn flushes_cards(cards: &[Card]) -> Vec<Vec<Card>> {
+    fn flushes_cards(cards: &[Card]) -> Vec<Vec<&Card>> {
 
-        let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_suit_first(b));
+        // Creates a sorted vector of references to cards
+        let cards = {
+            let mut vec: Vec<&Card> = Vec::new();
 
-        let mut iter = cards.iter().cloned();
-
-        let mut flushes: Vec<Vec<Card>> = Vec::new();
-        let mut last_card = iter.next().unwrap();
-
-        flushes.push(vec!(last_card));
-
-        while let Some(card) = iter.next() {
-
-            if last_card.suit == card.suit {
-                flushes.last_mut().unwrap().push(card);
-
-            } else {
-                flushes.push(vec![card]);
-                last_card = card;
-
+            for card in cards {
+                vec.push(&card);
             }
 
+            vec.sort_by_key(|c| c.suit);
+            vec
+        };
+
+        println!("Cards sorted: {:#?}", cards);
+
+        // Value to be returned
+        let mut flushes: Vec<Vec<&Card>> = Vec::new();
+        // Main Sequence Generator
+        let mut iter = cards.iter().peekable();
+        let mut temp_vec: Vec<&Card> = Vec::new();
+        let mut prev_suit = iter.peek().unwrap().suit;
+
+        while let Some(card) = iter.next() {
+            if prev_suit == card.suit {
+                temp_vec.push(card);
+               
+            } else {
+                flushes.push(temp_vec);
+                temp_vec = vec![card];
+                prev_suit = card.suit;
+            }
         }
 
-        flushes.drain_filter(|f| f.len() > 5);
+        flushes.push(temp_vec);
         flushes
-
     }
 
-    pub fn update(&self, cards: Vec<Card>) {}
+    //pub fn update(&self, cards: Vec<Card>) {}
+
+    pub fn test() {
+        let cards = cards!(Ace, Spades; King, Spades; Queen, Diamonds; Jack, Clubs; Ten, Clubs; Nine, Spades; Eight, Spades; Seven, Spades);
+        println!("Cards in {:#?}", cards);
+        println!("Straight out: {:#?}", Hand::straight_cards(&cards));
+    }
 }
 
 impl fmt::Display for Hand {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self.cards)
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    #[test]
+    fn test() {
+        use crate::holdem::Hand;
+
+        Hand::test();
     }
 }

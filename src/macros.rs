@@ -1,3 +1,4 @@
+
 /// First argument: Value
 /// Second argument: Suit
 /// As the saying goes:
@@ -5,7 +6,6 @@
 /// > I don't share your greed, the only card I need is...
 ///
 /// > The Ace of Spades
-
 #[macro_export]
 macro_rules! card {
     () => {{

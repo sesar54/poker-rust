@@ -76,7 +76,6 @@ mod test {
     fn test() {
 
         use crate::*;
-        use crate::{Suit::*, Value::*, Deck};
 
         let cards = cards!(Ace, Spades; King, Hearts);
 

@@ -1,36 +1,54 @@
 /// First argument: Value
-/// Second argument: Suit 
+/// Second argument: Suit
 /// As the saying goes:
-/// 
+///
 /// > I don't share your greed, the only card I need is...
-/// 
+///
 /// > The Ace of Spades
-
-pub use crate::card::{Card, Value::*, Suit::*};
 
 #[macro_export]
 macro_rules! card {
+    () => {{
+        extern crate rand;
+        use rand::seq::*;
 
-    () => {
+        use {Suit::*, Value::*};
+        let mut rng = rand::thread_rng();
 
-        crate::card::Card {
-            value: Ace,
-            suit: Spades,
+        let values = [
+            Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King,
+        ];
+        let suits = [Clubs, Diamonds, Hearts, Spades];
+
+        Card {
+            value: *values.iter().choose(&mut rng).unwrap(),
+            suit: *suits.iter().choose(&mut rng).unwrap(),
         }
-
-    };
+    }};
 
     ( $val:expr, $suit:expr ) => {
-
-        crate::card::Card {
+        Card {
             value: $val,
             suit: $suit,
         };
-
     };
-    
 }
 
+/// 
+#[macro_export]
+macro_rules! cards {
+    ( $($val:expr, $suit:expr);* ) => {
+
+        [
+            $(
+                card!($val,$suit),
+            )*
+        ]
+
+    }
+}
+
+/// TODO
 #[macro_export]
 macro_rules! hand {
 
@@ -43,24 +61,5 @@ macro_rules! hand {
             holdem::Hand::new(&cards)
         }
     };
-    
 }
 
-#[macro_export]
-macro_rules! clump {
-    ($check:expr) => {
-        crate::Clump::new($check)
-    };
-
-    ($check:expr, $slice:expr) => {{
-
-        let mut clump = clump!($check);
-
-        for elem in $slice {
-            clump.push(elem);
-        }
-
-        clump
-
-    }};
-}

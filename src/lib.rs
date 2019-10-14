@@ -14,7 +14,6 @@
 // Help Modules
 #[macro_use]
 pub mod macros;
-pub mod clump;
 
 // Basic Modules
 pub mod card;

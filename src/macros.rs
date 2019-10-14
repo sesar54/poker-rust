@@ -34,7 +34,6 @@ macro_rules! card {
     };
 }
 
-/// 
 #[macro_export]
 macro_rules! cards {
     ( $($val:expr, $suit:expr);* ) => {
@@ -61,5 +60,5 @@ macro_rules! hand {
             holdem::Hand::new(&cards)
         }
     };
-}
 
+}

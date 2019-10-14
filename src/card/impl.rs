@@ -1,6 +1,24 @@
 use crate::{Card, Suit, Value};
 use std::fmt;
 
+impl Card {
+
+    pub fn cmp_suit_first(&self, other: &Self) -> std::cmp::Ordering {
+        match self.suit.cmp(&other.suit) {
+            Equal => self.value.cmp(&other.value),
+            ord @ _ => ord,
+        }
+    }
+
+    pub fn cmp_value_first(&self, other: &Self) -> std::cmp::Ordering {
+        match self.value.cmp(&other.value) {
+            Equal => self.suit.cmp(&other.suit),
+            ord @ _ => ord,
+        }
+    }
+
+}
+
 /// ```
 /// let card = card!(Ace, Spades);
 /// println!("{}", card)

@@ -26,20 +26,13 @@ impl fmt::Display for Rank {
     }
 }
 
-macro_rules! ok_rank {
-    ($rank:expr) => {
-        return Ok(Rank($rank));
-    };
-}
-
-
 type ResultRank = Result<Rank, &'static str>;
 
 #[allow(non_snake_case)]
 impl Rank {
-
     pub fn High(card: Card) -> ResultRank {
-        ok_rank!(RankInner::High(card))
+        //ok_rank!(RankInner::High(card))
+        Ok(Rank(RankInner::High(card)))
     }
 
     pub fn Pair(pair: (Card, Card)) -> ResultRank {
@@ -48,7 +41,7 @@ impl Rank {
         } else if pair.0 < pair.1 {
             Err("Not Sorted")
         } else {
-            ok_rank!(RankInner::Pair(pair.0, pair.1))
+            Ok(Rank(RankInner::Pair(pair.0, pair.1)))
         }
     }
 
@@ -59,7 +52,7 @@ impl Rank {
         if pair0 < pair1 {
             Err("Not Sorted")
         } else {
-            ok_rank!(RankInner::TwoPair(pair0, pair1))
+            Ok(Rank(RankInner::TwoPair(pair0, pair1)))
         }
     }
 
@@ -69,7 +62,7 @@ impl Rank {
         } else if trips.0 < trips.1 || trips.1 < trips.2 {
             Err("Not Sorted")
         } else {
-            ok_rank!(RankInner::Trips(trips.0, trips.1, trips.2))
+            Ok(Rank(RankInner::Trips(trips.0, trips.1, trips.2)))
         }
     }
 
@@ -95,7 +88,7 @@ impl Rank {
             ]
         };
 
-        // See if cards[0] is greater than every other item by i ammount
+        // See if cards[0] is greater than every other item by i amount
         // Also check if cards are in order.
         // Ace is not included in this range. See above
         for i in 0..values.len() {
@@ -104,9 +97,9 @@ impl Rank {
             }
         }
 
-        ok_rank!(RankInner::Straight(
-            straight.0, straight.1, straight.2, straight.3, straight.4
-        ))
+        Ok(Rank(RankInner::Straight(
+            straight.0, straight.1, straight.2, straight.3, straight.4,
+        )))
     }
 
     /**
@@ -129,9 +122,9 @@ impl Rank {
             }
         }
 
-        ok_rank!(RankInner::Flush(
-            flush.0, flush.1, flush.2, flush.3, flush.4
-        ))
+        Ok(Rank(RankInner::Flush(
+            flush.0, flush.1, flush.2, flush.3, flush.4,
+        )))
     }
 
     pub fn House(trips: (Card, Card, Card), pair: (Card, Card)) -> ResultRank {
@@ -139,7 +132,7 @@ impl Rank {
         Rank::Trips(trips)?;
         Rank::Pair(pair)?;
 
-        ok_rank!(RankInner::House(trips, pair))
+        Ok(Rank(RankInner::House(trips, pair)))
     }
 
     pub fn Quads(quads: (Card, Card, Card, Card)) -> ResultRank {
@@ -159,7 +152,7 @@ impl Rank {
             }
         }
 
-        ok_rank!(RankInner::Quads(quads.0, quads.1, quads.2, quads.3))
+        Ok(Rank(RankInner::Quads(quads.0, quads.1, quads.2, quads.3)))
     }
 
     pub fn StraightFlush(sf: (Card, Card, Card, Card, Card)) -> ResultRank {
@@ -172,7 +165,7 @@ impl Rank {
             Rank::Flush(sf)?;
         }
 
-        ok_rank!(RankInner::StraightFlush(sf.0, sf.1, sf.2, sf.3, sf.4))
+        Ok(Rank(RankInner::StraightFlush(sf.0, sf.1, sf.2, sf.3, sf.4)))
     }
 
     pub fn Fives(fives: (Card, Card, Card, Card, Card)) -> ResultRank {
@@ -192,9 +185,9 @@ impl Rank {
             }
         }
 
-        ok_rank!(RankInner::Fives(
-            fives.0, fives.1, fives.2, fives.3, fives.4
-        ))
+        Ok(Rank(RankInner::Fives(
+            fives.0, fives.1, fives.2, fives.3, fives.4,
+        )))
     }
 }
 
@@ -207,7 +200,12 @@ mod tests {
     // TODO Write function walking through every possible combination of cards
     #[test]
     fn display() {
+        use {Suit::*, Value::*};
+
         println!("{}", Rank::High(card!()).unwrap());
-        println!("{}", Rank::Pair((card!(), card!())).unwrap());
+        println!(
+            "{}",
+            Rank::Pair((card!(Ace, Spades), card!(Ace, Spades))).unwrap()
+        );
     }
 }

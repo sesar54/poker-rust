@@ -38,10 +38,6 @@ impl Hand {
 
         let some_pair = Hand::pair_rank(cards);
 
-        let straight_cards = Hand::straight_groups(cards);
-
-        let flush_cards = Hand::flush_groups(cards);
-
         unimplemented!();
 
         /* Compare and return a rank *
@@ -53,15 +49,7 @@ impl Hand {
     }
 
     fn pair_rank(cards: &[Card]) -> Result<Rank, &'static str> {
-
-        // This line takes the last item in pair_cards,
-        // and copies Vec<&Card> to Vec<Card>
-        let pair = Hand::pair_groups(cards)
-            .pop()
-            .unwrap()
-            .iter()
-            .map(|&&i| i)
-            .collect::<Vec<Card>>();
+        let pair = Hand::pair_groups(cards).pop().unwrap();
 
         match pair.len() {
             len @ 6..0xFF => {
@@ -77,23 +65,73 @@ impl Hand {
         }
     }
 
+    /// Returns Some rank that is either Straight, Flush, StraightFlush 
+    /// Else None
+    fn straight_flush_rank(cards: &[Card]) -> Option<Rank> {
+        // Copy sort and const
+        let mut cards = cards.to_vec();
+        cards.sort();
+        let cards = cards;
+
+        // Iterate over all flushes for all flushes that has 5 or more cards,
+        // Then for the flush cards run it through the straight function
+        // and iterate over straights that has 5 or more cards.
+        // Return the 5 last cards from a valid straight flush.
+        let flush_group = Hand::flush_groups(cards.as_slice());
+        let mut flush_iter = flush_group.iter().rev().filter(|v| v.len() >= 5);
+
+        while let Some(flush) = flush_iter.next() {
+            // Check the same cards that was in flush 
+            // (Might be more than 5, this is important)
+            let straight_group = Hand::straight_groups(flush.as_slice());
+            let mut straight_iter = straight_group.iter().rev().filter(|v| v.len() >= 5);
+
+            while let Some(cards) = straight_iter.next() {
+                // Slice to correct range and make tuple
+                let cards = &cards[cards.len() - 5..];
+                let cards = (cards[0], cards[1], cards[2], cards[3], cards[4]);
+
+                return Some(Rank::StraightFlush(cards).unwrap());
+            }
+        }
+
+        // Get the last flush that has 5 or more cards,
+        // tuple the last cards in range
+        // and return as Some(Hand::Flush)
+        let mut flush_iter = flush_group.iter().filter(|v| v.len() >= 5);
+
+        if let Some(flush) = flush_iter.next() {
+            let flush = (flush[0], flush[1], flush[2], flush[3], flush[4]);
+            return Some(Rank::Flush(flush).unwrap());
+        }
+
+        // Get the last straight that has 5 or more cards,
+        // tuple the last cards in range
+        // and return as Some(Hand::Straight)
+        let straight_group = Hand::straight_groups(cards.as_slice());
+        let mut straight_iter = straight_group.iter().rev().filter(|v| v.len() >= 5);
+
+        if let Some(cards) = straight_iter.next() {
+            let cards = (cards[0], cards[1], cards[2], cards[3], cards[4]);
+            return Some(Rank::Straight(cards).unwrap());
+        }
+
+        // Well I suppose nothing worked out huh?
+        None
+    }
+
     /// Returns cards grouped together by these rules:
     /// 1. Cards are sorted by it's value first.
     /// 2. Cards are grouped together if their neighbor has the same value.
-    pub fn pair_groups(cards: &[Card]) -> Vec<Vec<&Card>> {
-
-        // Creates a sorted vector of references to cards
-        let cards = {
-            let mut vec = cards.iter().collect::<Vec<&Card>>();
-            vec.sort();
-            vec
-        };
+    fn pair_groups(cards: &[Card]) -> Vec<Vec<Card>> {
+        let mut cards = cards.to_vec();
+        cards.sort();
 
         // Value to be returned
-        let mut pairs: Vec<Vec<&Card>> = Vec::new();
+        let mut pairs: Vec<Vec<Card>> = Vec::new();
         // Main Sequence Generator
-        let mut iter = cards.iter().peekable();
-        let mut temp_vec: Vec<&Card> = Vec::new();
+        let mut iter = cards.iter().cloned().peekable();
+        let mut temp_vec: Vec<Card> = Vec::new();
         let mut prev_value = iter.peek().unwrap().value;
 
         while let Some(card) = iter.next() {
@@ -117,20 +155,15 @@ impl Hand {
     /// 3. If the absolute last card is a King
     ///     and the absolute first card is an Ace,
     ///     make a copy of the last group and append it with the Ace card.
-    pub fn straight_groups(cards: &[Card]) -> Vec<Vec<&Card>> {
-
-        // Creates a sorted vector of references to cards
-        let cards = {
-            let mut vec = cards.iter().collect::<Vec<&Card>>();
-            vec.sort();
-            vec
-        };
+    fn straight_groups(cards: &[Card]) -> Vec<Vec<Card>> {
+        let mut cards = cards.to_vec();
+        cards.sort();
 
         // Value to be returned
-        let mut straights: Vec<Vec<&Card>> = Vec::new();
+        let mut straights: Vec<Vec<Card>> = Vec::new();
         // Main Sequence Generator
-        let mut iter = cards.iter().peekable();
-        let mut temp_vec: Vec<&Card> = Vec::new();
+        let mut iter = cards.iter().cloned().peekable();
+        let mut temp_vec: Vec<Card> = Vec::new();
         let mut prev_value = iter.peek().unwrap().value;
 
         while let Some(card) = iter.next() {
@@ -152,7 +185,7 @@ impl Hand {
                 if ace_maybe.value == Ace {
                     let mut broadway = straights.last().unwrap().clone();
 
-                    broadway.push(ace_maybe);
+                    broadway.push(*ace_maybe);
                     straights.push(broadway);
                 }
             }
@@ -164,20 +197,15 @@ impl Hand {
     /// Returns cards grouped together by these rules:
     /// 1. Cards are sorted by it's suit first.
     /// 2. Cards are grouped together if their neighbor has the same suit.
-    fn flush_groups(cards: &[Card]) -> Vec<Vec<&Card>> {
-
-        // Creates a sorted vector of references to cards
-        let cards = {
-            let mut vec = cards.iter().collect::<Vec<&Card>>();
-            vec.sort_by_key(|c| c.suit);
-            vec
-        };
+    fn flush_groups(cards: &[Card]) -> Vec<Vec<Card>> {
+        let mut cards = cards.to_vec();
+        cards.sort_by_key(|c| c.suit);
 
         // Value to be returned
-        let mut flushes: Vec<Vec<&Card>> = Vec::new();
+        let mut flushes: Vec<Vec<Card>> = Vec::new();
         // Main Sequence Generator
-        let mut iter = cards.iter().peekable();
-        let mut temp_vec: Vec<&Card> = Vec::new();
+        let mut iter = cards.iter().cloned().peekable();
+        let mut temp_vec: Vec<Card> = Vec::new();
         let mut prev_suit = iter.peek().unwrap().suit;
 
         while let Some(card) = iter.next() {
@@ -199,7 +227,7 @@ impl Hand {
     pub fn test() {
         let cards = cards!(Ace, Spades; King, Spades; Queen, Diamonds; Jack, Clubs; Ten, Clubs; Nine, Spades; Eight, Spades; Seven, Spades);
         println!("Cards in {:#?}", cards);
-        println!("Straight out: {:#?}", Hand::straight_groups(&cards));
+        println!("Straight out: {:#?}", Hand::straight_groups(&cards),);
     }
 }
 

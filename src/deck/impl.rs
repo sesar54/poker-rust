@@ -11,9 +11,19 @@ impl Deck {
         self.inner_deck.pop()
     }
 
+    /// Deletes top card from deck
+    pub fn discard&mut self) {
+        self.inner_deck.pop();
+    }
+
     /// Shuffle the deck
     pub fn shuffle(&mut self) {
         self.inner_deck.shuffle(&mut rand::thread_rng());
+    }
+
+    /// Returns the length of deck
+    pub fn len(&self) -> usize {
+        self.inner_deck.len();
     }
 
     /// Constructs a new, full `Deck` of 52 sorted unique cards.
@@ -48,16 +58,16 @@ impl Deck {
     /// # Example
     /// ```
     /// # #![allow(unused_mut)]
-    /// let mut deck = Deck::new_unsorted();
+    /// let mut deck = Deck::new_shuffled();
     /// ```
-    pub fn new_unsorted() -> Deck {
+    pub fn new_shuffled() -> Deck {
         let mut deck = Deck::new_sorted();
         deck.shuffle();
         deck
     }
 
     /// Constructs a new, custom `Deck`.
-    /// /// 
+    /// ///
     /// # Example
     /// ```
     /// # #![allow(unused_mut)]

@@ -26,18 +26,23 @@ impl fmt::Display for Rank {
     }
 }
 
-type ResultRank = Result<Rank, &'static str>;
+use BuildException::*;
+type ResultRank = Result<Rank, BuildException>;
 
 #[allow(non_snake_case)]
 impl Rank {
+
+
+    /// Always Returns one high card.
     pub fn High(card: Card) -> ResultRank {
-        //ok_rank!(RankInner::High(card))
         Ok(Rank(RankInner::High(card)))
     }
 
+    /// Returns Pair, if both cards share the same value
+    /// and suit are ordered.
     pub fn Pair(pair: (Card, Card)) -> ResultRank {
         if pair.0.value != pair.1.value {
-            Err("Not pair")
+            Err(CardsException(vec!(vec!(pair.0, pair.1)),"Not pair"))
         } else if pair.0 < pair.1 {
             Err("Not Sorted")
         } else {
@@ -45,17 +50,20 @@ impl Rank {
         }
     }
 
+    /// Returns Two Pairs, if both pairs is sufficient pairs 
+    /// and pair.0 is the least significant pair
     pub fn TwoPair(pair0: (Card, Card), pair1: (Card, Card)) -> ResultRank {
         Rank::Pair(pair0)?;
         Rank::Pair(pair1)?;
 
-        if pair0 < pair1 {
+        if pair0 > pair1 {
             Err("Not Sorted")
         } else {
             Ok(Rank(RankInner::TwoPair(pair0, pair1)))
         }
     }
 
+    /// Returns 
     pub fn Trips(trips: (Card, Card, Card)) -> ResultRank {
         if trips.0.value != trips.1.value || trips.1.value != trips.2.value {
             Err("Not Trips")
@@ -185,27 +193,17 @@ impl Rank {
             }
         }
 
-        Ok(Rank(RankInner::Fives(
-            fives.0, fives.1, fives.2, fives.3, fives.4,
-        )))
+        Ok(Rank(RankInner::Fives(fives.0, fives.1, fives.2, fives.3, fives.4)))
     }
+
+    
+
 }
 
-#[cfg(test)]
-mod tests {
+pub enum BuildException {
+        
+    CardsDontApply(Vec<Vec<Card>>),
+    UnsortedInput(Vec<Vec<Card>>),
+    AceError(Vec<Vec<Card>>),
 
-    use crate::holdem::Rank;
-    use crate::*;
-
-    // TODO Write function walking through every possible combination of cards
-    #[test]
-    fn display() {
-        use {Suit::*, Value::*};
-
-        println!("{}", Rank::High(card!()).unwrap());
-        println!(
-            "{}",
-            Rank::Pair((card!(Ace, Spades), card!(Ace, Spades))).unwrap()
-        );
-    }
 }

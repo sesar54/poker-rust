@@ -69,20 +69,3 @@ impl Deck {
 
 }
 
-#[cfg(test)]
-mod test {
-
-    #[test]
-    fn test() {
-
-        use crate::*;
-
-        let cards = cards!(Ace, Spades; King, Hearts);
-
-        let deck = Deck::new_custom(&cards);
-
-        println!("{:?}", deck);
-
-    }
-
-}

@@ -52,11 +52,10 @@ impl Hand {
         let pair = Hand::pair_groups(cards).pop().unwrap();
 
         match pair.len() {
-            len @ 6..0xFF => {
-                let pair = &pair[len..];
+            len @ 5..0xFF => {
+                let pair = &pair[len-5..];
                 Rank::Fives((pair[0], pair[1], pair[2], pair[3], pair[4]))
             }
-            5 => Rank::Fives((pair[0], pair[1], pair[2], pair[3], pair[4])),
             4 => Rank::Quads((pair[0], pair[1], pair[2], pair[3])),
             3 => Rank::Trips((pair[0], pair[1], pair[2])),
             2 => Rank::Pair((pair[0], pair[1])),
@@ -234,16 +233,5 @@ impl Hand {
 impl fmt::Display for Hand {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self.cards)
-    }
-}
-
-#[cfg(test)]
-mod test {
-
-    #[test]
-    fn test() {
-        use crate::holdem::Hand;
-
-        Hand::test();
     }
 }

@@ -11,6 +11,23 @@ impl Deck {
         self.inner_deck.pop()
     }
 
+    /// Draw some cards and return them as a Vector
+    pub fn deal(&mut self, size: usize) -> Option<Vec<Card>> {
+
+        if self.inner_deck.len() >= size {
+            let mut cards = Vec::<Card>::new();
+
+            for _ in 0..size {
+                cards.push(self.inner_deck.pop().unwrap());
+            }
+            Some(cards)
+
+        } else {
+            None
+        }
+
+    }
+
     /// Deletes top card from deck
     pub fn discard(&mut self) {
         self.inner_deck.pop();
@@ -27,34 +44,28 @@ impl Deck {
     }
 
     /// Constructs a new, full `Deck` of 52 sorted unique cards.
-    /// 
+    ///
     /// # Example
     /// ```
     /// # #![allow(unused_mut)]
     /// let mut deck = Deck::new_sorted();
     /// ```
     pub fn new_sorted() -> Deck {
-        use {Value::*, Suit::*};
-
-        let values = [
-            Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, 
-            Jack, Queen, King,
-        ];
-        let suits = [Clubs, Diamonds, Hearts, Spades];
 
         let mut deck = vec![];
 
-        for suit in &suits {
-            for value in &values {
-                deck.push(card!(*value, *suit));
-            }
+        // TODO Iterate sorted
+        for i in 0..=52 {
+            deck.push(Card::from(i))
         }
+
+        deck.sort();
 
         Deck { inner_deck: deck }
     }
 
     /// Constructs a new, full `Deck` of 52 unsorted unique cards.
-    /// /// 
+    ///
     /// # Example
     /// ```
     /// # #![allow(unused_mut)]
@@ -67,14 +78,15 @@ impl Deck {
     }
 
     /// Constructs a new, custom `Deck`.
-    /// ///
+    ///
     /// # Example
     /// ```
     /// # #![allow(unused_mut)]
     /// let mut deck = Deck::new_custom(&card!(Ace,Spades; King, Hearts));
     /// ```
     pub fn new_custom(cards: &[Card]) -> Deck {
-        Deck { inner_deck: cards.to_vec() }
+        Deck {
+            inner_deck: cards.to_vec(),
+        }
     }
-
 }

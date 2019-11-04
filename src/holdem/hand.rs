@@ -8,13 +8,13 @@ impl Hand {
      * Creating a new hand will cause all given cards to be automatically
      * evaluated into a rank
      */
-    pub fn new(cards: &[Card]) -> Hand {
-        let rank = Hand::ranking(cards);
+    pub fn new(cards: Vec<Card>) -> Hand {
+        let rank = Hand::ranking(&cards);
 
         match rank {
             Ok(rank) => {
                 return Hand {
-                    cards: cards.to_owned(),
+                    cards: cards,
                     rank: rank,
                 }
             }
@@ -105,11 +105,38 @@ impl Hand {
 
         // Get the last straight that has 5 or more cards,
         // tuple the last cards in range
-        // and return as Some(Hand::Straight)
-        let straight_group = Hand::straight_groups(cards.as_slice());
-        let mut straight_iter = straight_group.iter().rev().filter(|v| v.len() >= 5);
+        // and maybe return some Hand::Straight
+        let mut straight_group = Hand::straight_groups(cards.as_slice());
+        let mut straight_iter = straight_group.iter_mut().rev().filter(|v| v.len() >= 5);
 
-        if let Some(cards) = straight_iter.next() {
+        while let Some(cards) = straight_iter.next() {
+
+            let mut count_down: usize = 5;
+            let mut straights: [Card; 5] = [card!(); 5];
+            let mut prev_value: Option<Value> = None;
+
+            while let Some(card) = cards.pop() {
+
+                if let Some(read_prev_value) = prev_value {
+
+                    if card.value < read_prev_value {
+                        prev_value = Some(card.value);
+                        straights[count_down] = card;
+                        count_down -= 1;
+                    } else {
+                        count_down = 5;
+                        straights = [card!(); 5];
+                        prev_value = None;
+                    }
+
+                } else {
+                    prev_value = Some(card.value);
+                    straights[count_down] = card;
+                    count_down -= 1;
+                }
+
+            }
+
             let cards = (cards[0], cards[1], cards[2], cards[3], cards[4]);
             return Some(Rank::Straight(cards).unwrap());
         }
@@ -153,15 +180,17 @@ impl Hand {
     /// 3. If the absolute last card is a King
     ///     and the absolute first card is an Ace,
     ///     make a copy of the last group and append it with the Ace card.
+    /// TODO update 3
+    /// This function does not attempt to return a straight!
     fn straight_groups(cards: &[Card]) -> Vec<Vec<Card>> {
         let mut cards = cards.to_vec();
         cards.sort();
 
         // Value to be returned
-        let mut straights: Vec<Vec<Card>> = Vec::new();
+        let mut straights = Vec::<Vec<Card>>::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned().peekable();
-        let mut temp_vec: Vec<Card> = Vec::new();
+        let mut temp_vec = Vec::<Card>::new();
         let mut prev_value = iter.peek().unwrap().value;
 
         while let Some(card) = iter.next() {
@@ -176,6 +205,7 @@ impl Hand {
         }
 
         straights.push(temp_vec);
+        println!("{:?}", straights);
 
         // Ace rule (Not proven broadway)
         if cards.last().unwrap().value == King {

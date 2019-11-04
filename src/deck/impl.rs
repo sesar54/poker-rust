@@ -43,6 +43,10 @@ impl Deck {
         self.inner_deck.len()
     }
 
+    pub fn new() -> Deck {
+        Deck::new_shuffled()
+    }
+
     /// Constructs a new, full `Deck` of 52 sorted unique cards.
     ///
     /// # Example

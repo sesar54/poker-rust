@@ -23,4 +23,5 @@ pub mod holdem;
 // Prelude
 pub use card::{ Suit::*, Value::*, * };
 pub use deck::*;
+pub use holdem::*;
 pub use macros::*;

@@ -1,10 +1,8 @@
 use crate::{Card, Suit, Value};
-use std::fmt;
 use std::cmp::Ordering::*;
-
+use std::fmt;
 
 impl Card {
-
     pub fn new(value: Value, suit: Suit) -> Card {
         Card {
             value: value,
@@ -25,7 +23,6 @@ impl Card {
             ord @ _ => ord,
         }
     }
-
 }
 
 /// ```
@@ -73,13 +70,11 @@ impl From<u8> for Card {
 impl From<u8> for Suit {
     fn from(u: u8) -> Suit {
         match u % 4 {
-
             0 => Suit::Clubs,
             1 => Suit::Diamonds,
             2 => Suit::Hearts,
             3 => Suit::Spades,
-            _ => unreachable!()
-
+            _ => unreachable!(),
         }
     }
 }
@@ -90,22 +85,21 @@ impl From<u8> for Value {
             Value::Joker
         } else {
             match u % 13 {
-                0 =>    Value::Ace,
-                1 =>    Value::Two,
-                2 =>    Value::Three,
-                3 =>    Value::Four,
-                4 =>    Value::Five,
-                5 =>    Value::Six,
-                6 =>    Value::Seven,
-                7 =>    Value::Eight,
-                8 =>    Value::Nine,
-                9 =>    Value::Ten,
-                10 =>   Value::Jack,
-                11 =>   Value::Queen,
-                12 =>   Value::King,
-                _ => unreachable!()
+                0 => Value::Ace,
+                1 => Value::Two,
+                2 => Value::Three,
+                3 => Value::Four,
+                4 => Value::Five,
+                5 => Value::Six,
+                6 => Value::Seven,
+                7 => Value::Eight,
+                8 => Value::Nine,
+                9 => Value::Ten,
+                10 => Value::Jack,
+                11 => Value::Queen,
+                12 => Value::King,
+                _ => unreachable!(),
             }
         }
-
     }
 }

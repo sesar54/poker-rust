@@ -18,7 +18,7 @@ impl Hand {
                     rank: rank,
                 }
             }
-            Err(e) => panic!(e),
+            Err(e) => panic!("{:?}", e),
         }
     }
 
@@ -30,22 +30,22 @@ impl Hand {
     ///
     /// If given a unsorted slice, the function will not work properly
 
-    fn ranking(cards: &[Card]) -> Result<Rank, &'static str> {
+    fn ranking(cards: &[Card]) -> Result<Rank, RankErr> {
         if cards.is_empty() {
             panic!();
             //Err("No cards were given");
         }
 
-        let some_pair = Hand::pair_rank(cards);
+        let pair = Hand::pair_rank(cards)?;
 
-        unimplemented!();
+        let straight_flush = Hand::straight_flush_rank(cards);
 
-        /* Compare and return a rank *
+        /* Compare and return a rank */
         if let Some(straight_flush) = straight_flush {
-            return Some(std::cmp::max(pair, straight_flush));
+            Ok(std::cmp::max(pair, straight_flush))
         } else {
-            return Some(pair);
-        }*/
+            Ok(pair)
+        }
     }
 
     fn pair_rank(cards: &[Card]) -> Result<Rank, RankErr> {
@@ -53,7 +53,7 @@ impl Hand {
 
         match pair.len() {
             len @ 5..0xFF => {
-                let pair = &pair[len-5..];
+                let pair = &pair[len - 5..];
                 Rank::Fives((pair[0], pair[1], pair[2], pair[3], pair[4]))
             }
             4 => Rank::Quads((pair[0], pair[1], pair[2], pair[3])),
@@ -70,7 +70,6 @@ impl Hand {
         // Copy sort and const
         let mut cards = cards.to_vec();
         cards.sort();
-        let cards = cards;
 
         // Iterate over all flushes for all flushes that has 5 or more cards,
         // Then for the flush cards run it through the straight function
@@ -222,12 +221,6 @@ impl Hand {
     }
 
     //pub fn update(&self, cards: Vec<Card>) {}
-
-    pub fn test() {
-        let cards = cards!(Ace, Spades; King, Spades; Queen, Diamonds; Jack, Clubs; Ten, Clubs; Nine, Spades; Eight, Spades; Seven, Spades);
-        println!("Cards in {:#?}", cards);
-        println!("Straight out: {:#?}", Hand::straight_groups(&cards),);
-    }
 }
 
 impl fmt::Display for Hand {

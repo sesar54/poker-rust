@@ -11,8 +11,7 @@
 #![forbid(unsafe_code)]
 
 // Help Modules
-#[macro_use]
-pub mod macros;
+#[macro_use] pub mod macros;
 
 // Basic Modules
 pub mod card;

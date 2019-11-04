@@ -11,6 +11,7 @@ mod rank;
  * part of our hand. Therefore the cards are slotted into enum struct "Rank".
  * Only the highest ranking cards are saved in it.
  */
+#[derive(Debug)]
 pub struct Hand {
     pub cards: Vec<Card>,
     pub rank: Rank,

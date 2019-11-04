@@ -42,7 +42,7 @@ impl Rank {
 
         if pair.0.value != pair.1.value {
             Err(Invalid(rank))
-        } else if pair.0 < pair.1 {
+        } else if pair.0 > pair.1 {
             Err(Unsorted(rank))
         } else {
             Ok(rank)
@@ -77,7 +77,7 @@ impl Rank {
 
         if trips.0.value != trips.1.value || trips.1.value != trips.2.value {
             Err(Invalid(rank))
-        } else if trips.0 < trips.1 || trips.1 < trips.2 {
+        } else if trips.0 > trips.1 || trips.1 > trips.2 {
             Err(Unsorted(rank))
         } else {
             Ok(rank)
@@ -89,9 +89,9 @@ impl Rank {
             straight.0, straight.1, straight.2, straight.3, straight.4,
         ));
 
-        let values = if straight.0.value == Ace {
-            if straight.1.value != King {
-                return Err(Explaned(rank, "Ace not followed by King".into()));
+        let values = if straight.3.value == King {
+            if straight.4.value != Ace {
+                return Err(Explaned(rank, "King not followed by Ace".into()));
             }
 
             vec![
@@ -138,7 +138,7 @@ impl Rank {
 
         // See if cards are sorted
         for i in 0..=3 {
-            if cards[i] <= cards[i + 1] {
+            if cards[i] >= cards[i + 1] {
                 return Err(Unsorted(rank));
             }
         }
@@ -173,7 +173,7 @@ impl Rank {
 
         // See if cards are sorted
         for i in 0..=2 {
-            if cards[i] < cards[i + 1] {
+            if cards[i] > cards[i + 1] {
                 return Err(Unsorted(rank));
             }
         }
@@ -217,7 +217,7 @@ impl Rank {
 
         // See if cards are sorted
         for i in 0..=2 {
-            if cards[i] < cards[i + 1] {
+            if cards[i] > cards[i + 1] {
                 return Err(Unsorted(rank));
             }
         }

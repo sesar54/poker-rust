@@ -21,10 +21,10 @@ pub struct Hand {
  * sorted by the lowest value first and greatest value last (actually in what
  * order they are written).
  */
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Rank(RankInner);
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum RankInner {
     High(Card),
     Pair(Card, Card),
@@ -36,4 +36,11 @@ enum RankInner {
     Quads(Card, Card, Card, Card),
     StraightFlush(Card, Card, Card, Card, Card),
     Fives(Card, Card, Card, Card, Card),
+}
+
+#[derive(Debug)]
+pub enum RankErr {
+    Invalid(Rank),
+    Unsorted(Rank),
+    Explaned(Rank, String)
 }

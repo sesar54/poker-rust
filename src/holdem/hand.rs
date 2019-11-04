@@ -48,7 +48,7 @@ impl Hand {
         }*/
     }
 
-    fn pair_rank(cards: &[Card]) -> Result<Rank, &'static str> {
+    fn pair_rank(cards: &[Card]) -> Result<Rank, RankErr> {
         let pair = Hand::pair_groups(cards).pop().unwrap();
 
         match pair.len() {
@@ -64,7 +64,7 @@ impl Hand {
         }
     }
 
-    /// Returns Some rank that is either Straight, Flush, StraightFlush 
+    /// Returns Some rank that is either Straight, Flush, StraightFlush
     /// Else None
     fn straight_flush_rank(cards: &[Card]) -> Option<Rank> {
         // Copy sort and const
@@ -80,7 +80,7 @@ impl Hand {
         let mut flush_iter = flush_group.iter().rev().filter(|v| v.len() >= 5);
 
         while let Some(flush) = flush_iter.next() {
-            // Check the same cards that was in flush 
+            // Check the same cards that was in flush
             // (Might be more than 5, this is important)
             let straight_group = Hand::straight_groups(flush.as_slice());
             let mut straight_iter = straight_group.iter().rev().filter(|v| v.len() >= 5);

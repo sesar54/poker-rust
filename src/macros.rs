@@ -1,4 +1,3 @@
-
 /// > I don't share your greed, the only card I need is...
 /// >
 /// > The Ace of Spades
@@ -21,7 +20,7 @@ macro_rules! card {
 
 #[macro_export]
 macro_rules! cards {
-    ( $($val:expr, $suit:expr);* ) => [$(card!($val,$suit),)*]
+    ( $($val:expr, $suit:expr);* ) => {[$(card!($val,$suit),)*]}
 }
 
 /// TODO

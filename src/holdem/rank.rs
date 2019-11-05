@@ -17,7 +17,7 @@ impl fmt::Display for Rank {
             RankInner::Flush(..) => write!(f, "Flush"),
             RankInner::House(..) => write!(f, "Full house"),
             RankInner::Quads(..) => write!(f, "Four of a kind"),
-            RankInner::StraightFlush(card, ..) => match card.value {
+            RankInner::StraightFlush(.., card) => match card.value {
                 Ace => write!(f, "Royal flush"),
                 _ => write!(f, "Straight flush"),
             },

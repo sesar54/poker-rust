@@ -50,15 +50,15 @@ impl Hand {
 
     fn pair_rank(cards: &[Card]) -> Result<Rank, RankErr> {
         let pair = Hand::pair_groups(cards).pop().unwrap();
-
+        
         match pair.len() {
             len @ 5..0xFF => {
                 let pair = &pair[len - 5..];
-                Rank::Fives((pair[0], pair[1], pair[2], pair[3], pair[4]))
+                Rank::Fives([pair[0], pair[1], pair[2], pair[3], pair[4]])
             }
-            4 => Rank::Quads((pair[0], pair[1], pair[2], pair[3])),
-            3 => Rank::Trips((pair[0], pair[1], pair[2])),
-            2 => Rank::Pair((pair[0], pair[1])),
+            4 => Rank::Quads([pair[0], pair[1], pair[2], pair[3]]),
+            3 => Rank::Trips([pair[0], pair[1], pair[2]]),
+            2 => Rank::Pair([pair[0], pair[1]]),
             1 => Rank::High(pair[0]),
             _ => unreachable!(),
         }
@@ -87,7 +87,7 @@ impl Hand {
             while let Some(cards) = straight_iter.next() {
                 // Slice to correct range and make tuple
                 let cards = &cards[cards.len() - 5..];
-                let cards = (cards[0], cards[1], cards[2], cards[3], cards[4]);
+                let cards = [cards[0], cards[1], cards[2], cards[3], cards[4]];
 
                 return Some(Rank::StraightFlush(cards).unwrap());
             }
@@ -99,50 +99,15 @@ impl Hand {
         let mut flush_iter = flush_group.iter().filter(|v| v.len() >= 5);
 
         if let Some(flush) = flush_iter.next() {
-            let flush = (flush[0], flush[1], flush[2], flush[3], flush[4]);
+            let flush = [flush[0], flush[1], flush[2], flush[3], flush[4]];
             return Some(Rank::Flush(flush).unwrap());
         }
 
         // Get the last straight that has 5 or more cards,
         // tuple the last cards in range
         // and maybe return some Hand::Straight
-        let mut straight_group = Hand::straight_groups(cards.as_slice());
-        let mut straight_iter = straight_group.iter_mut().rev().filter(|v| v.len() >= 5);
-
-        while let Some(cards) = straight_iter.next() {
-
-            let mut count_down: usize = 5;
-            let mut straights: [Card; 5] = [card!(); 5];
-            let mut prev_value: Option<Value> = None;
-
-            while let Some(card) = cards.pop() {
-
-                if let Some(read_prev_value) = prev_value {
-
-                    if card.value < read_prev_value {
-                        prev_value = Some(card.value);
-                        straights[count_down] = card;
-                        count_down -= 1;
-                    } else {
-                        count_down = 5;
-                        straights = [card!(); 5];
-                        prev_value = None;
-                    }
-
-                } else {
-                    prev_value = Some(card.value);
-                    straights[count_down] = card;
-                    count_down -= 1;
-                }
-
-            }
-
-            let cards = (cards[0], cards[1], cards[2], cards[3], cards[4]);
-            return Some(Rank::Straight(cards).unwrap());
-        }
-
-        // Well I suppose nothing worked out huh?
-        None
+        Hand::straight_cards(&Hand::straight_groups(cards.as_slice())) 
+        
     }
 
     /// Returns cards grouped together by these rules:
@@ -248,6 +213,57 @@ impl Hand {
 
         flushes.push(temp_vec);
         flushes
+    }
+
+    /// Returns either 5 cards in a straight or None.
+    fn straight_cards(cards: &Vec<Vec<Card>>) -> Option<Rank> {
+
+        let mut straight_iter = cards.iter().rev().filter(|v| v.len() >= 5);
+        /* Has to be initialized */
+        let mut straights = [card!(); 5];
+        while let Some(cards) = straight_iter.next() {
+
+            let mut card_iter = cards.iter().rev();
+            let mut space_iter = 4;
+            let mut cards_left = cards.len();
+
+            let mut prev_value: Option<Value> = None;
+
+            while let Some(card) = card_iter.next() {
+                cards_left -= 1;
+
+                let mut construct = || {
+                    prev_value = Some(card.value);
+                    straights[space_iter] = *card;
+                    space_iter -= 1;
+                };
+
+                if let Some(pv) = prev_value {
+
+                    if card.value < pv {
+                        construct();
+                    }
+
+                } else {
+                    construct();
+                }
+
+                // Return on overflow 
+                // (if straights was successfully constructed).
+                if space_iter == 255 {
+                    return Some(Rank::Straight(straights).unwrap());
+
+                // Break if there is not enough cards to construct with.
+                } else if cards_left <= space_iter {
+                    break;
+                }
+
+            }
+
+            
+        }
+
+        None
     }
 
     //pub fn update(&self, cards: Vec<Card>) {}

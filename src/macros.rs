@@ -1,31 +1,16 @@
 
-/// First argument: Value
-/// Second argument: Suit
-/// As the saying goes:
-///
 /// > I don't share your greed, the only card I need is...
-///
+/// >
 /// > The Ace of Spades
 #[macro_export]
 macro_rules! card {
     () => {{
         extern crate rand;
-        use rand::seq::*;
+        use rand::Rng;
 
-        use {Suit::*, Value::*};
-        let mut rng = rand::thread_rng();
-
-        let values = [
-            Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King,
-        ];
-        let suits = [Clubs, Diamonds, Hearts, Spades];
-
-        Card {
-            value: *values.iter().choose(&mut rng).unwrap(),
-            suit: *suits.iter().choose(&mut rng).unwrap(),
-        }
+        Card::from(rand::thread_rng().gen_range(0, 51))
     }};
-
+    
     ( $val:expr, $suit:expr ) => {
         Card {
             value: $val,
@@ -36,15 +21,7 @@ macro_rules! card {
 
 #[macro_export]
 macro_rules! cards {
-    ( $($val:expr, $suit:expr);* ) => {
-
-        [
-            $(
-                card!($val,$suit),
-            )*
-        ]
-
-    }
+    ( $($val:expr, $suit:expr);* ) => [$(card!($val,$suit),)*]
 }
 
 /// TODO

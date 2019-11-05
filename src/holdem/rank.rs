@@ -37,12 +37,12 @@ impl Rank {
 
     /// Returns Pair, if both cards share the same value
     /// and suit are ordered.
-    pub fn Pair(pair: (Card, Card)) -> ResultRank {
-        let rank = Rank(RankInner::Pair(pair.0, pair.1));
+    pub fn Pair(cards: [Card; 2]) -> ResultRank {
+        let rank = Rank(RankInner::Pair(cards[0], cards[1]));
 
-        if pair.0.value != pair.1.value {
+        if cards[0].value != cards[1].value {
             Err(Invalid(rank))
-        } else if pair.0 > pair.1 {
+        } else if cards[0] > cards[1] {
             Err(Unsorted(rank))
         } else {
             Ok(rank)
@@ -51,19 +51,16 @@ impl Rank {
 
     /// Returns Two Pairs, if both pairs is sufficient pairs and
     /// pair.0 is the least significant pair.Ace
-    pub fn TwoPair(pair0: (Card, Card), pair1: (Card, Card)) -> ResultRank {
-        let rank = Rank(RankInner::TwoPair(pair0, pair1));
+    pub fn TwoPair(pair0: [Card; 2], pair1: [Card; 2]) -> ResultRank {
+        let rank = Rank(RankInner::TwoPair(
+            (pair0[0], pair0[1]),
+            (pair1[0], pair1[1]),
+        ));
 
         if let Err(E) = Rank::Pair(pair0) {
-            Err(Explaned(
-                rank,
-                format!("Pair 1 of 2 returned: {:?}", E),
-            ))
+            Err(Explaned(rank, format!("Pair 1 of 2 returned: {:?}", E)))
         } else if let Err(E) = Rank::Pair(pair1) {
-            Err(Explaned(
-                rank,
-                format!("Pair 2 of 2 returned: {:?}", E),
-            ))
+            Err(Explaned(rank, format!("Pair 2 of 2 returned: {:?}", E)))
         } else if pair0 > pair1 {
             Err(Unsorted(rank))
         } else {
@@ -72,49 +69,39 @@ impl Rank {
     }
 
     /// Returns
-    pub fn Trips(trips: (Card, Card, Card)) -> ResultRank {
-        let rank = Rank(RankInner::Trips(trips.0, trips.1, trips.2));
+    pub fn Trips(cards: [Card; 3]) -> ResultRank {
+        let rank = Rank(RankInner::Trips(cards[0], cards[1], cards[2]));
 
-        if trips.0.value != trips.1.value || trips.1.value != trips.2.value {
+        if cards[0].value != cards[1].value || cards[1].value != cards[2].value {
             Err(Invalid(rank))
-        } else if trips.0 > trips.1 || trips.1 > trips.2 {
+        } else if cards[0] > cards[1] || cards[1] > cards[2] {
             Err(Unsorted(rank))
         } else {
             Ok(rank)
         }
     }
 
-    pub fn Straight(straight: (Card, Card, Card, Card, Card)) -> ResultRank {
+    pub fn Straight(cards: [Card; 5]) -> ResultRank {
         let rank = Rank(RankInner::Straight(
-            straight.0, straight.1, straight.2, straight.3, straight.4,
+            cards[0], cards[1], cards[2], cards[3], cards[4],
         ));
 
-        let values = if straight.3.value == King {
-            if straight.4.value != Ace {
+        let values: &[Card];
+        if cards[3].value == King {
+            if cards[4].value != Ace {
                 return Err(Explaned(rank, "King not followed by Ace".into()));
             }
 
-            vec![
-                straight.1.value as u8,
-                straight.2.value as u8,
-                straight.3.value as u8,
-                straight.4.value as u8,
-            ]
+            values.copy_from_slice(&cards[0..3])
         } else {
-            vec![
-                straight.0.value as u8,
-                straight.1.value as u8,
-                straight.2.value as u8,
-                straight.3.value as u8,
-                straight.4.value as u8,
-            ]
+            values.copy_from_slice(&cards[0..4]);
         };
 
         // See if cards[0] is greater than every other item by i amount
         // Also check if cards are in order.
         // Ace is not included in this range. See above
         for i in 0..values.len() {
-            if values[0] != values[i] - i as u8 {
+            if values[0].value as u8 != values[i].value as u8 - i as u8 {
                 return Err(Invalid(rank));
             }
         }
@@ -123,15 +110,14 @@ impl Rank {
     }
 
     ///
-    pub fn Flush(flush: (Card, Card, Card, Card, Card)) -> ResultRank {
+    pub fn Flush(cards: [Card; 5]) -> ResultRank {
         let rank = Rank(RankInner::Flush(
-            flush.0, flush.1, flush.2, flush.3, flush.4,
+            cards[0], cards[1], cards[2], cards[3], cards[4],
         ));
-        let cards = [flush.0, flush.1, flush.2, flush.3, flush.4];
 
         // See if all suits match
         for card in &cards {
-            if flush.0.suit != card.suit {
+            if cards[0].suit != card.suit {
                 return Err(Invalid(rank));
             }
         }
@@ -146,8 +132,11 @@ impl Rank {
         Ok(rank)
     }
 
-    pub fn House(trips: (Card, Card, Card), pair: (Card, Card)) -> ResultRank {
-        let rank = Rank(RankInner::House(trips, pair));
+    pub fn House(trips: [Card; 3], pair: [Card; 2]) -> ResultRank {
+        let rank = Rank(RankInner::House(
+            (trips[0], trips[1], trips[2]),
+            (pair[0], pair[1]),
+        ));
 
         // See if both Trips and Pair is ok and return rank
         // Else return an explained error
@@ -160,13 +149,12 @@ impl Rank {
         }
     }
 
-    pub fn Quads(quads: (Card, Card, Card, Card)) -> ResultRank {
-        let rank = Rank(RankInner::Quads(quads.0, quads.1, quads.2, quads.3));
-        let cards = [quads.0, quads.1, quads.2, quads.3];
-
+    pub fn Quads(cards: [Card; 4]) -> ResultRank {
+        let rank = Rank(RankInner::Quads(cards[0], cards[1], cards[2], cards[3]));
+        
         // See if all values match
         for card in &cards {
-            if quads.0.value != card.value {
+            if cards[0].value != card.value {
                 return Err(Invalid(rank));
             }
         }
@@ -181,20 +169,21 @@ impl Rank {
         Ok(rank)
     }
 
-    pub fn StraightFlush(sf: (Card, Card, Card, Card, Card)) -> ResultRank {
-        let rank = Rank(RankInner::StraightFlush(sf.0, sf.1, sf.2, sf.3, sf.4));
+    pub fn StraightFlush(sf: [Card; 5]) -> ResultRank {
+        let rank = Rank(RankInner::StraightFlush(sf[0], sf[1], sf[2], sf[3], sf[4]));
 
         if let Err(E) = Rank::Straight(sf) {
-            Err(Explaned(rank, format!("Straight function returned: {:?}", E)))
+            Err(Explaned(
+                rank,
+                format!("Straight function returned: {:?}", E),
+            ))
         } else if let Err(E) = {
-
             // Ace is always last in order for Flush()
-            if sf.0.value == Ace {
-                Rank::Flush((sf.1, sf.2, sf.3, sf.4, sf.0))
-            } else {
+            if sf[0].value == Ace {
                 Rank::Flush(sf)
+            } else {
+                Rank::Flush([sf[1], sf[2], sf[3], sf[4], sf[0]])
             }
-
         } {
             Err(Explaned(rank, format!("Flush function returned: {:?}", E)))
         } else {
@@ -202,15 +191,14 @@ impl Rank {
         }
     }
 
-    pub fn Fives(fives: (Card, Card, Card, Card, Card)) -> ResultRank {
+    pub fn Fives(cards: [Card; 5]) -> ResultRank {
         let rank = Rank(RankInner::Fives(
-            fives.0, fives.1, fives.2, fives.3, fives.4,
+            cards[0], cards[1], cards[2], cards[3], cards[4],
         ));
-        let cards = [fives.0, fives.1, fives.2, fives.3, fives.4];
 
         // See if all values match
         for card in &cards {
-            if fives.0.value != card.value {
+            if cards[0].value != card.value {
                 return Err(Invalid(rank));
             }
         }

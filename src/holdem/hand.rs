@@ -1,7 +1,11 @@
-use std::fmt;
+extern crate log;
 
 use crate::*;
 use holdem::*;
+
+use std::fmt;
+
+use log::{error, warn};
 
 impl Hand {
     /// Creating a new hand will cause all given cards to be automatically
@@ -165,6 +169,7 @@ impl Hand {
             prev_value = first_card.value;
             temp_vec = vec![first_card];
         } else {
+            // No cards in cards
             return straight_groupings;
         }
 
@@ -188,19 +193,19 @@ impl Hand {
         //
         // Cards are sorted numerically so they appear as the first and
         // last card.
-        if let Some(ace_maybe) = cards.first() {
-            if ace_maybe.value == Ace {
-                if let Some(king_perhaps) = cards.last() {
-                    if king_perhaps.value == King {
-                        if let Some(broadway) = straight_groupings.last() {
-                            let mut broadway = broadway.clone();
-
-                            broadway.push(*ace_maybe);
-                            straight_groupings.push(broadway);
-                        }
-                    }
-                }
+        match (cards.first(), cards.last(), straight_groupings.last()) {
+            (Some(ace), Some(king), Some(broadway)) if ace.value == Ace && king.value == King => {
+                let mut broadway = broadway.clone();
+                broadway.push(*ace);
+                straight_groupings.push(broadway);
             }
+            (_, _, None) => {
+                error!(
+                    "Card Ace and King found, but no element was appended to straight_groupings"
+                );
+                unreachable!();
+            }
+            _ => {}
         }
 
         straight_groupings
@@ -237,43 +242,69 @@ impl Hand {
     /// Returns either 5 cards in a straight or None.
     fn straight_cards(cards: &Vec<Vec<Card>>) -> Option<Rank> {
         let mut straight_iter = cards.iter().rev().filter(|v| v.len() >= 5);
-        /* Has to be initialized */
+        // Has to be initialized
         let mut straights = [card!(); 5];
+
+        // Iterate over every straight grouping larger than or equal to 5,
+        // in reverse (to return the most valuable straight first).
         while let Some(cards) = straight_iter.next() {
+            // Iterate over both slice cards and the "holes" in straight,
+            // while making sure that there is enough cards to check in order
+            // to fill straight. Else just go to the next straight.
             let mut card_iter = cards.iter().rev();
-            let mut space_iter = 4;
+            let mut card_holes = 4;
             let mut cards_left = cards.len();
-            let mut prev_value;
 
-            if let Some(first_card) = card_iter.next() {
-                cards_left -= 1;
+            // Insert card in one available spot inside straights array
+            // and if straights is full, try to return Something.
+            // Else decrement available card_holes.
+            macro_rules! advance {
+                ($card:expr) => {
+                    straights[card_holes] = *$card;
 
-                card_iter.len();
+                    // No more cards are needed to fill straights
+                    // See if straights was made correctly.
+                    if card_holes == 0 {
 
-                prev_value = first_card.value;
-                straights[space_iter] = *first_card;
-                space_iter -= 1;
-            } else {
-                eprintln!("[hand/straight_cards]: First series of card are empty");
-                continue;
+                        // If straights was successfully constructed:
+                        // * Return Some.
+                        // Else if it wasn't properly constructed:
+                        // * Log an error.
+                        match Rank::Straight(straights) {
+                            Ok(rank) => return Some(rank),
+                            Err(e) => error!("Function generated a false positive. Bad reference?\nError: {:#?}", e),
+                        }
+
+                    } else {
+                        card_holes -= 1;
+                    }
+
+                };
             }
 
+            // Pre loop initialization
+            let mut prev_value = if let Some(first_card) = card_iter.next() {
+                cards_left -= 1;
+                advance!(first_card);
+                first_card.value
+
+            // Incase it somehow fail's in the future let the maintainer know.
+            } else {
+                warn!("2D vector has an empty vector when it shouldn't");
+                continue;
+            };
+
+            // Iterate over rest of cards
+            // and break if there is not enough cards left
             while let Some(card) = card_iter.next() {
                 cards_left -= 1;
 
                 if card.value < prev_value {
+                    advance!(card);
                     prev_value = card.value;
-                    straights[space_iter] = *card;
 
-                    // Return before overflow if straights was successfully
-                    // constructed.
-                    if space_iter == 0 {
-                        return Some(Rank::Straight(straights).expect("TEWST"));
-                    } else {
-                        space_iter -= 1;
-                    }
                 // Break if there is not enough cards to construct with.
-                } else if cards_left <= space_iter {
+                } else if cards_left <= card_holes {
                     break;
                 }
             }

@@ -43,5 +43,5 @@ enum RankInner {
 pub enum RankErr {
     Invalid(Rank),
     Unsorted(Rank),
-    Explaned(Rank, String)
+    Explained(String)
 }

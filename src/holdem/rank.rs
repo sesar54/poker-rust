@@ -58,9 +58,15 @@ impl Rank {
         ));
 
         if let Err(E) = Rank::Pair(pair0) {
-            Err(Explaned(rank, format!("Pair 1 of 2 returned: {:?}", E)))
+            Err(Explained(format!(
+                "In Rank::TwoPair with rank: {:#?}\nPair 1 of 2 returned: {:#?}",
+                rank, E,
+            )))
         } else if let Err(E) = Rank::Pair(pair1) {
-            Err(Explaned(rank, format!("Pair 2 of 2 returned: {:?}", E)))
+            Err(Explained(format!(
+                "In Rank::TwoPair with rank: {:#?}\nPair 2 of 2 returned: {:#?}",
+                rank, E,
+            )))
         } else if pair0 > pair1 {
             Err(Unsorted(rank))
         } else {
@@ -86,22 +92,24 @@ impl Rank {
             cards[0], cards[1], cards[2], cards[3], cards[4],
         ));
 
-        let values: &[Card];
-        if cards[3].value == King {
+        let values: &[Card] = if cards[3].value == King {
             if cards[4].value != Ace {
-                return Err(Explaned(rank, "King not followed by Ace".into()));
+                return Err(Explained(format!(
+                    "In Rank::Straight with rank: {:#?}\nKing not followed by Ace",
+                    rank
+                )));
             }
 
-            values.copy_from_slice(&cards[0..3])
+            &cards[0..3]
         } else {
-            values.copy_from_slice(&cards[0..4]);
+            &cards[0..4]
         };
 
         // See if cards[0] is greater than every other item by i amount
         // Also check if cards are in order.
         // Ace is not included in this range. See above
         for i in 0..values.len() {
-            if values[0].value as u8 != values[i].value as u8 - i as u8 {
+            if values[0].value as u8 + i as u8 != values[i].value as u8 {
                 return Err(Invalid(rank));
             }
         }
@@ -124,7 +132,7 @@ impl Rank {
 
         // See if cards are sorted
         for i in 0..=3 {
-            if cards[i] >= cards[i + 1] {
+            if cards[i] > cards[i + 1] {
                 return Err(Unsorted(rank));
             }
         }
@@ -141,9 +149,15 @@ impl Rank {
         // See if both Trips and Pair is ok and return rank
         // Else return an explained error
         if let Err(E) = Rank::Trips(trips) {
-            Err(Explaned(rank, format!("Trips returned: {:?}", E)))
+            Err(Explained(format!(
+                "In Rank::House with rank: {:#?}\nFunction Trips returned: {:#?}",
+                rank, E
+            )))
         } else if let Err(E) = Rank::Pair(pair) {
-            Err(Explaned(rank, format!("Pair returned: {:?}", E)))
+            Err(Explained(format!(
+                "In Rank::House with rank: {:#?}\nFunction Pair returned: {:#?}",
+                rank, E
+            )))
         } else {
             Ok(rank)
         }
@@ -151,7 +165,6 @@ impl Rank {
 
     pub fn Quads(cards: [Card; 4]) -> ResultRank {
         let rank = Rank(RankInner::Quads(cards[0], cards[1], cards[2], cards[3]));
-        
         // See if all values match
         for card in &cards {
             if cards[0].value != card.value {
@@ -173,19 +186,22 @@ impl Rank {
         let rank = Rank(RankInner::StraightFlush(sf[0], sf[1], sf[2], sf[3], sf[4]));
 
         if let Err(E) = Rank::Straight(sf) {
-            Err(Explaned(
-                rank,
-                format!("Straight function returned: {:?}", E),
-            ))
+            Err(Explained(format!(
+                "In Rank::StraightFlush with rank: {:#?}\nFunction Rank::Straight returned: {:#?}",
+                rank, E
+            )))
         } else if let Err(E) = {
-            // Ace is always last in order for Flush()
-            if sf[0].value == Ace {
-                Rank::Flush(sf)
+            // Ace is always sorted last for Flush()
+            if sf[4].value == Ace {
+                Rank::Flush([sf[4], sf[0], sf[1], sf[2], sf[3]])
             } else {
-                Rank::Flush([sf[1], sf[2], sf[3], sf[4], sf[0]])
+                Rank::Flush(sf)
             }
         } {
-            Err(Explaned(rank, format!("Flush function returned: {:?}", E)))
+            Err(Explained(format!(
+                "In Rank::StraightFlush with rank: {:#?}\nFunction Rank::Flush returned: {:#?}",
+                rank, E
+            )))
         } else {
             Ok(rank)
         }

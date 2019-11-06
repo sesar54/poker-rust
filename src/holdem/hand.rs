@@ -183,8 +183,8 @@ impl Hand {
         straight_groupings.push(temp_vec);
 
         // Ace rule (Not proven broadway).
-        // Copy the last straight grouping and append Ace as the last argument,
-        // if both an Ace and a King is found in the slice cards.
+        // Copy the last straight grouping and append Ace as the last card if 
+        // both an Ace and a King is found in the slice cards.
         //
         // Cards are sorted numerically so they appear as the first and
         // last card.
@@ -192,6 +192,8 @@ impl Hand {
             if ace_maybe.value == Ace {
                 if let Some(king_perhaps) = cards.last() {
                     if king_perhaps.value == King {
+                        // Broadway is name for the highest valued straight 
+                        // (10 through Ace)
                         if let Some(broadway) = straight_groupings.last() {
                             let mut broadway = broadway.clone();
 

@@ -1,10 +1,7 @@
 use std::fmt;
 
-use crate::card::{
-    Card,
-    Value::{Ace, King},
-};
-use crate::holdem::{Rank, RankErr, RankErr::*, RankInner};
+use crate::card::{Card, Value::Ace, Value::King};
+use crate::holdem::{Rank, RankErr, RankInner};
 
 impl fmt::Display for Rank {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -41,9 +38,9 @@ impl Rank {
         let rank = Rank(RankInner::Pair(cards[0], cards[1]));
 
         if cards[0].value != cards[1].value {
-            Err(Invalid(rank))
+            Err(RankErr::Invalid(rank))
         } else if cards[0] > cards[1] {
-            Err(Unsorted(rank))
+            Err(RankErr::Unsorted(rank))
         } else {
             Ok(rank)
         }
@@ -58,35 +55,36 @@ impl Rank {
         ));
 
         if let Err(E) = Rank::Pair(pair0) {
-            Err(Explained(format!(
-                "In Rank::TwoPair with rank: {:#?}\nPair 1 of 2 returned: {:#?}",
+            Err(RankErr::Explained(format!(
+                "In Rank::TwoPair with rank: {:?} Pair 1 of 2 returned: {:?}",
                 rank, E,
             )))
         } else if let Err(E) = Rank::Pair(pair1) {
-            Err(Explained(format!(
-                "In Rank::TwoPair with rank: {:#?}\nPair 2 of 2 returned: {:#?}",
+            Err(RankErr::Explained(format!(
+                "In Rank::TwoPair with rank: {:?} Pair 2 of 2 returned: {:?}",
                 rank, E,
             )))
         } else if pair0 > pair1 {
-            Err(Unsorted(rank))
+            Err(RankErr::Unsorted(rank))
         } else {
             Ok(rank)
         }
     }
 
-    /// Returns
+    ///
     pub fn Trips(cards: [Card; 3]) -> ResultRank {
         let rank = Rank(RankInner::Trips(cards[0], cards[1], cards[2]));
 
         if cards[0].value != cards[1].value || cards[1].value != cards[2].value {
-            Err(Invalid(rank))
+            Err(RankErr::Invalid(rank))
         } else if cards[0] > cards[1] || cards[1] > cards[2] {
-            Err(Unsorted(rank))
+            Err(RankErr::Unsorted(rank))
         } else {
             Ok(rank)
         }
     }
 
+    ///
     pub fn Straight(cards: [Card; 5]) -> ResultRank {
         let rank = Rank(RankInner::Straight(
             cards[0], cards[1], cards[2], cards[3], cards[4],
@@ -94,8 +92,8 @@ impl Rank {
 
         let values: &[Card] = if cards[3].value == King {
             if cards[4].value != Ace {
-                return Err(Explained(format!(
-                    "In Rank::Straight with rank: {:#?}\nKing not followed by Ace",
+                return Err(RankErr::Explained(format!(
+                    "In Rank::Straight with rank: {:?} King not followed by Ace",
                     rank
                 )));
             }
@@ -110,7 +108,7 @@ impl Rank {
         // Ace is not included in this range. See above
         for i in 0..values.len() {
             if values[0].value as u8 + i as u8 != values[i].value as u8 {
-                return Err(Invalid(rank));
+                return Err(RankErr::Invalid(rank));
             }
         }
 
@@ -126,14 +124,14 @@ impl Rank {
         // See if all suits match
         for card in &cards {
             if cards[0].suit != card.suit {
-                return Err(Invalid(rank));
+                return Err(RankErr::Invalid(rank));
             }
         }
 
         // See if cards are sorted
         for i in 0..=3 {
             if cards[i] > cards[i + 1] {
-                return Err(Unsorted(rank));
+                return Err(RankErr::Unsorted(rank));
             }
         }
 
@@ -149,13 +147,13 @@ impl Rank {
         // See if both Trips and Pair is ok and return rank
         // Else return an explained error
         if let Err(E) = Rank::Trips(trips) {
-            Err(Explained(format!(
-                "In Rank::House with rank: {:#?}\nFunction Trips returned: {:#?}",
+            Err(RankErr::Explained(format!(
+                "In Rank::House with rank: {:?} Function Trips returned: {:?}",
                 rank, E
             )))
         } else if let Err(E) = Rank::Pair(pair) {
-            Err(Explained(format!(
-                "In Rank::House with rank: {:#?}\nFunction Pair returned: {:#?}",
+            Err(RankErr::Explained(format!(
+                "In Rank::House with rank: {:?} Function Pair returned: {:?}",
                 rank, E
             )))
         } else {
@@ -168,14 +166,14 @@ impl Rank {
         // See if all values match
         for card in &cards {
             if cards[0].value != card.value {
-                return Err(Invalid(rank));
+                return Err(RankErr::Invalid(rank));
             }
         }
 
         // See if cards are sorted
         for i in 0..=2 {
             if cards[i] > cards[i + 1] {
-                return Err(Unsorted(rank));
+                return Err(RankErr::Unsorted(rank));
             }
         }
 
@@ -186,8 +184,8 @@ impl Rank {
         let rank = Rank(RankInner::StraightFlush(sf[0], sf[1], sf[2], sf[3], sf[4]));
 
         if let Err(E) = Rank::Straight(sf) {
-            Err(Explained(format!(
-                "In Rank::StraightFlush with rank: {:#?}\nFunction Rank::Straight returned: {:#?}",
+            Err(RankErr::Explained(format!(
+                "In Rank::StraightFlush with rank: {:?} Function Rank::Straight returned: {:?}",
                 rank, E
             )))
         } else if let Err(E) = {
@@ -198,8 +196,8 @@ impl Rank {
                 Rank::Flush(sf)
             }
         } {
-            Err(Explained(format!(
-                "In Rank::StraightFlush with rank: {:#?}\nFunction Rank::Flush returned: {:#?}",
+            Err(RankErr::Explained(format!(
+                "In Rank::StraightFlush with rank: {:?}. Function Rank::Flush returned: {:?}",
                 rank, E
             )))
         } else {
@@ -215,14 +213,14 @@ impl Rank {
         // See if all values match
         for card in &cards {
             if cards[0].value != card.value {
-                return Err(Invalid(rank));
+                return Err(RankErr::Invalid(rank));
             }
         }
 
         // See if cards are sorted
         for i in 0..=2 {
             if cards[i] > cards[i + 1] {
-                return Err(Unsorted(rank));
+                return Err(RankErr::Unsorted(rank));
             }
         }
 

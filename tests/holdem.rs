@@ -12,11 +12,11 @@ mod hand {
     fn test() {
         let mut threads = vec![];
 
-        for _ in 0..=5 {
+        for _ in 0..=0 {
             threads.push(thread::spawn(move || {
-                for _ in 0..1000000 {
+                for _ in 0..1_000_000 {
                     Hand::new(
-                        Deck::new()
+                        Deck::default()
                             .deal(rand::thread_rng().gen_range(1, 52))
                             .unwrap(),
                     );

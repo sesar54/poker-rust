@@ -9,7 +9,6 @@ macro_rules! card {
 
         Card::from(rand::thread_rng().gen_range(0, 51))
     }};
-    
     ( $val:expr, $suit:expr ) => {
         Card {
             value: $val,

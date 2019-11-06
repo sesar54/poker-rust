@@ -13,7 +13,6 @@ impl Deck {
 
     /// Draw some cards and return them as a Vector
     pub fn deal(&mut self, size: usize) -> Option<Vec<Card>> {
-
         if self.inner_deck.len() >= size {
             let mut cards = Vec::<Card>::new();
 
@@ -21,11 +20,9 @@ impl Deck {
                 cards.push(self.inner_deck.pop().unwrap());
             }
             Some(cards)
-
         } else {
             None
         }
-
     }
 
     /// Deletes top card from deck
@@ -43,7 +40,7 @@ impl Deck {
         self.inner_deck.len()
     }
 
-    pub fn new() -> Deck {
+    pub fn default() -> Deck {
         Deck::new_shuffled()
     }
 
@@ -55,7 +52,6 @@ impl Deck {
     /// let mut deck = Deck::new_sorted();
     /// ```
     pub fn new_sorted() -> Deck {
-
         let mut deck = vec![];
 
         // TODO Iterate sorted
@@ -92,5 +88,9 @@ impl Deck {
         Deck {
             inner_deck: cards.to_vec(),
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.inner_deck.is_empty()
     }
 }

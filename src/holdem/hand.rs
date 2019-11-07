@@ -49,8 +49,8 @@ impl Hand {
         let mut pair_iter = pair_groups.iter().rev();
         let mut largest_pair: &Vec<Card>;
 
-        if let Some(pair) = pair_iter.next() {
-            largest_pair = pair;
+        if let Some(pairs) = pair_iter.next() {
+            largest_pair = pairs;
 
             let mut fives: Option<[Card; 5]> = None;
             let mut quads: Option<[Card; 4]> = None;
@@ -58,18 +58,22 @@ impl Hand {
             let mut pair: Option<[Card; 2]> = None;
             let mut high: Option<[Card; 1]> = None;
 
-            macro_rules! to_type {
-                ($from:expr; $to:expr) => <$to>::try_from($from)
+            macro_rules! try_from {
+                ($from:expr; $to:ty) => {$to::try_from($from)}
             }
 
-            for pair in pair_iter {
-                if largest_pair.len() < pair.len() {
-                    largest_pair = pair;
+            for pairs in pair_iter {
+                if largest_pair.len() < pairs.len() {
+                    largest_pair = pairs;
                 }
 
-                match pair.len() {
-                    3 => house.0 = Some(<[Card; 3]>::try_from(pair.as_slice()).unwrap()),
-                    2 => house.1 = Some(<[Card; 2]>::try_from(pair.as_slice()).unwrap()),
+                match pairs.len() {
+                    4 if quads.is_none() => 
+                        quads = Some(try_from!(<[Card; 4]>; pairs).unwrap()),
+                    3 if trips.is_none() => 
+                        trips = Some(<[Card; 3]>::try_from(pairs.as_slice()).unwrap()),
+                    2 if pair.is_none() => 
+                        pair = Some(<[Card; 2]>::try_from(pairs.as_slice()).unwrap()),
                     _ => (),
                 }
             }

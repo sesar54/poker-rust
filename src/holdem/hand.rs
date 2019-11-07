@@ -52,7 +52,15 @@ impl Hand {
         if let Some(pair) = pair_iter.next() {
             largest_pair = pair;
 
-            let mut house: (Option<[Card; 3]>, Option<[Card; 2]>) = (None, None);
+            let mut fives: Option<[Card; 5]> = None;
+            let mut quads: Option<[Card; 4]> = None;
+            let mut trips: Option<[Card; 3]> = None;
+            let mut pair: Option<[Card; 2]> = None;
+            let mut high: Option<[Card; 1]> = None;
+
+            macro_rules! to_type {
+                ($from:expr; $to:expr) => <$to>::try_from($from)
+            }
 
             for pair in pair_iter {
                 if largest_pair.len() < pair.len() {

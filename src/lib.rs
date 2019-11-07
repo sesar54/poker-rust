@@ -1,7 +1,6 @@
 //! A library for poker games
 
-#![feature(drain_filter,exclusive_range_pattern)]
-
+#![feature(drain_filter, exclusive_range_pattern)]
 #![warn(unused_import_braces, unused_qualifications, trivial_casts)]
 #![warn(trivial_numeric_casts, private_in_public, variant_size_differences)]
 #![warn(stable_features, unreachable_pub, non_shorthand_field_patterns)]
@@ -11,17 +10,16 @@
 #![forbid(unsafe_code)]
 
 // Help Modules
-#[macro_use] pub mod macros;
+#[macro_use]
+pub mod macros;
 
 // Basic Modules
 pub mod card;
 pub mod deck;
-
-// Game Modules
-pub mod holdem;
+pub mod hand;
 
 // Prelude
-pub use card::{ Suit::*, Value::*, * };
+pub use card::*;
 pub use deck::*;
-pub use holdem::*;
+pub use hand::*;
 pub use macros::*;

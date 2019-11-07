@@ -9,17 +9,8 @@ macro_rules! card {
 
         Card::from(rand::thread_rng().gen_range(0, 51))
     }};
-    ( $val:expr, $suit:expr ) => {
-        Card {
-            value: $val,
-            suit: $suit,
-        };
-    };
-}
-
-#[macro_export]
-macro_rules! cards {
-    ( $($val:expr, $suit:expr);* ) => {[$(card!($val,$suit),)*]}
+    ($val:expr, $suit:expr) => {Card {value: $val, suit: $suit}};
+    ($($val:expr, $suit:expr);*) => {[$(card!($val,$suit),)*]};
 }
 
 /// TODO

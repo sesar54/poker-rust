@@ -14,7 +14,6 @@ pub enum Suit {
     Spades,
 }
 
-/** enum used as i32 with implicit discriminator so (Ace=0, ... , King=12, Joker=13),  */
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value {
     Ace,

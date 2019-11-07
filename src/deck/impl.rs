@@ -19,6 +19,7 @@ impl Deck {
             for _ in 0..size {
                 cards.push(self.inner_deck.pop().unwrap());
             }
+
             Some(cards)
         } else {
             None
@@ -38,10 +39,6 @@ impl Deck {
     /// Returns the length of deck
     pub fn len(&self) -> usize {
         self.inner_deck.len()
-    }
-
-    pub fn default() -> Deck {
-        Deck::new_shuffled()
     }
 
     /// Constructs a new, full `Deck` of 52 sorted unique cards.
@@ -70,6 +67,7 @@ impl Deck {
     /// ```
     /// # #![allow(unused_mut)]
     /// let mut deck = Deck::new_shuffled();
+    /// println!("{}", deck);
     /// ```
     pub fn new_shuffled() -> Deck {
         let mut deck = Deck::new_sorted();
@@ -77,12 +75,13 @@ impl Deck {
         deck
     }
 
-    /// Constructs a new, custom `Deck`.
+    /// Constructs a new, custom `Deck`, by copying over from slice.
     ///
     /// # Example
     /// ```
     /// # #![allow(unused_mut)]
     /// let mut deck = Deck::new_custom(&card!(Ace,Spades; King, Hearts));
+    /// assert_eq!(deck.draw(), card!(Ace, Spades));
     /// ```
     pub fn new_custom(cards: &[Card]) -> Deck {
         Deck {
@@ -90,7 +89,13 @@ impl Deck {
         }
     }
 
+    /// Returns `true` if the deck contains no cards.
     pub fn is_empty(&self) -> bool {
         self.inner_deck.is_empty()
     }
+
+    // Returns `true` if the deck is sorted.
+    //pub fn is_sorted(&self) -> bool {
+    //    self.inner_deck.is_sorted()
+    //} // Unstable for now.
 }

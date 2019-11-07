@@ -1,5 +1,2 @@
 #[cfg(test)]
-mod card {
-
-
-}
+mod card {}

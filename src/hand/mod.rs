@@ -1,6 +1,6 @@
 use crate::Card;
 
-mod hand;
+mod r#impl;
 mod rank;
 
 /**
@@ -27,21 +27,21 @@ pub struct Rank(RankInner);
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum RankInner {
-    High(Card),
-    Pair(Card, Card),
-    TwoPair((Card, Card), (Card, Card)),
-    Trips(Card, Card, Card),
-    Straight(Card, Card, Card, Card, Card),
-    Flush(Card, Card, Card, Card, Card),
-    House((Card, Card, Card), (Card, Card)),
-    Quads(Card, Card, Card, Card),
-    StraightFlush(Card, Card, Card, Card, Card),
-    Fives(Card, Card, Card, Card, Card),
+    High([Card; 1]),
+    Pair([Card; 2]),
+    TwoPair([Card; 2], [Card; 2]),
+    Trips([Card; 3]),
+    Straight([Card; 5]),
+    Flush([Card; 5]),
+    House([Card; 3], [Card; 2]),
+    Quads([Card; 4]),
+    StraightFlush([Card; 5]),
+    Fives([Card; 5]),
 }
 
 #[derive(Debug)]
 pub enum RankErr {
     Invalid(Rank),
     Unsorted(Rank),
-    Explained(String)
+    Explained(String),
 }

@@ -1,41 +1,21 @@
 use std::fmt;
 
 use crate::card::{Card, Value::Ace, Value::King};
-use crate::holdem::{Rank, RankErr, RankInner};
-
-impl fmt::Display for Rank {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.0 {
-            RankInner::High(..) => write!(f, "High card"),
-            RankInner::Pair(..) => write!(f, "Pair"),
-            RankInner::TwoPair(..) => write!(f, "Two pairs"),
-            RankInner::Trips(..) => write!(f, "Three of a kind"),
-            RankInner::Straight(..) => write!(f, "Straight"),
-            RankInner::Flush(..) => write!(f, "Flush"),
-            RankInner::House(..) => write!(f, "Full house"),
-            RankInner::Quads(..) => write!(f, "Four of a kind"),
-            RankInner::StraightFlush(.., card) => match card.value {
-                Ace => write!(f, "Royal flush"),
-                _ => write!(f, "Straight flush"),
-            },
-            RankInner::Fives(..) => write!(f, "Five of a kind"),
-        }
-    }
-}
+use crate::hand::{Rank, RankErr, RankInner};
 
 type ResultRank = Result<Rank, RankErr>;
 
-#[allow(non_snake_case)]
+#[allow(non_snake_case)] // Do not remove
 impl Rank {
     /// Always Returns one high card.
-    pub fn High(card: Card) -> ResultRank {
+    pub fn High(card: [Card; 1]) -> ResultRank {
         Ok(Rank(RankInner::High(card)))
     }
 
     /// Returns Pair, if both cards share the same value
     /// and suit are ordered.
     pub fn Pair(cards: [Card; 2]) -> ResultRank {
-        let rank = Rank(RankInner::Pair(cards[0], cards[1]));
+        let rank = Rank(RankInner::Pair(cards));
 
         if cards[0].value != cards[1].value {
             Err(RankErr::Invalid(rank))
@@ -49,10 +29,7 @@ impl Rank {
     /// Returns Two Pairs, if both pairs is sufficient pairs and
     /// pair.0 is the least significant pair.Ace
     pub fn TwoPair(pair0: [Card; 2], pair1: [Card; 2]) -> ResultRank {
-        let rank = Rank(RankInner::TwoPair(
-            (pair0[0], pair0[1]),
-            (pair1[0], pair1[1]),
-        ));
+        let rank = Rank(RankInner::TwoPair(pair0, pair1));
 
         if let Err(E) = Rank::Pair(pair0) {
             Err(RankErr::Explained(format!(
@@ -73,7 +50,7 @@ impl Rank {
 
     ///
     pub fn Trips(cards: [Card; 3]) -> ResultRank {
-        let rank = Rank(RankInner::Trips(cards[0], cards[1], cards[2]));
+        let rank = Rank(RankInner::Trips(cards));
 
         if cards[0].value != cards[1].value || cards[1].value != cards[2].value {
             Err(RankErr::Invalid(rank))
@@ -86,9 +63,7 @@ impl Rank {
 
     ///
     pub fn Straight(cards: [Card; 5]) -> ResultRank {
-        let rank = Rank(RankInner::Straight(
-            cards[0], cards[1], cards[2], cards[3], cards[4],
-        ));
+        let rank = Rank(RankInner::Straight(cards));
 
         let values: &[Card] = if cards[3].value == King {
             if cards[4].value != Ace {
@@ -118,7 +93,7 @@ impl Rank {
     ///
     pub fn Flush(cards: [Card; 5]) -> ResultRank {
         let rank = Rank(RankInner::Flush(
-            cards[0], cards[1], cards[2], cards[3], cards[4],
+            cards
         ));
 
         // See if all suits match
@@ -140,8 +115,8 @@ impl Rank {
 
     pub fn House(trips: [Card; 3], pair: [Card; 2]) -> ResultRank {
         let rank = Rank(RankInner::House(
-            (trips[0], trips[1], trips[2]),
-            (pair[0], pair[1]),
+            trips,
+            pair,
         ));
 
         // See if both Trips and Pair is ok and return rank
@@ -162,7 +137,7 @@ impl Rank {
     }
 
     pub fn Quads(cards: [Card; 4]) -> ResultRank {
-        let rank = Rank(RankInner::Quads(cards[0], cards[1], cards[2], cards[3]));
+        let rank = Rank(RankInner::Quads(cards));
         // See if all values match
         for card in &cards {
             if cards[0].value != card.value {
@@ -181,7 +156,7 @@ impl Rank {
     }
 
     pub fn StraightFlush(sf: [Card; 5]) -> ResultRank {
-        let rank = Rank(RankInner::StraightFlush(sf[0], sf[1], sf[2], sf[3], sf[4]));
+        let rank = Rank(RankInner::StraightFlush(sf));
 
         if let Err(E) = Rank::Straight(sf) {
             Err(RankErr::Explained(format!(
@@ -207,7 +182,7 @@ impl Rank {
 
     pub fn Fives(cards: [Card; 5]) -> ResultRank {
         let rank = Rank(RankInner::Fives(
-            cards[0], cards[1], cards[2], cards[3], cards[4],
+            cards
         ));
 
         // See if all values match
@@ -225,5 +200,25 @@ impl Rank {
         }
 
         Ok(rank)
+    }
+}
+
+impl fmt::Display for Rank {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.0 {
+            RankInner::High(..) => write!(f, "High card"),
+            RankInner::Pair(..) => write!(f, "Pair"),
+            RankInner::TwoPair(..) => write!(f, "Two pairs"),
+            RankInner::Trips(..) => write!(f, "Three of a kind"),
+            RankInner::Straight(..) => write!(f, "Straight"),
+            RankInner::Flush(..) => write!(f, "Flush"),
+            RankInner::House(..) => write!(f, "Full house"),
+            RankInner::Quads(..) => write!(f, "Four of a kind"),
+            RankInner::StraightFlush(cards) => match cards[4].value {
+                Ace => write!(f, "Royal flush"),
+                _ => write!(f, "Straight flush"),
+            },
+            RankInner::Fives(..) => write!(f, "Five of a kind"),
+        }
     }
 }

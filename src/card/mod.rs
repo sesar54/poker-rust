@@ -16,6 +16,7 @@ pub enum Suit {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value {
+    Wild,
     Ace,
     Two,
     Three,
@@ -28,6 +29,5 @@ pub enum Value {
     Ten,
     Jack,
     Queen,
-    King,
-    Joker,
+    King,   
 }

@@ -1,6 +1,11 @@
 use crate::{Card, Suit, Value};
 use std::cmp::Ordering::*;
+use std::convert::TryFrom;
 use std::fmt;
+
+// -------------------------------------------------------------------------- //
+// Impl Card                                                                  //
+// -------------------------------------------------------------------------- //
 
 impl Card {
     pub fn new(value: Value, suit: Suit) -> Card {
@@ -38,19 +43,28 @@ impl From<u8> for Card {
     }
 }
 
+/// TODO
 impl Into<u8> for Card {
     fn into(self) -> u8 {
         ((self.value as u8) << 4) + (self.suit as u8)
     }
 }
 
+impl TryFrom<[char; 2]> for Card {
+    type Error = String;
+
+    fn try_from(c: [char; 2]) -> Result<Self, Self::Error> {
+        Ok(Card::new(Value::try_from(c[0])?, Suit::try_from(c[1])?))
+    }
+}
+
 // -------------------------------------------------------------------------- //
-// Impl Value and Suit enums                                                  //
+// Impl Suit enums                                                            //
 // -------------------------------------------------------------------------- //
 
 impl From<u8> for Suit {
     fn from(u: u8) -> Suit {
-        match u % 4 {
+        match u & 0x03 {
             0 => Suit::Clubs,
             1 => Suit::Diamonds,
             2 => Suit::Hearts,
@@ -60,34 +74,100 @@ impl From<u8> for Suit {
     }
 }
 
+impl Into<u8> for Suit {
+    fn into(self) -> u8 {
+        match self {
+            Suit::Clubs => 0,
+            Suit::Diamonds => 1,
+            Suit::Hearts => 2,
+            Suit::Spades => 3,
+        }
+    }
+}
+
+impl TryFrom<char> for Suit {
+    type Error = String;
+
+    fn try_from(c: char) -> Result<Self, Self::Error> {
+        match c.to_ascii_uppercase() {
+            'C' => Ok(Suit::Clubs),
+            'D' => Ok(Suit::Diamonds),
+            'H' => Ok(Suit::Hearts),
+            'S' => Ok(Suit::Spades),
+            _ => Err(format!("Card::Suit can't be converted from char '{}'.", c)),
+        }
+    }
+}
+
+impl Into<char> for Suit {
+    fn into(self) -> char {
+        match self {
+            Suit::Clubs => 'C',
+            Suit::Diamonds => 'D',
+            Suit::Hearts => 'H',
+            Suit::Spades => 'S',
+        }
+    }
+}
+
+// TODO
 impl fmt::UpperHex for Suit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:X}", *self as u8)
     }
 }
 
+// -------------------------------------------------------------------------- //
+// Impl Value enums                                                           //
+// -------------------------------------------------------------------------- //
+
 impl From<u8> for Value {
     fn from(u: u8) -> Value {
-        if u > 52 {
-            Value::Joker
-        } else {
-            match u % 13 {
-                0 => Value::Ace,
-                1 => Value::Two,
-                2 => Value::Three,
-                3 => Value::Four,
-                4 => Value::Five,
-                5 => Value::Six,
-                6 => Value::Seven,
-                7 => Value::Eight,
-                8 => Value::Nine,
-                9 => Value::Ten,
-                10 => Value::Jack,
-                11 => Value::Queen,
-                12 => Value::King,
-                _ => unreachable!(),
-            }
+        match u >> 4 {
+            0 => Value::Wild,
+            1 => Value::Ace,
+            2 => Value::Two,
+            3 => Value::Three,
+            4 => Value::Four,
+            5 => Value::Five,
+            6 => Value::Six,
+            7 => Value::Seven,
+            8 => Value::Eight,
+            9 => Value::Nine,
+            10 => Value::Ten,
+            11 => Value::Jack,
+            12 => Value::Queen,
+            13 => Value::King,
+            _ => unreachable!(),
         }
+    }
+}
+
+impl Into<u8> for Value {
+    fn into(self) -> u8 {
+        (self as u8) << 4
+    }
+}
+
+impl TryFrom<char> for Value {
+    type Error = String;
+
+    fn try_from(c: char) -> Result<Self, Self::Error> {
+        use rand::Rng;
+
+        let u: u8 = match c.to_ascii_uppercase() {
+            'W' => 0,
+            'A' => 1,
+            '1' => 10,
+            'J' => 11,
+            'Q' => 12,
+            'K' => 13,
+            '.' => rand::thread_rng().gen_range(0, 13),
+            c if c.is_digit(10) && c != '0' => c.to_digit(9).unwrap() as u8 - 1,
+            c => return Err(format!("Card::Value can't be converted from char '{}'.", c)),
+        };
+
+        Ok(Value::from(u))
     }
 }
 

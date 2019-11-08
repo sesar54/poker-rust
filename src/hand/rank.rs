@@ -92,9 +92,7 @@ impl Rank {
 
     ///
     pub fn Flush(cards: [Card; 5]) -> ResultRank {
-        let rank = Rank(RankInner::Flush(
-            cards
-        ));
+        let rank = Rank(RankInner::Flush(cards));
 
         // See if all suits match
         for card in &cards {
@@ -114,10 +112,7 @@ impl Rank {
     }
 
     pub fn House(trips: [Card; 3], pair: [Card; 2]) -> ResultRank {
-        let rank = Rank(RankInner::House(
-            trips,
-            pair,
-        ));
+        let rank = Rank(RankInner::House(trips, pair));
 
         // See if both Trips and Pair is ok and return rank
         // Else return an explained error
@@ -181,9 +176,7 @@ impl Rank {
     }
 
     pub fn Fives(cards: [Card; 5]) -> ResultRank {
-        let rank = Rank(RankInner::Fives(
-            cards
-        ));
+        let rank = Rank(RankInner::Fives(cards));
 
         // See if all values match
         for card in &cards {

@@ -1,9 +1,9 @@
-extern crate dead_mans_hand as lib;
+extern crate dead_mans_hand as poker;
 
 #[cfg(test)]
 mod deck {
 
-    use lib::*;
+    use poker::*;
     use Suit::*;
     use Value::*;
 

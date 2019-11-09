@@ -3,38 +3,55 @@
 /// > The Ace of Spades
 #[macro_export]
 macro_rules! card {
-    ($rand:expr) => {card!(value!($rand), suit!($rand))};)
-    ($val:expr, $suit:expr) => {Card {value: $val, suit: $suit}};
-    ($($val:expr, $suit:expr);*) => {[$(card!($val,$suit),)*]};
+    ($rand:expr) => {
+        card!(values!($rand)[0], suits!($rand)[0])
+    };
+    ($value:expr, $suit:expr) => {
+        crate::card::Card::new($value, $suit)
+    };
+    ($($value:expr, $suit:expr); +) => {
+        [
+            $(
+                crate::card::Card::new($value, $suit),
+            )*
+        ]
+    };
 }
 
-//TODO REDO ALL MACROS
 #[macro_export]
-macro_rules! suit {
-    () => {{use Suit::*; [Clubs, Diamonds, Hearts, Spades]}};
-    ($rand:expr) => {suit!()[$rand]};
-    ($rand:expr, $range:expr) => {{
-        let mut suits = suit!();
+macro_rules! suits {
+    () => {{
+        use crate::card::Suit::*;
+        [Clubs, Diamonds, Hearts, Spades]
+    }};
+    ($rand:expr) => {{
+        let mut suits = suits!();
         suits.shuffle($rand);
-        suits[..$range]
+        suits
     }};
 }
 
 #[macro_export]
-macro_rules! value {
+macro_rules! values {
     () => {{
-        use Value::*;
+        use crate::card::Value::*;
         [
             Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King,
         ]
     }};
-    ($rand:expr) => {value!()[$rand]};
-    ($rand:expr, $range:expr) => {{
-        let mut values = value!();
-        values.shuffle($ramd);
-        values[..$range]
+    ($rand:expr) => {{
+        let mut values = values!();
+        values.shuffle($rand);
+        values
     }};
+}
 
+///
+///
+//TODO REDO ALL MACROS
+#[macro_export]
+macro_rules! deck {
+    ($rand:expr) => {{}};
 }
 
 /// TODO

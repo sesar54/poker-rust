@@ -1,4 +1,6 @@
-use crate::{Card, Suit, Value};
+use super::*;
+
+use std::char;
 use std::cmp::Ordering::*;
 use std::convert::TryFrom;
 use std::fmt;
@@ -8,6 +10,15 @@ use std::fmt;
 // -------------------------------------------------------------------------- //
 
 impl Card {
+    /// # Example
+    /// ```
+    /// //extern crate dead_mans_hand as poker;
+    /// //use poker::*;
+    /// use crate::*;
+    /// use Value::*;
+    /// use Suit::*;
+    /// println!("{}", Card::new(Value::King, Suit::Hearts));
+    /// ```
     pub fn new(value: Value, suit: Suit) -> Card {
         Card { value, suit }
     }
@@ -27,10 +38,7 @@ impl Card {
     }
 }
 
-/// ```
-/// let card = card!(Ace, Spades);
-/// println!("{}", card)
-/// ```
+
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?} of {:?}", self.value, self.suit)
@@ -121,6 +129,28 @@ impl fmt::UpperHex for Suit {
 // Impl Value enums                                                           //
 // -------------------------------------------------------------------------- //
 
+impl Value {
+
+    /// # Examples
+    /// ```rust
+    /// use crate::*;
+    /// use Value::*;
+    ///
+    /// let val = Wild;
+    /// assert_eq(val.next(1), Wild);
+    ///
+    /// let val = Ace;
+    /// assert_eq(val.next(1), Ace);
+    /// ```
+    pub fn next(self, u: i32) -> Self {
+        if self == Value::Wild {
+            self
+        } else {
+            Value::from((((((self as u8 >> 4) as i32 - 1 + u) % 4) + 1) << 4) as u8)
+        }
+    }
+}
+
 impl From<u8> for Value {
     fn from(u: u8) -> Value {
         match u >> 4 {
@@ -168,6 +198,20 @@ impl TryFrom<char> for Value {
         };
 
         Ok(Value::from(u))
+    }
+}
+
+impl Into<char> for Value {
+    fn into(self) -> char {
+        match self {
+            Value::Wild => 'W',
+            Value::Ace => 'A',
+            Value::Ten => '1',
+            Value::Jack => 'J',
+            Value::Queen => 'Q',
+            Value::King => 'K',
+            v => char::from_u32(v as u32).expect("TODO"),
+        }
     }
 }
 

@@ -1,18 +1,19 @@
+use crate::card::{Card, Value};
+use crate::{card, values, suits};
+
 extern crate rand;
 use rand::seq::SliceRandom;
 use rand::Rng;
 
-use crate::*;
-
 pub fn high_card() -> [Card; 1] {
-    [card!()]
+    [card!(&mut rand::thread_rng())]
 }
 
 pub fn pair_cards() -> [Card; 2] {
     let mut rng = rand::thread_rng();
 
     let value = Value::from(rng.gen_range(0, 12));
-    let mut suits = suits!(&mut rng);
+    let suits = suits!(&mut rng);
 
     card!(value, suits[0]; value, suits[1])
 }
@@ -30,8 +31,8 @@ pub fn two_pairs_cards() -> ([Card; 2], [Card; 2]) {
 pub fn trips_cards() -> [Card; 3] {
     let mut rng = rand::thread_rng();
 
-    let value = Value::from(rng.gen_range(0, 12));
-    let suits = suits!(&mut rng, 3);
+    let value = values!(&mut rng)[0];
+    let suits = suits!(&mut rng);
 
     card!(
         value, suits[0];
@@ -43,18 +44,15 @@ pub fn trips_cards() -> [Card; 3] {
 pub fn straight_cards() -> [Card; 5] {
     let mut rng = rand::thread_rng();
 
-    let values = values!();
+    let value = values!()[rng.gen_range(0, 9)];
 
-    let value_start = rng.gen_range(0, 9);
-    let suits = suits!(&mut rng, 5);
-
-    if value_start == 9 {
-        format!
-    
-    }
-
-
-    [card!(); 5]
+    card!(
+        value,         suits!(&mut rng)[0];
+        value.next(1), suits!(&mut rng)[0];
+        value.next(2), suits!(&mut rng)[0];
+        value.next(3), suits!(&mut rng)[0];
+        value.next(4), suits!(&mut rng)[0]
+    )
 
 }
 
@@ -66,7 +64,7 @@ pub fn quad_cards() -> [Card; 4] {
     let mut rng = rand::thread_rng();
 
     let value = Value::from(rng.gen_range(0, 12));
-    let mut suits = suits!(&mut rng);
+    let suits = suits!(&mut rng);
 
     card!(
         value, suits[0];

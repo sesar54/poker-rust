@@ -1,8 +1,9 @@
-use crate::Card;
+use crate::card::Card;
 
-mod extra;
 mod r#impl;
 mod rank;
+
+pub mod extra;
 
 /**
  * A hand consist of all cards "in hand or private cards" and

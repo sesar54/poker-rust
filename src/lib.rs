@@ -1,6 +1,4 @@
 //! A library for poker games
-
-#![feature(drain_filter, exclusive_range_pattern)]
 #![warn(unused_import_braces, unused_qualifications, trivial_casts)]
 #![warn(trivial_numeric_casts, private_in_public, variant_size_differences)]
 #![warn(stable_features, unreachable_pub, non_shorthand_field_patterns)]
@@ -18,8 +16,4 @@ pub mod card;
 pub mod deck;
 pub mod hand;
 
-// Prelude
-pub use card::*;
-pub use deck::*;
-pub use hand::*;
-pub use macros::*;
+pub mod prelude;

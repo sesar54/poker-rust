@@ -1,7 +1,7 @@
-use std::fmt;
-
 use crate::card::{Card, Value::Ace, Value::King};
-use crate::hand::{Rank, RankErr, RankInner};
+use super::{Rank, RankErr, RankInner};
+
+use std::fmt;
 
 type ResultRank = Result<Rank, RankErr>;
 

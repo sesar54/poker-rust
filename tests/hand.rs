@@ -1,18 +1,19 @@
-extern crate dead_mans_hand as poker;
-extern crate rand;
-
 #[cfg(test)]
 mod hand {
 
-    use poker::*;
-    use rand::Rng;
+    extern crate dead_mans_hand as poker;
+    use poker::prelude::*;
+
     use std::thread;
 
+    extern crate rand;
+    use rand::Rng;
+
     #[test]
-    fn test() {
+    fn iterate_over_hands() {
         let mut threads = vec![];
 
-        for _ in 0..6 {
+        for _ in 0..1 {
             threads.push(thread::spawn(move || {
                 for _ in 0..1_000_000 {
                     Hand::new(

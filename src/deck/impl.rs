@@ -1,10 +1,10 @@
+use super::Deck;
+use crate::card::Card;
+use crate::{card, values, suits};
+
 extern crate rand;
-use rand::seq::SliceRandom;
+use rand::prelude::SliceRandom;
 
-use crate::deck::Deck;
-use crate::*;
-
-#[allow(dead_code)]
 impl Deck {
     /// Draw the top card from the deck, or return None if empty
     pub fn draw(&mut self) -> Option<Card> {
@@ -45,15 +45,16 @@ impl Deck {
     ///
     /// # Example
     /// ```
-    /// # #![allow(unused_mut)]
     /// let mut deck = Deck::new_sorted();
+    /// assert!(deck.is_sorted());
     /// ```
     pub fn new_sorted() -> Deck {
         let mut deck = vec![];
 
-        // TODO Iterate sorted
-        for i in 0..=52 {
-            deck.push(Card::from(i))
+        for val in &values!() {
+            for suit in &suits!() {
+                deck.push(card!(*val, *suit));
+            }
         }
 
         deck.sort();

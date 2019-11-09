@@ -1,11 +1,10 @@
-extern crate log;
-
-use crate::*;
-use hand::*;
+use crate::card::{Card, Value};
+use super::{Hand, Rank, RankErr};
 
 use std::convert::TryFrom;
 use std::fmt;
 
+extern crate log;
 use log::error;
 
 impl Hand {

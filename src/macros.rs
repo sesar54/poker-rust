@@ -7,12 +7,12 @@ macro_rules! card {
         card!(values!($rand)[0], suits!($rand)[0])
     };
     ($value:expr, $suit:expr) => {
-        crate::card::Card::new($value, $suit)
+        $crate::card::Card::new($value, $suit)
     };
     ($($value:expr, $suit:expr); +) => {
         [
             $(
-                crate::card::Card::new($value, $suit),
+                 $crate::card::Card::new($value, $suit),
             )*
         ]
     };
@@ -21,7 +21,7 @@ macro_rules! card {
 #[macro_export]
 macro_rules! suits {
     () => {{
-        use crate::card::Suit::*;
+        use $crate::card::Suit::*;
         [Clubs, Diamonds, Hearts, Spades]
     }};
     ($rand:expr) => {{
@@ -34,7 +34,7 @@ macro_rules! suits {
 #[macro_export]
 macro_rules! values {
     () => {{
-        use crate::card::Value::*;
+        use $crate::card::Value::*;
         [
             Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King,
         ]

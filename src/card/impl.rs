@@ -149,7 +149,7 @@ impl fmt::UpperHex for Suit {
 // Impl Value enums                                                           //
 // -------------------------------------------------------------------------- //
 
-impl Value {
+impl Circular<i32> for Value {
 
     /// # Examples
     /// ```rust
@@ -168,11 +168,11 @@ impl Value {
     /// assert_eq!(val.step(13), Ace);
     /// assert_eq!(val.step(-13), Ace);
     /// ```
-    pub fn step(self, u: i32) -> Self {
+    fn step(self, i: i32) -> Self {
         if self == Value::Wild {
             self
         } else {
-            Value::from((((self as i32 + u - 1) % 13) + 1) as u8)
+            Value::from((((self as i32 + i - 1) % 13) + 1) as u8)
         }
     }
 }

@@ -29,5 +29,9 @@ pub enum Value {
     Ten,
     Jack,
     Queen,
-    King,   
+    King,
+}
+
+trait Circular<T> {
+    fn step(self, t: T) -> Self;
 }

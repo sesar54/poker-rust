@@ -11,12 +11,8 @@ use std::fmt;
 
 impl Card {
     /// # Example
-    /// ```
-    /// //extern crate dead_mans_hand as poker;
-    /// //use poker::*;
-    /// use crate::*;
-    /// use Value::*;
-    /// use Suit::*;
+    /// ```rust
+    /// # use ace_of_spades::card::*;
     /// println!("{}", Card::new(Value::King, Suit::Hearts));
     /// ```
     pub fn new(value: Value, suit: Suit) -> Card {
@@ -69,6 +65,30 @@ impl TryFrom<[char; 2]> for Card {
 // -------------------------------------------------------------------------- //
 // Impl Suit enums                                                            //
 // -------------------------------------------------------------------------- //
+
+impl Suit {
+
+    /// # Examples
+    /// ```rust
+    /// use ace_of_spades::card::Value::*;
+    ///
+    /// let val = Wild;
+    /// assert_eq!(val.step(1), Wild);
+    /// for i in 0..101 {
+    ///     assert_eq!(val.step(i), Wild);
+    /// }
+    ///
+    /// let val = Ace;
+    /// assert_eq!(val.step(0), Ace);
+    /// assert_eq!(val.step(1), Two);
+    /// assert_eq!(val.step(9), Ten);
+    /// assert_eq!(val.step(13), Ace);
+    /// assert_eq!(val.step(-13), Ace);
+    /// ```
+    pub fn step(self, u: i32) -> Self {
+        Suit::from(((self as i32 + u) % 4) as u8)
+    }
+}
 
 impl From<u8> for Suit {
     fn from(u: u8) -> Suit {
@@ -133,27 +153,33 @@ impl Value {
 
     /// # Examples
     /// ```rust
-    /// use crate::*;
-    /// use Value::*;
+    /// use ace_of_spades::card::Value::*;
     ///
     /// let val = Wild;
-    /// assert_eq(val.next(1), Wild);
+    /// assert_eq!(val.step(1), Wild);
+    /// for i in 0..101 {
+    ///     assert_eq!(val.step(i), Wild);
+    /// }
     ///
     /// let val = Ace;
-    /// assert_eq(val.next(1), Ace);
+    /// assert_eq!(val.step(0), Ace);
+    /// assert_eq!(val.step(1), Two);
+    /// assert_eq!(val.step(9), Ten);
+    /// assert_eq!(val.step(13), Ace);
+    /// assert_eq!(val.step(-13), Ace);
     /// ```
-    pub fn next(self, u: i32) -> Self {
+    pub fn step(self, u: i32) -> Self {
         if self == Value::Wild {
             self
         } else {
-            Value::from((((((self as u8 >> 4) as i32 - 1 + u) % 4) + 1) << 4) as u8)
+            Value::from((((self as i32 + u - 1) % 13) + 1) as u8)
         }
     }
 }
 
 impl From<u8> for Value {
     fn from(u: u8) -> Value {
-        match u >> 4 {
+        match u {
             0 => Value::Wild,
             1 => Value::Ace,
             2 => Value::Two,
@@ -168,14 +194,8 @@ impl From<u8> for Value {
             11 => Value::Jack,
             12 => Value::Queen,
             13 => Value::King,
-            _ => unreachable!(),
+            _ => panic!(),
         }
-    }
-}
-
-impl Into<u8> for Value {
-    fn into(self) -> u8 {
-        (self as u8) << 4
     }
 }
 

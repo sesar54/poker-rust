@@ -45,8 +45,10 @@ impl Deck {
     ///
     /// # Example
     /// ```
+    /// # use ace_of_spades::prelude::*;
+    /// #
     /// let mut deck = Deck::new_sorted();
-    /// assert!(deck.is_sorted());
+    /// //assert!(deck.is_sorted());
     /// ```
     pub fn new_sorted() -> Deck {
         let mut deck = vec![];
@@ -66,9 +68,9 @@ impl Deck {
     ///
     /// # Example
     /// ```
-    /// # #![allow(unused_mut)]
+    /// # use ace_of_spades::prelude::*;
     /// let mut deck = Deck::new_shuffled();
-    /// println!("{}", deck);
+    /// println!("{:?}", deck.draw());
     /// ```
     pub fn new_shuffled() -> Deck {
         let mut deck = Deck::new_sorted();
@@ -80,9 +82,11 @@ impl Deck {
     ///
     /// # Example
     /// ```
-    /// # #![allow(unused_mut)]
-    /// let mut deck = Deck::new_custom(&card!(Ace,Spades; King, Hearts));
-    /// assert_eq!(deck.draw(), card!(Ace, Spades));
+    /// # use ace_of_spades::prelude::*;
+    /// # use Value::*;
+    /// # use Suit::*;
+    /// let mut deck = Deck::new_custom(&card!(King, Hearts; Ace, Spades));
+    /// assert_eq!(deck.draw().unwrap(), card!(Ace, Spades));
     /// ```
     pub fn new_custom(cards: &[Card]) -> Deck {
         Deck {

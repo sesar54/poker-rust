@@ -4,6 +4,7 @@ mod r#impl;
 mod rank;
 
 pub mod extra;
+pub use extra::*;
 
 /**
  * A hand consist of all cards "in hand or private cards" and

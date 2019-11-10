@@ -4,10 +4,6 @@ version = "0.0.1"
 authors = ["Nils Eriksson <nils.edvin.eriksson@outlook.com>"]
 edition = "2018"
 
-[lib]
-name = "dead_mans_hand"
-path = "src/lib.rs"
-
 [dependencies]
 rand = "0.7"
 log = "0.4"

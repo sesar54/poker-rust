@@ -1,2 +1,9 @@
 #[cfg(test)]
-mod card {}
+mod card {
+
+    #[test]
+    fn card_test() {
+
+
+    }
+}

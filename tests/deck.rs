@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate dead_mans_hand as poker;
+extern crate ace_of_spades as poker;
 
 #[cfg(test)]
 mod deck {
@@ -13,5 +13,6 @@ mod deck {
         let cards = card!(Ace, Spades; King, Hearts);
         let deck = Deck::new_custom(&cards);
         println!("{:?}", deck);
+
     }
 }

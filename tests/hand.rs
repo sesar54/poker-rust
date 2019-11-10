@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod hand {
 
-    extern crate dead_mans_hand as poker;
+    extern crate ace_of_spades as poker;
     use poker::prelude::*;
 
     use std::thread;
@@ -10,6 +10,7 @@ mod hand {
     use rand::Rng;
 
     #[test]
+    #[ignore]
     fn iterate_over_hands() {
         let mut threads = vec![];
 
@@ -28,5 +29,10 @@ mod hand {
         for thread in threads {
             thread.join().expect("Thread crashed");
         }
+    }
+
+    #[test]
+    fn straight_card() {
+        hand::extra::straight_cards();
     }
 }

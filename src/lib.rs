@@ -12,8 +12,11 @@
 pub mod macros;
 
 // Basic Modules
+//pub mod bot;
 pub mod card;
 pub mod deck;
 pub mod hand;
+pub mod player;
+pub mod table;
 
 pub mod prelude;

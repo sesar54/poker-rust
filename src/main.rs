@@ -1,3 +1,9 @@
+
 pub fn main() {
-    println!("Test");
+/*
+    let table = Table::new(4);
+    let player = Player::new();
+
+    table.join(player);
+*/
 }

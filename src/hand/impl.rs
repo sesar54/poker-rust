@@ -1,5 +1,5 @@
 use super::{Hand, Rank, RankErr};
-use crate::card::{self, Card};
+use crate::card::{self, Card, Circular};
 
 use std::convert::TryFrom;
 use std::fmt;
@@ -10,7 +10,6 @@ use log::error;
 impl Hand {
     /// Creating a new hand will cause all given cards to be automatically
     /// evaluated into a rank
-    /// TODO
     pub fn new(cards: Vec<Card>) -> Hand {
         match Hand::ranking(&cards) {
             Ok(rank) => Hand { cards, rank },
@@ -230,7 +229,7 @@ impl Hand {
 
         // Iterate over rest of cards
         for card in iter {
-            if card.rank as u8 == prev_rank as u8 + 1 {
+            if card.rank == prev_rank.step(1) {
                 temp_vec.push(card);
             // Drop temp_vec into straight_groupings and start a new one
             } else {
@@ -291,7 +290,10 @@ impl Hand {
         }
     }
 
-    //pub fn update(&self, cards: Vec<Card>) {}
+    pub fn take(&mut self, mut cards: Vec<Card>) {
+        self.cards.append(&mut cards);
+    }
+
 }
 
 impl fmt::Display for Hand {

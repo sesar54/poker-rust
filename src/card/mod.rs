@@ -10,12 +10,14 @@ pub struct Card {
 }
 
 /// Enum used by `card::Card`.
-/// Uses it's implicit discriminator which ranges from 0 to 3.
-/// This gives:
-/// * Clubs the value of 0.
-/// * Diamonds the value of 1.
-/// * Hearts the value of 2.
-/// * Spades the value of 3.
+/// It can be converted from and to both u8 and char as such:
+/// 
+/// | enum     | u8 | char |
+/// | -------- | -- | ---- |
+/// | Clubs    | 0  | W    |
+/// | Diamonds | 1  | A    |
+/// | Hearts   | 2  | 2    |
+/// | Spades   | 3  | 3    |
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Suit {
     Clubs,
@@ -25,12 +27,24 @@ pub enum Suit {
 }
 
 /// Enum used by `card::Card`.
-/// Uses it's implicit discriminator which ranges from 0 to 13
-/// This gives: 
-/// * Wild (as the joker) the value of 0. 
-/// * Ace the value of 1. 
-/// * Ten the value of 10.
-/// * King the value of 13.
+/// It can be converted from and to both u8 and char as such:
+/// 
+/// | enum  | u8 | char |
+/// | ----- | -- | ---- |
+/// | Wild  | 0  | W    |
+/// | Ace   | 1  | A    |
+/// | Two   | 2  | 2    |
+/// | Three | 3  | 3    |
+/// | Four  | 4  | 4    |
+/// | Five  | 5  | 5    |
+/// | Six   | 6  | 6    |
+/// | Seven | 7  | 7    |
+/// | Eight | 8  | 8    |
+/// | Nine  | 9  | 9    |
+/// | Ten   | 10 | 1    |
+/// | Jack  | 11 | J    |
+/// | Queen | 12 | Q    |
+/// | King  | 13 | K    |
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
     Wild,

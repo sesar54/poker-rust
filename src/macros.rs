@@ -4,7 +4,7 @@
 #[macro_export]
 macro_rules! card {
     ($rand:expr) => {
-        card!(values!($rand)[0], suits!($rand)[0])
+        card!(ranks!($rand)[0], suits!($rand)[0])
     };
     ($value:expr, $suit:expr) => {
         $crate::card::Card::new($value, $suit)
@@ -32,17 +32,17 @@ macro_rules! suits {
 }
 
 #[macro_export]
-macro_rules! values {
+macro_rules! ranks {
     () => {{
-        use $crate::card::Value::*;
+        use $crate::card::Rank::*;
         [
             Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King,
         ]
     }};
     ($rand:expr) => {{
-        let mut values = values!();
-        values.shuffle($rand);
-        values
+        let mut ranks = ranks!();
+        ranks.shuffle($rand);
+        ranks
     }};
 }
 

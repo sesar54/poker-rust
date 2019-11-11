@@ -1,6 +1,6 @@
 use super::Deck;
 use crate::card::Card;
-use crate::{card, values, suits};
+use crate::{card, ranks, suits};
 
 extern crate rand;
 use rand::prelude::SliceRandom;
@@ -53,9 +53,9 @@ impl Deck {
     pub fn new_sorted() -> Deck {
         let mut deck = vec![];
 
-        for val in &values!() {
+        for rank in &ranks!() {
             for suit in &suits!() {
-                deck.push(card!(*val, *suit));
+                deck.push(card!(*rank, *suit));
             }
         }
 
@@ -83,8 +83,7 @@ impl Deck {
     /// # Example
     /// ```
     /// # use ace_of_spades::prelude::*;
-    /// # use Value::*;
-    /// # use Suit::*;
+    /// # use card::face::*;
     /// let mut deck = Deck::new_custom(&card!(King, Hearts; Ace, Spades));
     /// assert_eq!(deck.draw().unwrap(), card!(Ace, Spades));
     /// ```

@@ -1,4 +1,4 @@
-use super::*;
+use super::face::*;
 
 use std::char;
 use std::cmp::Ordering::*;
@@ -10,55 +10,122 @@ use std::fmt;
 // -------------------------------------------------------------------------- //
 
 impl Card {
+    /// Constructs a new `Card`.
+    ///
     /// # Example
     /// ```rust
-    /// # use ace_of_spades::card::*;
-    /// println!("{}", Card::new(Value::King, Suit::Hearts));
+    /// # use ace_of_spades::card::face::*;
+    /// let card = Card::new(Rank::King, Suit::Hearts);
     /// ```
-    pub fn new(value: Value, suit: Suit) -> Card {
-        Card { value, suit }
+    pub fn new(rank: Rank, suit: Suit) -> Card {
+        Card { rank, suit }
     }
 
     pub fn cmp_suit_first(self, other: Self) -> std::cmp::Ordering {
         match self.suit.cmp(&other.suit) {
-            Equal => self.value.cmp(&other.value),
+            Equal => self.rank.cmp(&other.rank),
             ord => ord,
         }
     }
 
-    pub fn cmp_value_first(self, other: Self) -> std::cmp::Ordering {
-        match self.value.cmp(&other.value) {
+    pub fn cmp_rank_first(self, other: Self) -> std::cmp::Ordering {
+        match self.rank.cmp(&other.rank) {
             Equal => self.suit.cmp(&other.suit),
             ord => ord,
         }
     }
 }
 
-
 impl fmt::Display for Card {
+    /// Formats `Card` into a human readable string.
+    /// # Example
+    /// ```
+    /// # use ace_of_spades::{*, card::face::*};
+    /// assert_eq!(format!("{}", card!(Ace, Spades)), "Ace of Spades");
+    /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?} of {:?}", self.value, self.suit)
+        write!(f, "{:?} of {:?}", self.rank, self.suit)
     }
 }
 
-impl From<u8> for Card {
-    fn from(u: u8) -> Card {
-        Card::new(Value::from(u), Suit::from(u))
+impl fmt::Debug for Card {
+    /// Formats `Card` into 2 characters.
+    /// First character depicts the cards `Rank`.
+    /// Second character depicts the cards `Suit`.
+    /// # Example
+    /// ```
+    /// # use ace_of_spades::{*, card::face::*};
+    /// assert_eq!(format!("{:?}", card!(King, Diamonds)), "KD");
+    /// ```
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let chars: [char; 2] = [self.rank.into(), self.suit.into()];
+        write!(f, "{}{}", chars[0], chars[1])
     }
 }
 
-/// TODO
 impl Into<u8> for Card {
+    /// Converts `Card` into `u8`.
+    /// `Rank` gets inscribed into the first 4 bits.
+    /// `Suit` gets inscribed into the last 4 bits.
+    /// # Example
+    /// ```
+    /// # use ace_of_spades::card::face::*;
+    /// let u: u8 = Card::new(Ace, Spades).into();
+    /// assert_eq!(u, 0x13);
+    /// ```
     fn into(self) -> u8 {
-        ((self.value as u8) << 4) + (self.suit as u8)
+        ((self.rank as u8) << 4) + (self.suit as u8)
+    }
+}
+
+impl TryFrom<u8> for Card {
+    type Error = String;
+
+    /// Tries to create `Card` from `u8`.
+    /// `Rank` is taken from the first 4 bits.
+    /// `Suit` is taken from the last 4 bits.
+    ///
+    /// # Example
+    /// ```
+    /// # use ace_of_spades::card::face::*;
+    /// use std::convert::TryFrom;
+    /// assert_eq!(Card::try_from(0x13).unwrap(), Card::new(Ace, Spades));
+    /// ```
+    fn try_from(u: u8) -> Result<Self, Self::Error> {
+        Ok(Card::new(Rank::try_from(u >> 4)?, Suit::from(u)))
+    }
+}
+
+impl Into<[char; 2]> for Card {
+    /// Converts `Card` into 2 characters.
+    /// First character depicts the cards `Rank`.
+    /// Second character depicts the cards `Suit`.
+    /// # Example
+    /// ```
+    /// # use ace_of_spades::{*, card::face::*};
+    /// let chars: [char; 2] = card!(Queen, Hearts).into();
+    /// assert_eq!(chars, ['Q', 'H']);
+    /// ```
+    fn into(self) -> [char; 2] {
+        [self.rank.into(), self.suit.into()]
     }
 }
 
 impl TryFrom<[char; 2]> for Card {
     type Error = String;
 
+    /// Tries to convert `[char; 2]` into `Card`
+    /// First character depicts the cards `Rank`.
+    /// Second character depicts the cards `Suit`.
+    /// # Example
+    /// ```
+    /// # use ace_of_spades::{*, card::face::*};
+    /// use std::convert::TryFrom;
+    /// assert_eq!(Card::try_from(['2','C']).unwrap(), card!(Two, Clubs));
     fn try_from(c: [char; 2]) -> Result<Self, Self::Error> {
-        Ok(Card::new(Value::try_from(c[0])?, Suit::try_from(c[1])?))
+        println!("{:?}", c);
+        println!("{:?} {:?}", Rank::try_from(c[0]), Suit::try_from(c[1]));
+        Ok(Card::new(Rank::try_from(c[0])?, Suit::try_from(c[1])?))
     }
 }
 
@@ -66,11 +133,12 @@ impl TryFrom<[char; 2]> for Card {
 // Impl Suit enums                                                            //
 // -------------------------------------------------------------------------- //
 
-impl Suit {
-
+impl super::Circular<i32> for Suit {
+    /// Cycles over the elements of `Suit`, starting at `self`.
+    /// Returns the n'th neighbor.
     /// # Examples
     /// ```rust
-    /// use ace_of_spades::card::Value::*;
+    /// use ace_of_spades::card::{Circular, Rank::*};
     ///
     /// let val = Wild;
     /// assert_eq!(val.step(1), Wild);
@@ -85,30 +153,20 @@ impl Suit {
     /// assert_eq!(val.step(13), Ace);
     /// assert_eq!(val.step(-13), Ace);
     /// ```
-    pub fn step(self, u: i32) -> Self {
-        Suit::from(((self as i32 + u) % 4) as u8)
+    fn step(self, n: i32) -> Self {
+        Suit::from(((self as i32 + n) % 4) as u8)
     }
 }
 
 impl From<u8> for Suit {
+    /// Converts `u8` into `Suit` by looking at the last 3 bits.
     fn from(u: u8) -> Suit {
         match u & 0x03 {
-            0 => Suit::Clubs,
-            1 => Suit::Diamonds,
-            2 => Suit::Hearts,
-            3 => Suit::Spades,
+            0 => Clubs,
+            1 => Diamonds,
+            2 => Hearts,
+            3 => Spades,
             _ => unreachable!(),
-        }
-    }
-}
-
-impl Into<u8> for Suit {
-    fn into(self) -> u8 {
-        match self {
-            Suit::Clubs => 0,
-            Suit::Diamonds => 1,
-            Suit::Hearts => 2,
-            Suit::Spades => 3,
         }
     }
 }
@@ -116,32 +174,29 @@ impl Into<u8> for Suit {
 impl TryFrom<char> for Suit {
     type Error = String;
 
+    /// Tries to convert `ASCII char` to `Suit`, 
+    /// by mapping each enum to a upper character.
+    /// Can take lower characters.
     fn try_from(c: char) -> Result<Self, Self::Error> {
         match c.to_ascii_uppercase() {
-            'C' => Ok(Suit::Clubs),
-            'D' => Ok(Suit::Diamonds),
-            'H' => Ok(Suit::Hearts),
-            'S' => Ok(Suit::Spades),
+            'C' => Ok(Clubs),
+            'D' => Ok(Diamonds),
+            'H' => Ok(Hearts),
+            'S' => Ok(Spades),
             _ => Err(format!("Card::Suit can't be converted from char '{}'.", c)),
         }
     }
 }
 
 impl Into<char> for Suit {
+    /// Converts `self` to `char` by mapping.
     fn into(self) -> char {
         match self {
-            Suit::Clubs => 'C',
-            Suit::Diamonds => 'D',
-            Suit::Hearts => 'H',
-            Suit::Spades => 'S',
+            Clubs => 'C',
+            Diamonds => 'D',
+            Hearts => 'H',
+            Spades => 'S',
         }
-    }
-}
-
-// TODO
-impl fmt::UpperHex for Suit {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:X}", *self as u8)
     }
 }
 
@@ -149,11 +204,12 @@ impl fmt::UpperHex for Suit {
 // Impl Value enums                                                           //
 // -------------------------------------------------------------------------- //
 
-impl Circular<i32> for Value {
-
+impl super::Circular<i32> for Rank {
+    /// Cycles over the elements of `Rank`, starting at `self`.
+    /// Returns the n'th neighbor.
     /// # Examples
     /// ```rust
-    /// use ace_of_spades::card::Value::*;
+    /// use ace_of_spades::card::{Circular, Rank::*};
     ///
     /// let val = Wild;
     /// assert_eq!(val.step(1), Wild);
@@ -169,39 +225,64 @@ impl Circular<i32> for Value {
     /// assert_eq!(val.step(-13), Ace);
     /// ```
     fn step(self, i: i32) -> Self {
-        if self == Value::Wild {
+        if self == Wild {
             self
         } else {
-            Value::from((((self as i32 + i - 1) % 13) + 1) as u8)
+            Rank::try_from((((self as i32 + i - 1) % 13) + 1) as u8).unwrap()
         }
     }
 }
 
-impl From<u8> for Value {
-    fn from(u: u8) -> Value {
-        match u {
-            0 => Value::Wild,
-            1 => Value::Ace,
-            2 => Value::Two,
-            3 => Value::Three,
-            4 => Value::Four,
-            5 => Value::Five,
-            6 => Value::Six,
-            7 => Value::Seven,
-            8 => Value::Eight,
-            9 => Value::Nine,
-            10 => Value::Ten,
-            11 => Value::Jack,
-            12 => Value::Queen,
-            13 => Value::King,
-            _ => panic!(),
-        }
-    }
-}
-
-impl TryFrom<char> for Value {
+impl TryFrom<u8> for Rank {
     type Error = String;
 
+    /// Tries to convert `u8` to `Rank` by mapping 0 to 13 to a Rank.
+    /// All other numbers will result in an error.
+    fn try_from(u: u8) -> Result<Self, Self::Error> {
+        let rank = match u {
+            0 => Wild,
+            1 => Ace,
+            2 => Two,
+            3 => Three,
+            4 => Four,
+            5 => Five,
+            6 => Six,
+            7 => Seven,
+            8 => Eight,
+            9 => Nine,
+            10 => Ten,
+            11 => Jack,
+            12 => Queen,
+            13 => King,
+            u => return Err(format!("card::Rank can't be converted from u8 '{}'.", u)),
+        };
+
+        Ok(rank)
+    }
+}
+
+impl Into<char> for Rank {
+
+    /// Converts `self` to `char` by mapping.
+    fn into(self) -> char {
+        match self {
+            Wild => 'W',
+            Ace => 'A',
+            Ten => '1',
+            Jack => 'J',
+            Queen => 'Q',
+            King => 'K',
+            v => char::from_u32(v as u32).unwrap(),
+        }
+    }
+}
+
+impl TryFrom<char> for Rank {
+    type Error = String;
+
+    /// Tries to convert `ASCII char` to `Rank`, 
+    /// by mapping each enum to a upper character.
+    /// Can take lower characters.
     fn try_from(c: char) -> Result<Self, Self::Error> {
         use rand::Rng;
 
@@ -213,30 +294,10 @@ impl TryFrom<char> for Value {
             'Q' => 12,
             'K' => 13,
             '.' => rand::thread_rng().gen_range(0, 13),
-            c if c.is_digit(10) && c != '0' => c.to_digit(9).unwrap() as u8 - 1,
-            c => return Err(format!("Card::Value can't be converted from char '{}'.", c)),
+            c if c.is_digit(10) && c != '0' => c.to_digit(9).unwrap() as u8,
+            c => return Err(format!("card::Rank can't be converted from char '{}'.", c)),
         };
 
-        Ok(Value::from(u))
-    }
-}
-
-impl Into<char> for Value {
-    fn into(self) -> char {
-        match self {
-            Value::Wild => 'W',
-            Value::Ace => 'A',
-            Value::Ten => '1',
-            Value::Jack => 'J',
-            Value::Queen => 'Q',
-            Value::King => 'K',
-            v => char::from_u32(v as u32).expect("TODO"),
-        }
-    }
-}
-
-impl fmt::UpperHex for Value {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:X}", *self as u8)
+        Ok(Rank::try_from(u).unwrap())
     }
 }

@@ -1,5 +1,5 @@
-use crate::card::{Card, Value};
 use super::{Hand, Rank, RankErr};
+use crate::card::{self, Card};
 
 use std::convert::TryFrom;
 use std::fmt;
@@ -133,26 +133,26 @@ impl Hand {
     }
 
     /// Returns cards grouped together by these rules:
-    /// 1. Cards are sorted by it's value first.
-    /// 2. Cards are grouped together if their neighbor has the same value.
+    /// 1. Cards are sorted by it's rank first.
+    /// 2. Cards are grouped together if their neighbor has the same rank.
     pub fn pair_groups(cards: &[Card]) -> Vec<Vec<Card>> {
         let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_value_first(*b));
+        cards.sort_by(|a, b| a.cmp_rank_first(*b));
 
         // Value to be returned
         let mut pairs: Vec<Vec<Card>> = Vec::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned().peekable();
         let mut temp_vec: Vec<Card> = Vec::new();
-        let mut prev_value = iter.peek().unwrap().value;
+        let mut prev_rank = iter.peek().unwrap().rank;
 
         for card in iter {
-            if prev_value == card.value {
+            if prev_rank == card.rank {
                 temp_vec.push(card);
             } else {
                 pairs.push(temp_vec);
                 temp_vec = vec![card];
-                prev_value = card.value;
+                prev_rank = card.rank;
             }
         }
 
@@ -200,8 +200,8 @@ impl Hand {
     }
 
     /// Returns cards grouped together by these rules:
-    /// 1. Cards are sorted by it's value first.
-    /// 2. Cards are grouped together if their neighbor has the same value + 1
+    /// 1. Cards are sorted by it's rank first.
+    /// 2. Cards are grouped together if their neighbor has the same rank + 1
     /// 3. If the absolute last card is a King
     ///     and the absolute first card is an Ace,
     ///     make a copy of the last grouping, append it with the Ace card and save
@@ -210,18 +210,18 @@ impl Hand {
     ///
     pub fn straight_groups(cards: &[Card]) -> Vec<Vec<Card>> {
         let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_value_first(*b));
+        cards.sort_by(|a, b| a.cmp_rank_first(*b));
 
         // Value to be returned
         let mut straight_groupings = Vec::<Vec<Card>>::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned();
         let mut temp_vec;
-        let mut prev_value;
+        let mut prev_rank;
 
         // First card initiates things
         if let Some(first_card) = iter.next() {
-            prev_value = first_card.value;
+            prev_rank = first_card.rank;
             temp_vec = vec![first_card];
         } else {
             // No cards in cards
@@ -230,7 +230,7 @@ impl Hand {
 
         // Iterate over rest of cards
         for card in iter {
-            if card.value as u8 == prev_value as u8 + 1 {
+            if card.rank as u8 == prev_rank as u8 + 1 {
                 temp_vec.push(card);
             // Drop temp_vec into straight_groupings and start a new one
             } else {
@@ -238,7 +238,7 @@ impl Hand {
                 temp_vec = vec![card];
             }
 
-            prev_value = card.value;
+            prev_rank = card.rank;
         }
 
         straight_groupings.push(temp_vec);
@@ -246,7 +246,7 @@ impl Hand {
         // Ace rule
         match (cards.first(), cards.last(), straight_groupings.last()) {
             (Some(ace), Some(king), Some(broadway))
-                if ace.value == Value::Ace && king.value == Value::King =>
+                if ace.rank == card::Rank::Ace && king.rank == card::Rank::King =>
             {
                 let mut broadway = broadway.clone();
                 broadway.push(*ace);

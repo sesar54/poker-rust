@@ -1,5 +1,5 @@
-use crate::card::{Card, Value::Ace, Value::King};
 use super::{Rank, RankErr, RankInner};
+use crate::card::{Card, Rank::Ace, Rank::King};
 
 use std::fmt;
 
@@ -12,12 +12,12 @@ impl Rank {
         Ok(Rank(RankInner::High(card)))
     }
 
-    /// Returns Pair, if both cards share the same value
+    /// Returns Pair, if both cards share the same rank
     /// and suit are ordered.
     pub fn Pair(cards: [Card; 2]) -> ResultRank {
         let rank = Rank(RankInner::Pair(cards));
 
-        if cards[0].value != cards[1].value {
+        if cards[0].rank != cards[1].rank {
             Err(RankErr::Invalid(rank))
         } else if cards[0] > cards[1] {
             Err(RankErr::Unsorted(rank))
@@ -41,6 +41,11 @@ impl Rank {
                 "In Rank::TwoPair with rank: {:?} Pair 2 of 2 returned: {:?}",
                 rank, E,
             )))
+        } else if pair0[0].rank == pair1[0].rank {
+            Err(RankErr::Explained(format!(
+                "In Rank::TwoPair with rank: {:?} Pairs are actually Quads.",
+                rank,
+            )))
         } else if pair0 > pair1 {
             Err(RankErr::Unsorted(rank))
         } else {
@@ -52,7 +57,7 @@ impl Rank {
     pub fn Trips(cards: [Card; 3]) -> ResultRank {
         let rank = Rank(RankInner::Trips(cards));
 
-        if cards[0].value != cards[1].value || cards[1].value != cards[2].value {
+        if cards[0].rank != cards[1].rank || cards[1].rank != cards[2].rank {
             Err(RankErr::Invalid(rank))
         } else if cards[0] > cards[1] || cards[1] > cards[2] {
             Err(RankErr::Unsorted(rank))
@@ -65,8 +70,8 @@ impl Rank {
     pub fn Straight(cards: [Card; 5]) -> ResultRank {
         let rank = Rank(RankInner::Straight(cards));
 
-        let values: &[Card] = if cards[3].value == King {
-            if cards[4].value != Ace {
+        let ranks: &[Card] = if cards[3].rank == King {
+            if cards[4].rank != Ace {
                 return Err(RankErr::Explained(format!(
                     "In Rank::Straight with rank: {:?} King not followed by Ace",
                     rank
@@ -81,8 +86,8 @@ impl Rank {
         // See if cards[0] is greater than every other item by i amount
         // Also check if cards are in order.
         // Ace is not included in this range. See above
-        for i in 0..values.len() {
-            if values[0].value as u8 + i as u8 != values[i].value as u8 {
+        for i in 0..ranks.len() {
+            if ranks[0].rank as u8 + i as u8 != ranks[i].rank as u8 {
                 return Err(RankErr::Invalid(rank));
             }
         }
@@ -133,9 +138,9 @@ impl Rank {
 
     pub fn Quads(cards: [Card; 4]) -> ResultRank {
         let rank = Rank(RankInner::Quads(cards));
-        // See if all values match
+        // See if all ranks match
         for card in &cards {
-            if cards[0].value != card.value {
+            if cards[0].rank != card.rank {
                 return Err(RankErr::Invalid(rank));
             }
         }
@@ -160,7 +165,7 @@ impl Rank {
             )))
         } else if let Err(E) = {
             // Ace is always sorted last for Flush()
-            if sf[4].value == Ace {
+            if sf[4].rank == Ace {
                 Rank::Flush([sf[4], sf[0], sf[1], sf[2], sf[3]])
             } else {
                 Rank::Flush(sf)
@@ -180,7 +185,7 @@ impl Rank {
 
         // See if all values match
         for card in &cards {
-            if cards[0].value != card.value {
+            if cards[0].rank != card.rank {
                 return Err(RankErr::Invalid(rank));
             }
         }
@@ -207,7 +212,7 @@ impl fmt::Display for Rank {
             RankInner::Flush(..) => write!(f, "Flush"),
             RankInner::House(..) => write!(f, "Full house"),
             RankInner::Quads(..) => write!(f, "Four of a kind"),
-            RankInner::StraightFlush(cards) => match cards[4].value {
+            RankInner::StraightFlush(cards) => match cards[4].rank {
                 Ace => write!(f, "Royal flush"),
                 _ => write!(f, "Straight flush"),
             },

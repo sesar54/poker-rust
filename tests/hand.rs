@@ -31,8 +31,4 @@ mod hand {
         }
     }
 
-    #[test]
-    fn straight_card() {
-        hand::extra::straight_cards();
-    }
 }

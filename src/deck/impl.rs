@@ -103,3 +103,9 @@ impl Deck {
     //    self.inner_deck.is_sorted()
     //} // Unstable for now.
 }
+
+impl Default for Deck {
+    fn default() -> Self {
+        Deck::new_shuffled()
+    }
+}

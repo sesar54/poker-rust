@@ -10,13 +10,10 @@ use log::error;
 impl Hand {
     /// Creating a new hand will cause all given cards to be automatically
     /// evaluated into a rank
-    pub fn new(cards: Vec<Card>) -> Hand {
+    pub fn new(cards: Vec<Card>) -> Result<Hand, RankErr> {
         match Hand::ranking(&cards) {
-            Ok(rank) => Hand { cards, rank },
-            Err(e) => {
-                error!("{:#?}", e);
-                panic!("{:#?}", e)
-            }
+            Ok(rank) => Ok(Hand { cards, rank }),
+            Err(e) => Err(e),
         }
     }
 
@@ -49,8 +46,19 @@ impl Hand {
         self.cards.len()
     }
 
-    pub fn take(&mut self, mut cards: Vec<Card>) {
+    pub fn is_empty(&self) -> bool {
+        self.cards.is_empty()
+    }
+
+    pub fn take(&mut self, mut cards: Vec<Card>) -> Result<(), RankErr> {
+        match Hand::ranking(&self.cards) {
+            Ok(rank) => self.rank = rank,
+            Err(err) => return Err(err),
+        }
+
         self.cards.append(&mut cards);
+
+        Ok(())
     }
 
     /// Return the best ranking pair found in `cards`.
@@ -145,10 +153,15 @@ impl Hand {
 
     /// Returns cards grouped together by these rules:
     /// 1. Cards are sorted by it's rank first.
+    /// 1.1 Ace Cards are sorted last (more valuable)
     /// 2. Cards are grouped together if their neighbor has the same rank.
     pub fn pair_groups(cards: &[Card]) -> Vec<Vec<Card>> {
         let mut cards = cards.to_vec();
         cards.sort_by(|a, b| a.cmp_rank_first(*b));
+
+        // Ace rule
+        let rotate = cards.len() - cards.iter().filter(|c| c.rank == card::Rank::Ace).count();
+        cards.rotate_right(rotate);
 
         // Value to be returned
         let mut pairs: Vec<Vec<Card>> = Vec::new();
@@ -301,8 +314,6 @@ impl Hand {
             None
         }
     }
-
-
 }
 
 impl fmt::Display for Hand {

@@ -1,5 +1,5 @@
 use crate::card::Card;
-use crate::hand::Hand;
+use crate::hand::{RankErr, Hand};
 
 pub struct Player {
 
@@ -15,10 +15,10 @@ pub struct Player {
 pub enum Betting {
     Fold(Vec<Card>),
     /// Call is multifunctional. It works as both check, call and raise.
-    /// 
+    ///
     /// It will automatically match any bid if 0 is provided and
     /// automatically raise value if not 0.
-    /// 
+    ///
     /// Mind that the table might not accept any small raise.
     Call(u32),
 }
@@ -41,10 +41,13 @@ impl Player {
 
     }
 
-    pub fn take(&mut self, cards: Vec<Card>) {
+    pub fn take(&mut self, cards: Vec<Card>) -> Result<(), RankErr> {
         match &mut self.hand {
             Some(hand) => hand.take(cards),
-            None => self.hand = Some(Hand::new(cards)),
+            None => {
+                self.hand = Some(Hand::new(cards)?);
+                Ok(())
+            },
         }
     }
 
@@ -66,6 +69,10 @@ impl Player {
             Some(hand) => hand.len(),
             None => 0,
         }
+    }
+
+    pub fn hand_is_empty(&self) -> bool {
+        self.hand.is_none()
     }
 
 }

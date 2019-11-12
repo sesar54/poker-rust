@@ -20,6 +20,10 @@ impl Hand {
         }
     }
 
+    pub fn discard(self) -> Vec<Card> {
+        self.cards
+    }
+
     /// Takes a slice of cards and return the best card rank.
     ///
     /// If given a slice of length 0, return immediately with an error.
@@ -39,6 +43,14 @@ impl Hand {
                 None => Ok(pair_rank),
             }
         }
+    }
+
+    pub fn len(&self) -> usize {
+        self.cards.len()
+    }
+
+    pub fn take(&mut self, mut cards: Vec<Card>) {
+        self.cards.append(&mut cards);
     }
 
     /// Return the best ranking pair found in `cards`.
@@ -290,9 +302,6 @@ impl Hand {
         }
     }
 
-    pub fn take(&mut self, mut cards: Vec<Card>) {
-        self.cards.append(&mut cards);
-    }
 
 }
 

@@ -1,16 +1,16 @@
 use crate::card::Card;
-use crate::hand::{RankErr, Hand};
+use crate::hand::{Hand, RankErr};
 
 pub struct Player {
-    pub name: String,
-
     pub pot: u32,
     pub tot_bet: u32,
 
     hand: Option<Hand>,
 }
 
-pub enum Betting {
+pub struct Action(ActionInner);
+
+enum ActionInner {
     Fold(Vec<Card>),
     /// Call is multifunctional. It works as both check, call and raise.
     ///
@@ -21,33 +21,30 @@ pub enum Betting {
     Call(u32),
 }
 
+impl Action {
+    pub fn folding(player: &mut Player) -> Action {
+        Action(ActionInner::Fold(player.discard()))
+    }
+
+    pub fn calling(player: &mut Player, mut bet: u32) -> Action {
+        bet = std::cmp::min(bet, player.pot);
+        player.pot -= bet;
+        Action(ActionInner::Call(bet))
+    }
+}
+
 impl Player {
-    pub fn folding(&mut self) -> Betting {
-        Betting::Fold(self.discard())
-    }
-
-    pub fn calling(&mut self, mut bet: u32) -> Betting {
-        if bet > self.pot {
-            bet = self.pot;
-        }
-
-        self.pot -= bet;
-
-        Betting::Call(bet)
-    }
-
     pub fn take(&mut self, cards: Vec<Card>) -> Result<(), RankErr> {
         match &mut self.hand {
             Some(hand) => hand.take(cards),
             None => {
                 self.hand = Some(Hand::new(cards)?);
                 Ok(())
-            },
+            }
         }
     }
 
     pub fn discard(&mut self) -> Vec<Card> {
-        
         match self.hand.take() {
             Some(hand) => hand.discard(),
             None => Vec::new(),
@@ -64,5 +61,8 @@ impl Player {
     pub fn hand_is_empty(&self) -> bool {
         self.hand.is_none()
     }
+}
 
+trait Inter {
+    fn decide(&self) -> Action;
 }

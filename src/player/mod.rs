@@ -2,14 +2,12 @@ use crate::card::Card;
 use crate::hand::{RankErr, Hand};
 
 pub struct Player {
-
     pub name: String,
 
     pub pot: u32,
     pub tot_bet: u32,
 
     hand: Option<Hand>,
-
 }
 
 pub enum Betting {
@@ -24,13 +22,11 @@ pub enum Betting {
 }
 
 impl Player {
-
     pub fn folding(&mut self) -> Betting {
         Betting::Fold(self.discard())
     }
 
     pub fn calling(&mut self, mut bet: u32) -> Betting {
-
         if bet > self.pot {
             bet = self.pot;
         }
@@ -38,7 +34,6 @@ impl Player {
         self.pot -= bet;
 
         Betting::Call(bet)
-
     }
 
     pub fn take(&mut self, cards: Vec<Card>) -> Result<(), RankErr> {
@@ -52,16 +47,11 @@ impl Player {
     }
 
     pub fn discard(&mut self) -> Vec<Card> {
-
-        let hand = self.hand.take();
-
-        match hand {
-
+        
+        match self.hand.take() {
             Some(hand) => hand.discard(),
             None => Vec::new(),
-
         }
-
     }
 
     pub fn hand_len(&self) -> usize {

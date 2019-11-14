@@ -16,8 +16,10 @@ pub use extra::*;
  */
 #[derive(Debug)]
 pub struct Hand {
-    pub cards: Vec<Card>,
-    pub rank: Rank,
+    cards: Vec<Card>,
+    community_cards: &Vec<Card>,
+    rank: Rank,
+    kickers: Vec<&Card>,
 }
 
 /**

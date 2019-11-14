@@ -20,8 +20,9 @@ use std::rc::*;
 pub struct Hand {
     cards: Vec<Rc<Card>>,
     rank: Rank,
-    kickers: Vec<Weak<Card>>,
+    kickers: Vec<Rc<Card>>,
 }
+
 
 /**
  * A Rank consist of a number of cards in a specific configuration. They are
@@ -33,9 +34,9 @@ pub struct Rank(RankInner);
 
 #[derive(Debug)]
 pub enum RankErr {
+    Explained(String),
     Invalid(Rank),
     Unsorted(Rank),
-    Explained(String),
 }
 
 type CardRef = Rc<Card>;

@@ -1,18 +1,23 @@
 use super::{Hand, Rank, RankErr};
 use crate::card::{self, Card, Circular};
 
-use std::convert::TryFrom;
 use std::fmt;
 use std::rc::Rc;
 
 extern crate log;
 use log::error;
 
+type CardRef = Rc<Card>;
+
 impl Hand {
-    /// Iron rule: Map Vec<Card> to Vec<Rc<Card>>
+    /// Iron rule: Map Vec<Card> to Vec<CardRef>
     /// Creating a new hand will cause all given cards to be automatically
     /// evaluated into a rank
     pub fn new(cards: Vec<Card>) -> Result<Hand, RankErr> {
+        let cards = cards
+            .into_iter()
+            .map(|c| Rc::new(c))
+            .collect::<Vec<CardRef>>();
         match Hand::ranking(&cards, &Vec::new()) {
             // 2nd arg is a placeholder
             Ok((rank, kickers)) => Ok(Hand {
@@ -26,16 +31,16 @@ impl Hand {
 
     // Iron rule: Map cards to Vec<Card>
     pub fn discard(self) -> Vec<Card> {
-        self.cards
+        self.cards.iter().map(|c| **c).collect()
     }
 
     /// Takes a slice of community cards and return the best card rank
     ///
     /// If given a slice of length 0, return immediately with an error.
     pub fn ranking(
-        cards: &[Rc<Card>],
+        cards: &[CardRef],
         community_cards: &[Card],
-    ) -> Result<(Rank, Vec<&'a Card>), RankErr> {
+    ) -> Result<(Rank, Vec<CardRef>), RankErr> {
         if cards.is_empty() {
             Err(RankErr::Explained(format!(
                 "No cards were given. Cards: {:?}",
@@ -52,8 +57,7 @@ impl Hand {
             };
 
             // TODO
-            let kickers = cards.iter().collect();
-
+            let kickers = cards.into();
             Ok((rank, kickers))
         }
     }
@@ -64,11 +68,6 @@ impl Hand {
 
     pub fn is_empty(&self) -> bool {
         self.cards.is_empty()
-    }
-
-    pub fn take(&mut self, mut cards: Vec<Card>, community_cards: &[Card]) -> Result<(), RankErr> {
-        self.cards.append(&mut cards);
-        self.update(community_cards)
     }
 
     pub fn update(&mut self, community_cards: &[Card]) -> Result<(), RankErr> {
@@ -86,7 +85,7 @@ impl Hand {
     /// This function will always return High, if no other pair was found.
     /// The exception to the rule is if the slice of cards have a size of 0
     /// or something internally went wrong.
-    pub fn pair_rank(cards: &[Card]) -> Result<Rank, RankErr> {
+    pub fn pair_rank(cards: &[CardRef]) -> Result<Rank, RankErr> {
         let pair_groups = Hand::pair_groups(cards);
         let pair_iter = pair_groups.iter().rev().map(|p| p.as_slice());
 
@@ -100,17 +99,17 @@ impl Hand {
         for cards in pair_iter {
             match cards.len() {
                 // Return immediately since Fives can't be beaten
-                5 => return Rank::Fives(<[Card; 5]>::try_from(cards).unwrap()),
-                4 if quads.is_none() => quads = Some(<[Card; 4]>::try_from(cards).unwrap()),
-                3 if trips.is_none() => trips = Some(<[Card; 3]>::try_from(cards).unwrap()),
+                5 => return Rank::Fives(*array_ref![cards, 0, 5]),
+                4 if quads.is_none() => quads = Some(*array_ref![cards, 0, 4]),
+                3 if trips.is_none() => trips = Some(*array_ref![cards, 0, 3]),
                 2 => {
                     if pairs.0.is_none() {
-                        pairs.0 = Some(<[Card; 2]>::try_from(cards).unwrap())
+                        pairs.0 = Some(*array_ref![cards, 0, 2])
                     } else if pairs.1.is_none() {
-                        pairs.1 = Some(<[Card; 2]>::try_from(cards).unwrap())
+                        pairs.1 = Some(*array_ref![cards, 0, 2])
                     }
                 }
-                1 if high.is_none() => high = Some(<[Card; 1]>::try_from(cards).unwrap()),
+                1 if high.is_none() => high = Some(*array_ref![cards, 0, 1]),
                 _ => (),
             }
         }
@@ -135,7 +134,7 @@ impl Hand {
 
     /// Maybe returns one rank after checking in order:
     /// **[StraightFlush, Flush, Straight]**
-    pub fn straight_flush_rank(cards: &[Card]) -> Option<Result<Rank, RankErr>> {
+    pub fn straight_flush_rank(cards: &[CardRef]) -> Option<Result<Rank, RankErr>> {
         // Copy, sort and const.
         let mut cards = cards.to_vec();
         cards.sort();
@@ -173,19 +172,19 @@ impl Hand {
     /// 1. Cards are sorted by it's rank first.
     /// 1.1 Ace Cards are sorted last (more valuable)
     /// 2. Cards are grouped together if their neighbor has the same rank.
-    pub fn pair_groups(cards: &[Card]) -> Vec<Vec<Card>> {
+    pub fn pair_groups(cards: &[CardRef]) -> Vec<Vec<CardRef>> {
         let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_rank_first(*b));
+        cards.sort_by(|a, b| a.cmp_rank_first(**b));
 
         // Ace rule
         let rotate = cards.len() - cards.iter().filter(|c| c.rank == card::Rank::Ace).count();
         cards.rotate_right(rotate);
 
         // Value to be returned
-        let mut pairs: Vec<Vec<Card>> = Vec::new();
+        let mut pairs: Vec<Vec<CardRef>> = Vec::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned().peekable();
-        let mut temp_vec: Vec<Card> = Vec::new();
+        let mut temp_vec: Vec<CardRef> = Vec::new();
         let mut prev_rank = iter.peek().unwrap().rank;
 
         for card in iter {
@@ -205,12 +204,12 @@ impl Hand {
     /// Returns cards grouped together by these rules:
     /// 1. Cards are sorted by it's suit first.
     /// 2. Cards are grouped together if their neighbor has the same suit.
-    pub fn flush_groups(cards: &[Card]) -> Vec<Vec<Card>> {
+    pub fn flush_groups(cards: &[CardRef]) -> Vec<Vec<CardRef>> {
         let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_suit_first(*b));
+        cards.sort_by(|a, b| a.cmp_suit_first(**b));
 
         // Value to be returned
-        let mut flush_groupings: Vec<Vec<Card>> = Vec::new();
+        let mut flush_groupings: Vec<Vec<CardRef>> = Vec::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned();
         let mut temp_vec;
@@ -250,12 +249,12 @@ impl Hand {
     ///     it along the other groups.
     ///     This is done to simulating the ace rule in straights.
     ///
-    pub fn straight_groups(cards: &[Card]) -> Vec<Vec<Card>> {
+    pub fn straight_groups(cards: &[CardRef]) -> Vec<Vec<CardRef>> {
         let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_rank_first(*b));
+        cards.sort_by(|a, b| a.cmp_rank_first(**b));
 
         // Value to be returned
-        let mut straight_groupings = Vec::<Vec<Card>>::new();
+        let mut straight_groupings = Vec::<Vec<CardRef>>::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned();
         let mut temp_vec;
@@ -311,7 +310,7 @@ impl Hand {
     ///
     /// This function extends `flush_groups(..)` as it's output is assumed to be
     /// this functions input.
-    fn straight_flush_cards(flush_grouping: &[Vec<Card>]) -> Option<[Card; 5]> {
+    fn straight_flush_cards(flush_grouping: &[Vec<CardRef>]) -> Option<[CardRef; 5]> {
         for group in flush_grouping.iter().rev().filter(|v| v.len() >= 5) {
             if let Some(cards) = Hand::extract_last_cards(&Hand::straight_groups(&group)) {
                 return Some(cards);
@@ -323,7 +322,7 @@ impl Hand {
 
     /// Iterate, in reverse, over groupings that has size 5 or over.
     /// Extract it's 5 most valuable cards (last cards).
-    fn extract_last_cards(groupings: &[Vec<Card>]) -> Option<[Card; 5]> {
+    fn extract_last_cards(groupings: &[Vec<CardRef>]) -> Option<[CardRef; 5]> {
         if let Some(cards) = groupings.iter().rev().find(|v| v.len() >= 5) {
             let cards = &cards[cards.len() - 5..];
             let cards = [cards[0], cards[1], cards[2], cards[3], cards[4]];

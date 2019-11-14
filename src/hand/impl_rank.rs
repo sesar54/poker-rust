@@ -14,8 +14,6 @@ impl Rank {}
 type CardRef = Rc<Card>;
 
 impl Rank {
-
-
     /// Always Returns one high card.
     pub fn High(card: [CardRef; 1]) -> ResultRank {
         Ok(Rank(RankInner::High(card)))

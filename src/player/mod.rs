@@ -36,11 +36,11 @@ impl Action {
 impl Player {
     pub fn take(&mut self, cards: Vec<Card>) -> Result<(), RankErr> {
         match &mut self.hand {
-            Some(hand) => hand.take(cards),
             None => {
                 self.hand = Some(Hand::new(cards)?);
                 Ok(())
             }
+            _ => panic!(), //TODO
         }
     }
 

@@ -1,31 +1,41 @@
-use super::{Hand, Rank, RankErr, RankInner};
+use super::{Hand, Rank, RankErr};
 use crate::card::{self, Card, Circular};
 
 use std::convert::TryFrom;
 use std::fmt;
-use std::cmp::Ordering;
+use std::rc::Rc;
 
 extern crate log;
 use log::error;
 
 impl Hand {
+    /// Iron rule: Map Vec<Card> to Vec<Rc<Card>>
     /// Creating a new hand will cause all given cards to be automatically
     /// evaluated into a rank
     pub fn new(cards: Vec<Card>) -> Result<Hand, RankErr> {
-        match Hand::ranking(&cards) {
-            Ok(rank) => Ok(Hand { cards, rank }),
+        match Hand::ranking(&cards, &Vec::new()) {
+            // 2nd arg is a placeholder
+            Ok((rank, kickers)) => Ok(Hand {
+                cards,
+                rank,
+                kickers,
+            }),
             Err(e) => Err(e),
         }
     }
 
+    // Iron rule: Map cards to Vec<Card>
     pub fn discard(self) -> Vec<Card> {
         self.cards
     }
 
-    /// Takes a slice of cards and return the best card rank.
+    /// Takes a slice of community cards and return the best card rank
     ///
     /// If given a slice of length 0, return immediately with an error.
-    pub fn ranking(cards: &[Card]) -> Result<Rank, RankErr> {
+    pub fn ranking(
+        cards: &[Rc<Card>],
+        community_cards: &[Card],
+    ) -> Result<(Rank, Vec<&'a Card>), RankErr> {
         if cards.is_empty() {
             Err(RankErr::Explained(format!(
                 "No cards were given. Cards: {:?}",
@@ -36,10 +46,15 @@ impl Hand {
             let option_sf = Hand::straight_flush_rank(cards);
 
             // Compare and return the biggest rank
-            match option_sf {
-                Some(sf) => Ok(std::cmp::max(pair_rank, sf?)),
-                None => Ok(pair_rank),
-            }
+            let rank = match option_sf {
+                Some(sf) => std::cmp::max(pair_rank, sf?),
+                None => pair_rank,
+            };
+
+            // TODO
+            let kickers = cards.iter().collect();
+
+            Ok((rank, kickers))
         }
     }
 
@@ -51,14 +66,16 @@ impl Hand {
         self.cards.is_empty()
     }
 
-    pub fn take(&mut self, mut cards: Vec<Card>) -> Result<(), RankErr> {
-        match Hand::ranking(&self.cards) {
-            Ok(rank) => self.rank = rank,
-            Err(err) => return Err(err),
-        }
-
+    pub fn take(&mut self, mut cards: Vec<Card>, community_cards: &[Card]) -> Result<(), RankErr> {
         self.cards.append(&mut cards);
+        self.update(community_cards)
+    }
 
+    pub fn update(&mut self, community_cards: &[Card]) -> Result<(), RankErr> {
+        let (rank, kickers) = Hand::ranking(&self.cards, community_cards)?;
+
+        self.rank = rank;
+        self.kickers = kickers;
         Ok(())
     }
 
@@ -322,34 +339,3 @@ impl fmt::Display for Hand {
         write!(f, "{:?}", self.cards)
     }
 }
-
-impl Ord for Rank {
-    fn cmp(&self, other: &Self) -> Ordering {
-
-        let default = || self.cmp(other);
-
-        let ord: Option<Ordering> = match (self.0, other.0) {
-            (RankInner::High(this), RankInner::High(other)) => {
-                if this[0].rank == other[0].rank {
-                    Some(default())
-                } else if this[0].rank == card::Rank::Ace {
-                    Some(Ordering::Greater)
-                } else if other[0].rank == card::Rank::Ace {
-                    Some(Ordering::Less)
-                } else {
-                    Some(default())
-                }
-            }
-            _ => Some(default()),
-        };
-
-        if let Some(Ordering) = ord {
-            Ordering
-        } else {
-            default()
-        }
-
-    }
-
-}
-

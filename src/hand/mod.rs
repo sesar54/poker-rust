@@ -1,10 +1,12 @@
 use crate::card::Card;
 
-mod r#impl;
-mod rank;
+mod impl_hand;
+mod impl_rank;
 
 pub mod extra;
 pub use extra::*;
+
+use std::rc::*;
 
 /**
  * A hand consist of all cards "in hand or private cards" and
@@ -16,10 +18,9 @@ pub use extra::*;
  */
 #[derive(Debug)]
 pub struct Hand {
-    cards: Vec<Card>,
-    community_cards: &Vec<Card>,
+    cards: Vec<Rc<Card>>,
     rank: Rank,
-    kickers: Vec<&Card>,
+    kickers: Vec<Weak<Card>>,
 }
 
 /**
@@ -37,16 +38,18 @@ pub enum RankErr {
     Explained(String),
 }
 
+type CardRef = Rc<Card>;
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum RankInner {
-    High([Card; 1]),
-    Pair([Card; 2]),
-    TwoPair([Card; 2], [Card; 2]),
-    Trips([Card; 3]),
-    Straight([Card; 5]),
-    Flush([Card; 5]),
-    House([Card; 3], [Card; 2]),
-    Quads([Card; 4]),
-    StraightFlush([Card; 5]),
-    Fives([Card; 5]),
+    High([CardRef; 1]),
+    Pair([CardRef; 2]),
+    TwoPair([CardRef; 2], [CardRef; 2]),
+    Trips([CardRef; 3]),
+    Straight([CardRef; 5]),
+    Flush([CardRef; 5]),
+    House([CardRef; 3], [CardRef; 2]),
+    Quads([CardRef; 4]),
+    StraightFlush([CardRef; 5]),
+    Fives([CardRef; 5]),
 }

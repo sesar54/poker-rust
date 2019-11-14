@@ -1,20 +1,29 @@
 use super::{Rank, RankErr, RankInner};
 use crate::card::{Card, Rank::Ace, Rank::King};
 
+use std::cmp::Ordering;
 use std::fmt;
+
+use std::rc::*;
 
 type ResultRank = Result<Rank, RankErr>;
 
 #[allow(non_snake_case)] // Do not remove
+impl Rank {}
+
+type CardRef = Rc<Card>;
+
 impl Rank {
+
+
     /// Always Returns one high card.
-    pub fn High(card: [Card; 1]) -> ResultRank {
+    pub fn High(card: [CardRef; 1]) -> ResultRank {
         Ok(Rank(RankInner::High(card)))
     }
 
     /// Returns Pair, if both cards share the same rank
     /// and suit are ordered.
-    pub fn Pair(cards: [Card; 2]) -> ResultRank {
+    pub fn Pair(cards: [CardRef; 2]) -> ResultRank {
         let rank = Rank(RankInner::Pair(cards));
 
         if cards[0].rank != cards[1].rank {
@@ -28,7 +37,7 @@ impl Rank {
 
     /// Returns Two Pairs, if both pairs is sufficient pairs and
     /// pair.0 is the least significant pair.Ace
-    pub fn TwoPair(pair0: [Card; 2], pair1: [Card; 2]) -> ResultRank {
+    pub fn TwoPair(pair0: [CardRef; 2], pair1: [CardRef; 2]) -> ResultRank {
         let rank = Rank(RankInner::TwoPair(pair0, pair1));
 
         if let Err(E) = Rank::Pair(pair0) {
@@ -54,7 +63,7 @@ impl Rank {
     }
 
     ///
-    pub fn Trips(cards: [Card; 3]) -> ResultRank {
+    pub fn Trips(cards: [CardRef; 3]) -> ResultRank {
         let rank = Rank(RankInner::Trips(cards));
 
         if cards[0].rank != cards[1].rank || cards[1].rank != cards[2].rank {
@@ -67,10 +76,10 @@ impl Rank {
     }
 
     ///
-    pub fn Straight(cards: [Card; 5]) -> ResultRank {
+    pub fn Straight(cards: [CardRef; 5]) -> ResultRank {
         let rank = Rank(RankInner::Straight(cards));
 
-        let ranks: &[Card] = if cards[3].rank == King {
+        let ranks = if cards[3].rank == King {
             if cards[4].rank != Ace {
                 return Err(RankErr::Explained(format!(
                     "In Rank::Straight with rank: {:?} King not followed by Ace",
@@ -96,7 +105,7 @@ impl Rank {
     }
 
     ///
-    pub fn Flush(cards: [Card; 5]) -> ResultRank {
+    pub fn Flush(cards: [CardRef; 5]) -> ResultRank {
         let rank = Rank(RankInner::Flush(cards));
 
         // See if all suits match
@@ -116,7 +125,7 @@ impl Rank {
         Ok(rank)
     }
 
-    pub fn House(trips: [Card; 3], pair: [Card; 2]) -> ResultRank {
+    pub fn House(trips: [CardRef; 3], pair: [CardRef; 2]) -> ResultRank {
         let rank = Rank(RankInner::House(trips, pair));
 
         // See if both Trips and Pair is ok and return rank
@@ -136,7 +145,7 @@ impl Rank {
         }
     }
 
-    pub fn Quads(cards: [Card; 4]) -> ResultRank {
+    pub fn Quads(cards: [CardRef; 4]) -> ResultRank {
         let rank = Rank(RankInner::Quads(cards));
         // See if all ranks match
         for card in &cards {
@@ -155,7 +164,7 @@ impl Rank {
         Ok(rank)
     }
 
-    pub fn StraightFlush(sf: [Card; 5]) -> ResultRank {
+    pub fn StraightFlush(sf: [CardRef; 5]) -> ResultRank {
         let rank = Rank(RankInner::StraightFlush(sf));
 
         if let Err(E) = Rank::Straight(sf) {
@@ -180,7 +189,7 @@ impl Rank {
         }
     }
 
-    pub fn Fives(cards: [Card; 5]) -> ResultRank {
+    pub fn Fives(cards: [CardRef; 5]) -> ResultRank {
         let rank = Rank(RankInner::Fives(cards));
 
         // See if all values match
@@ -217,6 +226,33 @@ impl fmt::Display for Rank {
                 _ => write!(f, "Straight flush"),
             },
             RankInner::Fives(..) => write!(f, "Five of a kind"),
+        }
+    }
+}
+
+impl Ord for Rank {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let default = || self.cmp(other);
+
+        let ord: Option<Ordering> = match (self.0, other.0) {
+            (RankInner::High(this), RankInner::High(other)) => {
+                if this[0].rank == other[0].rank {
+                    Some(default())
+                } else if this[0].rank == Ace {
+                    Some(Ordering::Greater)
+                } else if other[0].rank == Ace {
+                    Some(Ordering::Less)
+                } else {
+                    Some(default())
+                }
+            }
+            _ => Some(default()),
+        };
+
+        if let Some(Ordering) = ord {
+            Ordering
+        } else {
+            default()
         }
     }
 }

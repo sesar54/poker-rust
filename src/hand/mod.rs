@@ -28,6 +28,13 @@ pub struct Hand {
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Rank(RankInner);
 
+#[derive(Debug)]
+pub enum RankErr {
+    Invalid(Rank),
+    Unsorted(Rank),
+    Explained(String),
+}
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum RankInner {
     High([Card; 1]),
@@ -40,11 +47,4 @@ enum RankInner {
     Quads([Card; 4]),
     StraightFlush([Card; 5]),
     Fives([Card; 5]),
-}
-
-#[derive(Debug)]
-pub enum RankErr {
-    Invalid(Rank),
-    Unsorted(Rank),
-    Explained(String),
 }

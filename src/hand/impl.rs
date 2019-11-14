@@ -1,8 +1,9 @@
-use super::{Hand, Rank, RankErr};
+use super::{Hand, Rank, RankErr, RankInner};
 use crate::card::{self, Card, Circular};
 
 use std::convert::TryFrom;
 use std::fmt;
+use std::cmp::Ordering;
 
 extern crate log;
 use log::error;
@@ -321,3 +322,34 @@ impl fmt::Display for Hand {
         write!(f, "{:?}", self.cards)
     }
 }
+
+impl Ord for Rank {
+    fn cmp(&self, other: &Self) -> Ordering {
+
+        let default = || self.cmp(other);
+
+        let ord: Option<Ordering> = match (self.0, other.0) {
+            (RankInner::High(this), RankInner::High(other)) => {
+                if this[0].rank == other[0].rank {
+                    Some(default())
+                } else if this[0].rank == card::Rank::Ace {
+                    Some(Ordering::Greater)
+                } else if other[0].rank == card::Rank::Ace {
+                    Some(Ordering::Less)
+                } else {
+                    Some(default())
+                }
+            }
+            _ => Some(default()),
+        };
+
+        if let Some(Ordering) = ord {
+            Ordering
+        } else {
+            default()
+        }
+
+    }
+
+}
+

@@ -14,10 +14,7 @@ impl Hand {
     /// Creating a new hand will cause all given cards to be automatically
     /// evaluated into a rank
     pub fn new(cards: Vec<Card>) -> Result<Hand, RankErr> {
-        let cards = cards
-            .into_iter()
-            .map(|c| Rc::new(c))
-            .collect::<Vec<CardRef>>();
+        let cards = cards.into_iter().map(Rc::new).collect::<Vec<CardRef>>();
         match Hand::ranking(&cards, &Vec::new()) {
             // 2nd arg is a placeholder
             Ok((rank, kickers)) => Ok(Hand {
@@ -59,7 +56,7 @@ impl Hand {
             };
 
             // TODO
-            let kickers = cards.into();
+            let kickers = cards;
             Ok((rank, kickers))
         }
     }
@@ -104,17 +101,17 @@ impl Hand {
 
             match len {
                 // Return immediately since Fives can't be beaten
-                5 => return Rank::Fives(drain![iter; 5]),
-                4 if quads.is_none() => quads = Some(drain!(iter; 4)),
-                3 if trips.is_none() => trips = Some(drain!(iter; 3)),
+                5 => return Rank::Fives(fill_array![iter; 5]),
+                4 if quads.is_none() => quads = Some(fill_array!(iter; 4)),
+                3 if trips.is_none() => trips = Some(fill_array!(iter; 3)),
                 2 => {
                     if pairs.0.is_none() {
-                        pairs.0 = Some(drain!(iter; 2))
+                        pairs.0 = Some(fill_array!(iter; 2))
                     } else if pairs.1.is_none() {
-                        pairs.1 = Some(drain!(iter; 2))
+                        pairs.1 = Some(fill_array!(iter; 2))
                     }
                 }
-                1 if high.is_none() => high = Some(drain!(iter; 1)),
+                1 if high.is_none() => high = Some(fill_array!(iter; 1)),
                 _ => (),
             }
         }
@@ -323,7 +320,7 @@ impl Hand {
     /// Extract it's 5 most valuable cards (last cards).
     fn extract_last_cards(groupings: &[Vec<CardRef>]) -> Option<[CardRef; 5]> {
         if let Some(cards) = groupings.iter().rev().find(|v| v.len() >= 5) {
-            let cards = drain![cards[cards.len() - 5..].iter().cloned(); 5];
+            let cards = fill_array![cards[cards.len() - 5..].iter().cloned(); 5];
             Some(cards)
         } else {
             None

@@ -39,16 +39,18 @@ impl Hand {
     /// If given a slice of length 0, return immediately with an error.
     pub fn ranking(
         cards: &[CardRef],
-        community_cards: &[Card],
+        community: &[CardRef],
     ) -> Result<(Rank, Vec<CardRef>), RankErr> {
+        let cards: Vec<CardRef> = cards.iter().chain(community.iter()).cloned().collect();
+
         if cards.is_empty() {
             Err(RankErr::Explained(format!(
                 "No cards were given. Cards: {:?}",
                 cards
             )))
         } else {
-            let pair_rank = Hand::pair_rank(cards)?;
-            let option_sf = Hand::straight_flush_rank(cards);
+            let pair_rank = Hand::pair_rank(&cards)?;
+            let option_sf = Hand::straight_flush_rank(&cards);
 
             // Compare and return the biggest rank
             let rank = match option_sf {
@@ -70,8 +72,8 @@ impl Hand {
         self.cards.is_empty()
     }
 
-    pub fn update(&mut self, community_cards: &[Card]) -> Result<(), RankErr> {
-        let (rank, kickers) = Hand::ranking(&self.cards, community_cards)?;
+    pub fn update(&mut self, community: &[CardRef]) -> Result<(), RankErr> {
+        let (rank, kickers) = Hand::ranking(&self.cards, community)?;
 
         self.rank = rank;
         self.kickers = kickers;
@@ -86,8 +88,8 @@ impl Hand {
     /// The exception to the rule is if the slice of cards have a size of 0
     /// or something internally went wrong.
     pub fn pair_rank(cards: &[CardRef]) -> Result<Rank, RankErr> {
-        let pair_groups = Hand::pair_groups(cards);
-        let pair_iter = pair_groups.iter().rev().map(|p| p.as_slice());
+        let mut pair_groups = Hand::pair_groups(cards);
+        let pair_iter = pair_groups.iter_mut().rev();
 
         // Define some
         let mut quads = None;
@@ -97,38 +99,35 @@ impl Hand {
 
         // Build some
         for cards in pair_iter {
-            match cards.len() {
+            let len = cards.len();
+            let iter = cards.drain(..);
+
+            match len {
                 // Return immediately since Fives can't be beaten
-                5 => return Rank::Fives(*array_ref![cards, 0, 5]),
-                4 if quads.is_none() => quads = Some(*array_ref![cards, 0, 4]),
-                3 if trips.is_none() => trips = Some(*array_ref![cards, 0, 3]),
+                5 => return Rank::Fives(drain![iter; 5]),
+                4 if quads.is_none() => quads = Some(drain!(iter; 4)),
+                3 if trips.is_none() => trips = Some(drain!(iter; 3)),
                 2 => {
                     if pairs.0.is_none() {
-                        pairs.0 = Some(*array_ref![cards, 0, 2])
+                        pairs.0 = Some(drain!(iter; 2))
                     } else if pairs.1.is_none() {
-                        pairs.1 = Some(*array_ref![cards, 0, 2])
+                        pairs.1 = Some(drain!(iter; 2))
                     }
                 }
-                1 if high.is_none() => high = Some(*array_ref![cards, 0, 1]),
+                1 if high.is_none() => high = Some(drain!(iter; 1)),
                 _ => (),
             }
         }
 
         // Get some
-        if let Some(quads) = quads {
-            Rank::Quads(quads)
-        } else if let (Some(trips), Some(pair)) = (trips, pairs.0) {
-            Rank::House(trips, pair)
-        } else if let Some(trips) = trips {
-            Rank::Trips(trips)
-        } else if let (Some(pair0), Some(pair1)) = (pairs.0, pairs.1) {
-            Rank::TwoPair(pair1, pair0) // Notice that pair1 comes before pair0
-        } else if let Some(pair) = pairs.0 {
-            Rank::Pair(pair)
-        } else if let Some(high) = high {
-            Rank::High(high)
-        } else {
-            Err(RankErr::Explained(format!("TODO Error: {:#?}", cards)))
+        match (quads, trips, pairs, high) {
+            (Some(quads), _, _, _) => Rank::Quads(quads),
+            (_, Some(trips), (Some(pair), _), _) => Rank::House(trips, pair),
+            (_, Some(trips), _, _) => Rank::Trips(trips),
+            (_, _, (Some(pair0), Some(pair1)), _) => Rank::TwoPair(pair0, pair1),
+            (_, _, (Some(pair), _), _) => Rank::Pair(pair),
+            (_, _, _, Some(high)) => Rank::High(high),
+            _ => Err(RankErr::Explained(format!("TODO Error: {:#?}", cards))),
         }
     }
 
@@ -192,8 +191,8 @@ impl Hand {
                 temp_vec.push(card);
             } else {
                 pairs.push(temp_vec);
-                temp_vec = vec![card];
                 prev_rank = card.rank;
+                temp_vec = vec![card];
             }
         }
 
@@ -217,8 +216,8 @@ impl Hand {
 
         // First card initiates things
         if let Some(first_card) = iter.next() {
-            temp_vec = vec![first_card];
             prev_suit = first_card.suit;
+            temp_vec = vec![first_card];
 
         // No cards in cards
         } else {
@@ -231,8 +230,8 @@ impl Hand {
                 temp_vec.push(card);
             } else {
                 flush_groupings.push(temp_vec);
-                temp_vec = vec![card];
                 prev_suit = card.suit;
+                temp_vec = vec![card];
             }
         }
 
@@ -272,14 +271,14 @@ impl Hand {
         // Iterate over rest of cards
         for card in iter {
             if card.rank == prev_rank.step(1) {
+                prev_rank = card.rank;
                 temp_vec.push(card);
             // Drop temp_vec into straight_groupings and start a new one
             } else {
                 straight_groupings.push(temp_vec);
+                prev_rank = card.rank;
                 temp_vec = vec![card];
             }
-
-            prev_rank = card.rank;
         }
 
         straight_groupings.push(temp_vec);
@@ -290,7 +289,7 @@ impl Hand {
                 if ace.rank == card::Rank::Ace && king.rank == card::Rank::King =>
             {
                 let mut broadway = broadway.clone();
-                broadway.push(*ace);
+                broadway.push(ace.clone());
                 straight_groupings.push(broadway);
             }
             (Some(_), Some(_), None) => {
@@ -324,8 +323,7 @@ impl Hand {
     /// Extract it's 5 most valuable cards (last cards).
     fn extract_last_cards(groupings: &[Vec<CardRef>]) -> Option<[CardRef; 5]> {
         if let Some(cards) = groupings.iter().rev().find(|v| v.len() >= 5) {
-            let cards = &cards[cards.len() - 5..];
-            let cards = [cards[0], cards[1], cards[2], cards[3], cards[4]];
+            let cards = drain![cards[cards.len() - 5..].iter().cloned(); 5];
             Some(cards)
         } else {
             None

@@ -13,7 +13,26 @@ impl Rank {}
 
 type CardRef = Rc<Card>;
 
+macro_rules! explained {
+    ($string:expr, $($value:expr),*) => {
+        Err(RankErr::Explained(format!($string, $( $value, )*)))
+    };
+}
+
+macro_rules! unsorted {
+    ($value:expr) => {
+        Err(RankErr::Unsorted($value))
+    };
+}
+
+macro_rules! invalid {
+    ($value:expr) => {
+        Err(RankErr::Invalid($value))
+    };
+}
+
 impl Rank {
+    /// Constructors
     /// Always Returns one high card.
     pub fn High(card: [CardRef; 1]) -> ResultRank {
         Ok(Rank(RankInner::High(card)))
@@ -22,67 +41,73 @@ impl Rank {
     /// Returns Pair, if both cards share the same rank
     /// and suit are ordered.
     pub fn Pair(cards: [CardRef; 2]) -> ResultRank {
-        let rank = Rank(RankInner::Pair(cards));
+        let rank = |cards| Rank(RankInner::Pair(cards));
 
         if cards[0].rank != cards[1].rank {
-            Err(RankErr::Invalid(rank))
+            invalid!(rank(cards))
         } else if cards[0] > cards[1] {
-            Err(RankErr::Unsorted(rank))
+            unsorted!(rank(cards))
         } else {
-            Ok(rank)
+            Ok(rank(cards))
         }
     }
 
     /// Returns Two Pairs, if both pairs is sufficient pairs and
     /// pair.0 is the least significant pair.Ace
     pub fn TwoPair(pair0: [CardRef; 2], pair1: [CardRef; 2]) -> ResultRank {
-        let rank = Rank(RankInner::TwoPair(pair0, pair1));
+        // Value to be returned.
+        // Create TwoPair out of Two Pairs inner array. Called once.
+        let rank = |pair0: Rank, pair1: Rank| {
+            if let (RankInner::Pair(pair0), RankInner::Pair(pair1)) = (pair0.0, pair1.0) {
+                Rank(RankInner::TwoPair(pair0, pair1))
+            } else {
+                unreachable!()
+            }
+        };
 
-        if let Err(E) = Rank::Pair(pair0) {
-            Err(RankErr::Explained(format!(
-                "In Rank::TwoPair with rank: {:?} Pair 1 of 2 returned: {:?}",
-                rank, E,
-            )))
-        } else if let Err(E) = Rank::Pair(pair1) {
-            Err(RankErr::Explained(format!(
-                "In Rank::TwoPair with rank: {:?} Pair 2 of 2 returned: {:?}",
-                rank, E,
-            )))
-        } else if pair0[0].rank == pair1[0].rank {
-            Err(RankErr::Explained(format!(
-                "In Rank::TwoPair with rank: {:?} Pairs are actually Quads.",
-                rank,
-            )))
-        } else if pair0 > pair1 {
-            Err(RankErr::Unsorted(rank))
-        } else {
-            Ok(rank)
+        // Error format to be used
+        macro_rules! err {
+            () => {
+                "In Rank::TwoPair: [ pair0: {:?}, pair1: {:?} ]"
+            };
+        }
+
+        match (Rank::Pair(pair0), Rank::Pair(pair1)) {
+            (Err(E), pair1) => explained!(err!(), E, pair1),
+            (pair0, Err(E)) => explained!(err!(), pair0, E),
+            (Ok(pair0), Ok(pair1)) => {
+                if pair0 > pair1 {
+                    unsorted!(rank(pair0, pair1))
+                } else {
+                    Ok(rank(pair0, pair1))
+                }
+            }
         }
     }
 
     ///
     pub fn Trips(cards: [CardRef; 3]) -> ResultRank {
-        let rank = Rank(RankInner::Trips(cards));
+        let rank = |cards| Rank(RankInner::Trips(cards));
 
         if cards[0].rank != cards[1].rank || cards[1].rank != cards[2].rank {
-            Err(RankErr::Invalid(rank))
+            invalid!(rank(cards))
         } else if cards[0] > cards[1] || cards[1] > cards[2] {
-            Err(RankErr::Unsorted(rank))
+            unsorted!(rank(cards))
         } else {
-            Ok(rank)
+            Ok(rank(cards))
         }
     }
 
     ///
     pub fn Straight(cards: [CardRef; 5]) -> ResultRank {
-        let rank = Rank(RankInner::Straight(cards));
+        let rank = |cards| Rank(RankInner::Straight(cards));
 
         let ranks = if cards[3].rank == King {
             if cards[4].rank != Ace {
-                return Err(RankErr::Explained(format!(
+                return explained!(
                     "In Rank::Straight with rank: {:?} King not followed by Ace",
-                    rank
-                )));
+                    rank(cards)
+                );
             }
 
             &cards[0..3]
@@ -95,122 +120,207 @@ impl Rank {
         // Ace is not included in this range. See above
         for i in 0..ranks.len() {
             if ranks[0].rank as u8 + i as u8 != ranks[i].rank as u8 {
-                return Err(RankErr::Invalid(rank));
+                return Err(RankErr::Invalid(rank(cards)));
             }
         }
 
-        Ok(rank)
+        Ok(rank(cards))
     }
 
     ///
     pub fn Flush(cards: [CardRef; 5]) -> ResultRank {
-        let rank = Rank(RankInner::Flush(cards));
+        let rank = |cards| Rank(RankInner::Flush(cards));
 
         // See if all suits match
         for card in &cards {
             if cards[0].suit != card.suit {
-                return Err(RankErr::Invalid(rank));
+                return Err(RankErr::Invalid(rank(cards)));
             }
         }
 
         // See if cards are sorted
         for i in 0..=3 {
             if cards[i] > cards[i + 1] {
-                return Err(RankErr::Unsorted(rank));
+                return Err(RankErr::Unsorted(rank(cards)));
             }
         }
 
-        Ok(rank)
+        Ok(rank(cards))
     }
 
     pub fn House(trips: [CardRef; 3], pair: [CardRef; 2]) -> ResultRank {
-        let rank = Rank(RankInner::House(trips, pair));
+        // Value to be returned
+        let rank = |trips: Rank, pair: Rank| {
+            if let (RankInner::Trips(trips), RankInner::Pair(pair)) = (trips.0, pair.0) {
+                Rank(RankInner::House(trips, pair))
+            } else {
+                unreachable!()
+            }
+        };
+
+        // Error format to used returned
+        macro_rules! err {
+            () => {
+                "In Rank::House: [trips: {:?}, pair: {:?}]."
+            };
+        }
 
         // See if both Trips and Pair is ok and return rank
         // Else return an explained error
-        if let Err(E) = Rank::Trips(trips) {
-            Err(RankErr::Explained(format!(
-                "In Rank::House with rank: {:?} Function Trips returned: {:?}",
-                rank, E
-            )))
-        } else if let Err(E) = Rank::Pair(pair) {
-            Err(RankErr::Explained(format!(
-                "In Rank::House with rank: {:?} Function Pair returned: {:?}",
-                rank, E
-            )))
-        } else {
-            Ok(rank)
+        match (Rank::Trips(trips), Rank::Pair(pair)) {
+            (Err(E), pair) => explained!(err!(), E, pair),
+            (trips, Err(E)) => explained!(err!(), trips, E),
+            (Ok(trips), Ok(pair)) => Ok(rank(trips, pair)),
         }
     }
 
     pub fn Quads(cards: [CardRef; 4]) -> ResultRank {
-        let rank = Rank(RankInner::Quads(cards));
+        let rank = |cards| Rank(RankInner::Quads(cards));
         // See if all ranks match
         for card in &cards {
             if cards[0].rank != card.rank {
-                return Err(RankErr::Invalid(rank));
+                return invalid!(rank(cards));
             }
         }
 
         // See if cards are sorted
         for i in 0..=2 {
             if cards[i] > cards[i + 1] {
-                return Err(RankErr::Unsorted(rank));
+                return unsorted!(rank(cards));
             }
         }
 
-        Ok(rank)
+        Ok(rank(cards))
     }
 
-    pub fn StraightFlush(sf: [CardRef; 5]) -> ResultRank {
-        let rank = Rank(RankInner::StraightFlush(sf));
+    pub fn StraightFlush(cards: [CardRef; 5]) -> ResultRank {
+        let rank = |cards| Rank(RankInner::StraightFlush(cards));
 
-        if let Err(E) = Rank::Straight(sf) {
-            Err(RankErr::Explained(format!(
-                "In Rank::StraightFlush with rank: {:?} Function Rank::Straight returned: {:?}",
-                rank, E
-            )))
-        } else if let Err(E) = {
-            // Ace is always sorted last for Flush()
-            if sf[4].rank == Ace {
-                Rank::Flush([sf[4], sf[0], sf[1], sf[2], sf[3]])
-            } else {
-                Rank::Flush(sf)
+        let mut cards = match Rank::Straight(cards) {
+            Ok(Straight) => Straight.drop_Straight(),
+            Err(E) => {
+                return explained!(
+                    "In Rank::StraightFlush: Function Rank::Straight returned: {:?}",
+                    E
+                )
             }
-        } {
-            Err(RankErr::Explained(format!(
-                "In Rank::StraightFlush with rank: {:?}. Function Rank::Flush returned: {:?}",
-                rank, E
-            )))
+        };
+
+        let flush_check = |cards| match Rank::Flush(cards) {
+            Ok(Flush) => Ok(Flush.drop_Flush()),
+            Err(E) => {
+                return explained!(
+                    "In Rank::StraightFlush: Function Rank::Flush returned: {:?}",
+                    E
+                )
+            }
+        };
+
+        let cards = if cards[4].rank == Ace {
+            cards.rotate_right(1);
+            let mut cards = flush_check(cards)?;
+            cards.rotate_left(1);
+            cards
         } else {
-            Ok(rank)
-        }
+            flush_check(cards)?
+        };
+
+        Ok(rank(cards))
     }
 
     pub fn Fives(cards: [CardRef; 5]) -> ResultRank {
-        let rank = Rank(RankInner::Fives(cards));
+        let rank = |cards| Rank(RankInner::Fives(cards));
 
         // See if all values match
         for card in &cards {
             if cards[0].rank != card.rank {
-                return Err(RankErr::Invalid(rank));
+                return invalid!(rank(cards));
             }
         }
 
         // See if cards are sorted
         for i in 0..=2 {
             if cards[i] > cards[i + 1] {
-                return Err(RankErr::Unsorted(rank));
+                return unsorted!(rank(cards));
             }
         }
 
-        Ok(rank)
+        Ok(rank(cards))
+    }
+}
+
+impl Rank {
+    /// Deconstructor
+
+    pub fn drop_High(self) -> [CardRef; 1] {
+        match self.0 {
+            RankInner::High(cards) => cards,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn drop_Pair(self) -> [CardRef; 2] {
+        match self.0 {
+            RankInner::Pair(cards) => cards,
+            _ => unreachable!(),
+        }
+    }
+    pub fn drop_TwoPair(self) -> ([CardRef; 2], [CardRef; 2]) {
+        match self.0 {
+            RankInner::TwoPair(cards0, cards1) => (cards0, cards1),
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn drop_Trips(self) -> [CardRef; 3] {
+        match self.0 {
+            RankInner::Trips(cards) => cards,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn drop_Straight(self) -> [CardRef; 5] {
+        match self.0 {
+            RankInner::Straight(cards) => cards,
+            _ => unreachable!(),
+        }
+    }
+    pub fn drop_Flush(self) -> [CardRef; 5] {
+        match self.0 {
+            RankInner::Flush(cards) => cards,
+            _ => unreachable!(),
+        }
+    }
+    pub fn drop_House(self) -> ([CardRef; 3], [CardRef; 2]) {
+        match self.0 {
+            RankInner::House(trips, pair) => (trips, pair),
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn drop_Quads(self) -> [CardRef; 4] {
+        match self.0 {
+            RankInner::Quads(cards) => cards,
+            _ => unreachable!(),
+        }
+    }
+    pub fn drop_StraightFlush(self) -> [CardRef; 5] {
+        match self.0 {
+            RankInner::StraightFlush(cards) => cards,
+            _ => unreachable!(),
+        }
+    }
+    pub fn drop_Fives(self) -> [CardRef; 5] {
+        match self.0 {
+            RankInner::Fives(cards) => cards,
+            _ => unreachable!(),
+        }
     }
 }
 
 impl fmt::Display for Rank {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.0 {
+        match &self.0 {
             RankInner::High(..) => write!(f, "High card"),
             RankInner::Pair(..) => write!(f, "Pair"),
             RankInner::TwoPair(..) => write!(f, "Two pairs"),
@@ -230,27 +340,18 @@ impl fmt::Display for Rank {
 
 impl Ord for Rank {
     fn cmp(&self, other: &Self) -> Ordering {
-        let default = || self.cmp(other);
-
-        let ord: Option<Ordering> = match (self.0, other.0) {
-            (RankInner::High(this), RankInner::High(other)) => {
-                if this[0].rank == other[0].rank {
-                    Some(default())
-                } else if this[0].rank == Ace {
-                    Some(Ordering::Greater)
-                } else if other[0].rank == Ace {
-                    Some(Ordering::Less)
-                } else {
-                    Some(default())
-                }
+        if let (RankInner::High(high0), RankInner::High(high1)) = (&self.0, &other.0) {
+            if high0[0].rank == high1[0].rank {
+                self.cmp(other)
+            } else if high0[0].rank == Ace {
+                Ordering::Greater
+            } else if high1[0].rank == Ace {
+                Ordering::Less
+            } else {
+                self.cmp(other)
             }
-            _ => Some(default()),
-        };
-
-        if let Some(Ordering) = ord {
-            Ordering
         } else {
-            default()
+            self.cmp(other)
         }
     }
 }

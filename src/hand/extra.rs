@@ -3,10 +3,13 @@ use crate::{card, ranks, suits};
 
 use std::convert::TryFrom;
 use std::convert::TryInto;
+use std::rc::Rc;
 
 extern crate rand;
 use rand::seq::SliceRandom;
 use rand::Rng;
+
+type CardRef = Rc<Card>;
 
 /// Creates a random, valid high card.
 /// # Example
@@ -17,8 +20,8 @@ use rand::Rng;
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn high_card() -> [Card; 1] {
-    [card!(&mut rand::thread_rng())]
+pub fn high_card() -> [CardRef; 1] {
+    [Rc::new(card!(&mut rand::thread_rng()))]
 }
 
 /// Creates a random, valid pair of cards.
@@ -30,7 +33,7 @@ pub fn high_card() -> [Card; 1] {
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn pair_cards() -> [Card; 2] {
+pub fn pair_cards() -> [CardRef; 2] {
     let mut rng = rand::thread_rng();
 
     let rank = Rank::try_from(rng.gen_range(1, 13)).unwrap();
@@ -39,7 +42,7 @@ pub fn pair_cards() -> [Card; 2] {
     // Suit's must differ so to not make the same card.
     let mut pair = card!(rank, suits[0]; rank, suits[1]);
     pair.sort();
-    pair
+    drain![pair.iter().map(|c| Rc::new(*c)); 2] 
 }
 
 /// Creates a random, valid 2 pairs of cards.
@@ -52,7 +55,7 @@ pub fn pair_cards() -> [Card; 2] {
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn two_pairs_cards() -> ([Card; 2], [Card; 2]) {
+pub fn two_pairs_cards() -> ([CardRef; 2], [CardRef; 2]) {
     loop {
         let cards = (pair_cards(), pair_cards());
 
@@ -75,7 +78,7 @@ pub fn two_pairs_cards() -> ([Card; 2], [Card; 2]) {
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn trips_cards() -> [Card; 3] {
+pub fn trips_cards() -> [CardRef; 3] {
     let mut rng = rand::thread_rng();
 
     let rank = ranks!(&mut rng)[0];
@@ -89,7 +92,7 @@ pub fn trips_cards() -> [Card; 3] {
     );
 
     trips.sort();
-    trips
+    drain![trips.iter().map(|c| Rc::new(*c)); 3] 
 }
 
 /// Creates a random, valid straight.
@@ -101,7 +104,7 @@ pub fn trips_cards() -> [Card; 3] {
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn straight_cards() -> [Card; 5] {
+pub fn straight_cards() -> [CardRef; 5] {
     let mut rng = rand::thread_rng();
 
     // Generate one value in range: [Ace - Ten]
@@ -112,13 +115,14 @@ pub fn straight_cards() -> [Card; 5] {
 
     // Make sure that 2 cards don't share a suit,
     // as it prevents creating a straight flush
-    card!(
+    let cards = card!(
         rank,         suits[0];
         rank.step(1), suits[1];
         rank.step(2), suits[rng()];
         rank.step(3), suits[rng()];
         rank.step(4), suits[rng()]
-    )
+    );
+    drain![cards.into_iter().map(|c| Rc::new(*c)); 5] 
 }
 
 /// Creates a random, valid flush.
@@ -130,7 +134,7 @@ pub fn straight_cards() -> [Card; 5] {
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn flush_cards() -> [Card; 5] {
+pub fn flush_cards() -> [CardRef; 5] {
     let mut rng = rand::thread_rng();
 
     let ranks: [Rank; 5] = loop {
@@ -144,13 +148,14 @@ pub fn flush_cards() -> [Card; 5] {
 
     let suit = suits!(&mut rng)[0];
 
-    card!(
+    let cards = card!(
         ranks[0], suit;
         ranks[1], suit;
         ranks[2], suit;
         ranks[3], suit;
         ranks[4], suit
-    )
+    );
+    drain![cards.into_iter().map(|c| Rc::new(*c)); 5] 
 }
 
 /// Creates a random, valid house of cards.
@@ -163,7 +168,7 @@ pub fn flush_cards() -> [Card; 5] {
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn house_cards() -> ([Card; 3], [Card; 2]) {
+pub fn house_cards() -> ([CardRef; 3], [CardRef; 2]) {
     (trips_cards(), pair_cards())
 }
 
@@ -176,18 +181,19 @@ pub fn house_cards() -> ([Card; 3], [Card; 2]) {
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn quad_cards() -> [Card; 4] {
+pub fn quad_cards() -> [CardRef; 4] {
     let mut rng = rand::thread_rng();
     let rank = Rank::try_from(rng.gen_range(0, 12)).unwrap();
     let suits = suits!();
 
     // Suit's must differ so to not make the same card.
-    card!(
+    let cards = card!(
         rank, suits[0];
         rank, suits[1];
         rank, suits[2];
         rank, suits[3]
-    )
+    );
+    drain![cards.into_iter().map(|c| Rc::new(*c)); 4] 
 }
 
 /// Creates a random, valid five cards pair.
@@ -199,7 +205,7 @@ pub fn quad_cards() -> [Card; 4] {
 /// # }
 /// # Ok::<(), RankErr>(())
 /// ```
-pub fn five_cards() -> [Card; 5] {
+pub fn five_cards() -> [CardRef; 5] {
     let mut rng = rand::thread_rng();
 
     let rank = Rank::try_from(rng.gen_range(0, 12)).unwrap();
@@ -213,5 +219,5 @@ pub fn five_cards() -> [Card; 5] {
         rank, *suits.choose(&mut rng).unwrap()
     );
     cards.sort();
-    cards
+    drain![cards.into_iter().map(|c| Rc::new(*c)); 5] 
 }

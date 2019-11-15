@@ -69,3 +69,12 @@ macro_rules! hand {
     };
 
 }
+
+#[macro_export]
+macro_rules! drain {
+    {$iter:expr; $size:expr} => {{
+        use seq_macro::seq;
+        let mut iter = $iter;
+        seq!(_ in 0..$size {[#(iter.next().unwrap(),)*]})
+    }};
+}

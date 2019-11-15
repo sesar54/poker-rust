@@ -2,7 +2,7 @@
 mod hand {
 
     extern crate ace_of_spades as poker;
-    use poker::prelude::*;
+    use ace_of_spades::prelude::*;
 
     use std::thread;
 

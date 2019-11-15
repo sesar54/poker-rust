@@ -1,4 +1,9 @@
 //! A library for poker games
+//!
+//!
+
+#![feature(vec_drain_as_slice)]
+#![feature(proc_macro_hygiene)]
 #![warn(unused_import_braces, unused_qualifications, trivial_casts)]
 #![warn(trivial_numeric_casts, private_in_public, variant_size_differences)]
 #![warn(stable_features, unreachable_pub, non_shorthand_field_patterns)]
@@ -8,7 +13,7 @@
 #![forbid(unsafe_code)]
 
 #[macro_use]
-extern crate arrayref;
+extern crate seq_macro;
 
 // Help Modules
 #[macro_use]

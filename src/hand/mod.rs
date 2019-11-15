@@ -29,7 +29,7 @@ pub struct Hand {
  * sorted by the lowest value first and greatest value last (actually in what
  * order they are written).
  */
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd)]
 pub struct Rank(RankInner);
 
 #[derive(Debug)]
@@ -41,7 +41,7 @@ pub enum RankErr {
 
 type CardRef = Rc<Card>;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum RankInner {
     High([CardRef; 1]),
     Pair([CardRef; 2]),

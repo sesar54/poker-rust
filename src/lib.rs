@@ -12,7 +12,6 @@
 #![warn(unused_comparisons, bare_trait_objects, unused_must_use, const_err)]
 #![forbid(unsafe_code)]
 
-#[macro_use]
 extern crate seq_macro;
 
 // Help Modules

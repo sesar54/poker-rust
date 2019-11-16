@@ -14,7 +14,7 @@ impl Card {
     ///
     /// # Example
     /// ```rust
-    /// # use ace_of_spades::card::face::*;
+    /// # use aces_high::card::face::*;
     /// let card = Card::new(Rank::King, Suit::Hearts);
     /// ```
     pub fn new(rank: Rank, suit: Suit) -> Card {
@@ -40,7 +40,7 @@ impl fmt::Display for Card {
     /// Formats `Card` into a human readable string.
     /// # Example
     /// ```
-    /// # use ace_of_spades::{*, card::face::*};
+    /// # use aces_high::{*, card::face::*};
     /// assert_eq!(format!("{}", card!(Ace, Spades)), "Ace of Spades");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -54,7 +54,7 @@ impl fmt::Debug for Card {
     /// Second character depicts the cards `Suit`.
     /// # Example
     /// ```
-    /// # use ace_of_spades::{*, card::face::*};
+    /// # use aces_high::{*, card::face::*};
     /// assert_eq!(format!("{:?}", card!(King, Diamonds)), "KD");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -69,7 +69,7 @@ impl Into<u8> for Card {
     /// `Suit` gets inscribed into the last 4 bits.
     /// # Example
     /// ```
-    /// # use ace_of_spades::card::face::*;
+    /// # use aces_high::card::face::*;
     /// let u: u8 = Card::new(Ace, Spades).into();
     /// assert_eq!(u, 0x13);
     /// ```
@@ -87,7 +87,7 @@ impl TryFrom<u8> for Card {
     ///
     /// # Example
     /// ```
-    /// # use ace_of_spades::card::face::*;
+    /// # use aces_high::card::face::*;
     /// use std::convert::TryFrom;
     /// assert_eq!(Card::try_from(0x13).unwrap(), Card::new(Ace, Spades));
     /// ```
@@ -102,7 +102,7 @@ impl Into<[char; 2]> for Card {
     /// Second character depicts the cards `Suit`.
     /// # Example
     /// ```
-    /// # use ace_of_spades::{*, card::face::*};
+    /// # use aces_high::{*, card::face::*};
     /// let chars: [char; 2] = card!(Queen, Hearts).into();
     /// assert_eq!(chars, ['Q', 'H']);
     /// ```
@@ -119,7 +119,7 @@ impl TryFrom<[char; 2]> for Card {
     /// Second character depicts the cards `Suit`.
     /// # Example
     /// ```
-    /// # use ace_of_spades::{*, card::face::*};
+    /// # use aces_high::{*, card::face::*};
     /// use std::convert::TryFrom;
     /// assert_eq!(Card::try_from(['2','C']).unwrap(), card!(Two, Clubs));
     fn try_from(c: [char; 2]) -> Result<Self, Self::Error> {
@@ -138,7 +138,7 @@ impl super::Circular<i32> for Suit {
     /// Returns the n'th neighbor.
     /// # Examples
     /// ```rust
-    /// use ace_of_spades::card::{Circular, Rank::*};
+    /// use aces_high::card::{Circular, Rank::*};
     ///
     /// let val = Wild;
     /// assert_eq!(val.step(1), Wild);
@@ -209,7 +209,7 @@ impl super::Circular<i32> for Rank {
     /// Returns the n'th neighbor.
     /// # Examples
     /// ```rust
-    /// use ace_of_spades::card::{Circular, Rank::*};
+    /// use aces_high::card::{Circular, Rank::*};
     ///
     /// let val = Wild;
     /// assert_eq!(val.step(1), Wild);

@@ -14,7 +14,7 @@ type CardRef = Rc<Card>;
 /// Creates a random, valid high card.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// Rank::High(high_card())?;
 /// # }
@@ -27,7 +27,7 @@ pub fn high_card() -> [CardRef; 1] {
 /// Creates a random, valid pair of cards.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// Rank::Pair(pair_cards())?;
 /// # }
@@ -48,7 +48,7 @@ pub fn pair_cards() -> [CardRef; 2] {
 /// Creates a random, valid 2 pairs of cards.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// let pairs = two_pairs_cards();
 /// Rank::TwoPair(pairs.0, pairs.1)?;
@@ -72,7 +72,7 @@ pub fn two_pairs_cards() -> ([CardRef; 2], [CardRef; 2]) {
 /// Creates a random, valid trips of cards.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// Rank::Trips(trips_cards())?;
 /// # }
@@ -98,7 +98,7 @@ pub fn trips_cards() -> [CardRef; 3] {
 /// Creates a random, valid straight.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// Rank::Straight(straight_cards())?;
 /// # }
@@ -128,7 +128,7 @@ pub fn straight_cards() -> [CardRef; 5] {
 /// Creates a random, valid flush.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// Rank::Flush(flush_cards())?;
 /// # }
@@ -161,7 +161,7 @@ pub fn flush_cards() -> [CardRef; 5] {
 /// Creates a random, valid house of cards.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// let (trips, pair) = house_cards();
 /// Rank::House(trips, pair)?;
@@ -175,7 +175,7 @@ pub fn house_cards() -> ([CardRef; 3], [CardRef; 2]) {
 /// Creates a random, valid quad.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// Rank::Quads(quad_cards())?;
 /// # }
@@ -199,7 +199,7 @@ pub fn quad_cards() -> [CardRef; 4] {
 /// Creates a random, valid five cards pair.
 /// # Example
 /// ```
-/// # use ace_of_spades::hand::*;
+/// # use aces_high::hand::*;
 /// # for _ in 0..1_000 {
 /// Rank::Fives(five_cards())?;
 /// # }

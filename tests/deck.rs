@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate ace_of_spades as poker;
+extern crate aces_high as poker;
 
 #[cfg(test)]
 mod deck {

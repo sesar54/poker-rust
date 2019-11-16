@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod hand {
 
-    extern crate ace_of_spades as poker;
-    use ace_of_spades::prelude::*;
+    extern crate aces_high as poker;
+    use poker::prelude::*;
 
     use std::thread;
 

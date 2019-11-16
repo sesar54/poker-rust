@@ -182,7 +182,7 @@ impl Hand {
         // Value to be returned
         let mut pairs: Vec<Vec<CardRef>> = Vec::new();
         // Main Sequence Generator
-        let mut iter = cards.iter().cloned().peekable();
+        let mut iter = cards.iter().cloned().peekable(); // TODO Should not need peekable()
         let mut temp_vec: Vec<CardRef> = Vec::new();
         let mut prev_rank = iter.peek().unwrap().rank;
 

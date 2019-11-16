@@ -45,7 +45,7 @@ impl Deck {
     ///
     /// # Example
     /// ```
-    /// # use ace_of_spades::prelude::*;
+    /// # use aces_high::prelude::*;
     /// #
     /// let mut deck = Deck::new_sorted();
     /// //assert!(deck.is_sorted());
@@ -68,7 +68,7 @@ impl Deck {
     ///
     /// # Example
     /// ```
-    /// # use ace_of_spades::prelude::*;
+    /// # use aces_high::prelude::*;
     /// let mut deck = Deck::new_shuffled();
     /// println!("{:?}", deck.draw());
     /// ```
@@ -82,7 +82,7 @@ impl Deck {
     ///
     /// # Example
     /// ```
-    /// # use ace_of_spades::prelude::*;
+    /// # use aces_high::prelude::*;
     /// # use card::face::*;
     /// let mut deck = Deck::new_custom(&card!(King, Hearts; Ace, Spades));
     /// assert_eq!(deck.draw().unwrap(), card!(Ace, Spades));

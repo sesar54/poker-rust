@@ -2,7 +2,6 @@
 //!
 //!
 
-#![feature(vec_drain_as_slice)]
 #![feature(proc_macro_hygiene)]
 #![warn(unused_import_braces, unused_qualifications, trivial_casts)]
 #![warn(trivial_numeric_casts, private_in_public, variant_size_differences)]
@@ -12,7 +11,6 @@
 #![warn(unused_comparisons, bare_trait_objects, unused_must_use, const_err)]
 #![forbid(unsafe_code)]
 
-#[macro_use]
 extern crate seq_macro;
 
 // Help Modules

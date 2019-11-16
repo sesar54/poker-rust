@@ -97,21 +97,26 @@ impl Hand {
         // Build some
         for cards in pair_iter {
             let len = cards.len();
-            let iter = cards.drain(..);
+
+            macro_rules! carrd {
+                ($i:expr) => {
+                    into_array![cards.drain(..); $i].unwrap()
+                };
+            };
 
             match len {
                 // Return immediately since Fives can't be beaten
-                5 => return Rank::Fives(fill_array![iter; 5]),
-                4 if quads.is_none() => quads = Some(fill_array!(iter; 4)),
-                3 if trips.is_none() => trips = Some(fill_array!(iter; 3)),
+                5 => return Rank::Fives(carrd!(5)),
+                4 if quads.is_none() => quads = Some(carrd!(4)),
+                3 if trips.is_none() => trips = Some(carrd!(3)),
                 2 => {
                     if pairs.0.is_none() {
-                        pairs.0 = Some(fill_array!(iter; 2))
+                        pairs.0 = Some(carrd!(2))
                     } else if pairs.1.is_none() {
-                        pairs.1 = Some(fill_array!(iter; 2))
+                        pairs.1 = Some(carrd!(2))
                     }
                 }
-                1 if high.is_none() => high = Some(fill_array!(iter; 1)),
+                1 if high.is_none() => high = Some(carrd!(1)),
                 _ => (),
             }
         }
@@ -320,8 +325,13 @@ impl Hand {
     /// Extract it's 5 most valuable cards (last cards).
     fn extract_last_cards(groupings: &[Vec<CardRef>]) -> Option<[CardRef; 5]> {
         if let Some(cards) = groupings.iter().rev().find(|v| v.len() >= 5) {
-            let cards = fill_array![cards[cards.len() - 5..].iter().cloned(); 5];
-            Some(cards)
+            let cards = into_array![cards[cards.len()-5..].iter().cloned(); 5];
+
+            if cards.is_some() {
+                cards
+            } else {
+                unreachable!();
+            }
         } else {
             None
         }

@@ -70,12 +70,22 @@ macro_rules! hand {
 
 }
 
-/// Creates an array from yielding a iterator. 
+/// Creates an array from yielding a iterator.
 #[macro_export]
-macro_rules! fill_array {
+macro_rules! into_array {
     {$iter:expr; $size:expr} => {{
         use seq_macro::seq;
-        let mut iter = $iter;
-        seq!(_ in 0..$size {[#(iter.next().unwrap(),)*]})
+        let mut iter = $iter; // seq! does not like $iter, so rename is required
+
+        // Closure returns Option<[T; $size]>
+        (|| Some(
+            seq!(_ in 0..$size {
+                [
+                    #(
+                        iter.next()?,
+                    )*
+                ]
+            }
+        )))()
     }};
 }

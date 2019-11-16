@@ -42,7 +42,7 @@ pub fn pair_cards() -> [CardRef; 2] {
     // Suit's must differ so to not make the same card.
     let mut pair = card!(rank, suits[0]; rank, suits[1]);
     pair.sort();
-    fill_array![pair.iter().map(|c| Rc::new(*c)); 2]
+    into_array![pair.iter().map(|c| Rc::new(*c)); 2].unwrap()
 }
 
 /// Creates a random, valid 2 pairs of cards.
@@ -92,7 +92,7 @@ pub fn trips_cards() -> [CardRef; 3] {
     );
 
     trips.sort();
-    fill_array![trips.iter().map(|c| Rc::new(*c)); 3]
+    into_array![trips.iter().map(|c| Rc::new(*c)); 3].unwrap()
 }
 
 /// Creates a random, valid straight.
@@ -122,7 +122,7 @@ pub fn straight_cards() -> [CardRef; 5] {
         rank.step(3), suits[rng()];
         rank.step(4), suits[rng()]
     );
-    fill_array![cards.iter().map(|c| Rc::new(*c)); 5]
+    into_array![cards.iter().map(|c| Rc::new(*c)); 5].unwrap()
 }
 
 /// Creates a random, valid flush.
@@ -155,7 +155,7 @@ pub fn flush_cards() -> [CardRef; 5] {
         ranks[3], suit;
         ranks[4], suit
     );
-    fill_array![cards.iter().map(|c| Rc::new(*c)); 5]
+    into_array![cards.iter().map(|c| Rc::new(*c)); 5].unwrap()
 }
 
 /// Creates a random, valid house of cards.
@@ -193,7 +193,7 @@ pub fn quad_cards() -> [CardRef; 4] {
         rank, suits[2];
         rank, suits[3]
     );
-    fill_array![cards.iter().map(|c| Rc::new(*c)); 4]
+    into_array![cards.iter().map(|c| Rc::new(*c)); 4].unwrap()
 }
 
 /// Creates a random, valid five cards pair.
@@ -219,5 +219,5 @@ pub fn five_cards() -> [CardRef; 5] {
         rank, *suits.choose(&mut rng).unwrap()
     );
     cards.sort();
-    fill_array![cards.iter().map(|c| Rc::new(*c)); 5]
+    into_array![cards.iter().map(|c| Rc::new(*c)); 5].unwrap()
 }

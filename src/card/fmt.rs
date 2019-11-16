@@ -5,7 +5,7 @@ impl fmt::Display for Card {
     /// Formats `Card` into a human readable string.
     /// # Example
     /// ```
-    /// # use ace_of_spades::{*, card::face::*};
+    /// # use aces_high::{*, card::face::*};
     /// assert_eq!(format!("{}", card!(Ace, Spades)), "Ace of Spades");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -19,7 +19,7 @@ impl fmt::Debug for Card {
     /// Second character depicts the cards `Suit`.
     /// # Example
     /// ```
-    /// # use ace_of_spades::{*, card::face::*};
+    /// # use aces_high::{*, card::face::*};
     /// assert_eq!(format!("{:?}", card!(King, Diamonds)), "KD");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -35,33 +35,6 @@ impl Card {
     }
 }
 
-impl fmt::Display for Card {
-    /// Formats `Card` into a human readable string.
-    /// # Example
-    /// ```
-    /// # use aces_high::{*, card::face::*};
-    /// assert_eq!(format!("{}", card!(Ace, Spades)), "Ace of Spades");
-    /// ```
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?} of {:?}", self.rank, self.suit)
-    }
-}
-
-impl fmt::Debug for Card {
-    /// Formats `Card` into 2 characters.
-    /// First character depicts the cards `Rank`.
-    /// Second character depicts the cards `Suit`.
-    /// # Example
-    /// ```
-    /// # use aces_high::{*, card::face::*};
-    /// assert_eq!(format!("{:?}", card!(King, Diamonds)), "KD");
-    /// ```
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let chars: [char; 2] = [self.rank.into(), self.suit.into()];
-        write!(f, "{}{}", chars[0], chars[1])
-    }
-}
-
 impl Into<u8> for Card {
     /// Converts `Card` into `u8`.
     /// `Rank` gets inscribed into the first 4 bits.

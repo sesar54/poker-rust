@@ -72,7 +72,7 @@ macro_rules! hand {
 
 /// Creates an array from yielding a iterator.
 #[macro_export]
-macro_rules! into_array {
+macro_rules! to_array {
     {$iter:expr; $size:expr} => {{
         use seq_macro::seq;
         let mut iter = $iter; // seq! does not like $iter, so rename is required

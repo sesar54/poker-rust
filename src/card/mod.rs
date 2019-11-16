@@ -1,6 +1,6 @@
+mod fmt;
 mod r#impl;
 pub mod face;
-
 
 /// Basic Card struct.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -11,7 +11,7 @@ pub struct Card {
 
 /// Enum used by `card::Card`.
 /// It can be converted from and to both u8 and char as such:
-/// 
+///
 /// | enum     | u8 | char |
 /// | -------- | -- | ---- |
 /// | Clubs    | 0  | W    |
@@ -28,7 +28,7 @@ pub enum Suit {
 
 /// Enum used by `card::Card`.
 /// It can be converted from and to both u8 and char as such:
-/// 
+///
 /// | enum  | u8 | char |
 /// | ----- | -- | ---- |
 /// | Wild  | 0  | W    |

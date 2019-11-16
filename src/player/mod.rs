@@ -40,7 +40,7 @@ impl Player {
                 self.hand = Some(Hand::new(cards)?);
                 Ok(())
             }
-            _ => panic!(), //TODO
+            _ => panic!(), // TODO
         }
     }
 

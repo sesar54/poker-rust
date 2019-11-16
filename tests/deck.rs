@@ -6,10 +6,10 @@ mod deck {
     use poker::{card::face::*, deck::Deck};
 
     #[test]
-    #[ignore]
     fn test() {
         let cards = card!(Ace, Spades; King, Hearts);
         let deck = Deck::new_custom(&cards);
         println!("{:?}", deck);
+        println!("{:X}", cards[1]);
     }
 }

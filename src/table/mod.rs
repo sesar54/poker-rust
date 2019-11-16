@@ -9,7 +9,7 @@ pub struct Table {
 impl Table {
     pub fn deal(&mut self, size: usize) {
         for player in self.players.as_mut_slice() {
-            player.take(self.deck.deal(size).unwrap());
+            player.take(self.deck.deal(size).unwrap()).ok();
         }
     }
 }

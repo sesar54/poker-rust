@@ -70,8 +70,9 @@ macro_rules! hand {
 
 }
 
+/// Creates an array from yielding a iterator. 
 #[macro_export]
-macro_rules! drain {
+macro_rules! fill_array {
     {$iter:expr; $size:expr} => {{
         use seq_macro::seq;
         let mut iter = $iter;

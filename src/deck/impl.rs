@@ -2,6 +2,8 @@ use super::Deck;
 use crate::card::Card;
 use crate::{card, ranks, suits};
 
+use std::fmt;
+
 extern crate rand;
 use rand::prelude::SliceRandom;
 
@@ -107,5 +109,11 @@ impl Deck {
 impl Default for Deck {
     fn default() -> Self {
         Deck::new_shuffled()
+    }
+}
+
+impl fmt::Debug for Deck {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Deck {:?}", self.inner_deck)
     }
 }

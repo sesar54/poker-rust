@@ -8,7 +8,7 @@ use std::rc::*;
 
 type ResultRank = Result<Rank, RankErr>;
 
-#[allow(non_snake_case)] // Do not remove
+
 impl Rank {}
 
 type CardRef = Rc<Card>;
@@ -31,6 +31,7 @@ macro_rules! invalid {
     };
 }
 
+#[allow(non_snake_case)] // Do not remove
 impl Rank {
     /// Constructors
     /// Always Returns one high card.
@@ -249,6 +250,7 @@ impl Rank {
     }
 }
 
+#[allow(non_snake_case)] // Do not remove
 impl Rank {
     /// Deconstructor
 

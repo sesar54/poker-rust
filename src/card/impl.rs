@@ -3,7 +3,6 @@ use super::face::*;
 use std::char;
 use std::cmp::Ordering::*;
 use std::convert::TryFrom;
-use std::fmt;
 
 // -------------------------------------------------------------------------- //
 // Impl Card                                                                  //
@@ -133,7 +132,7 @@ impl TryFrom<[char; 2]> for Card {
 // Impl Suit enums                                                            //
 // -------------------------------------------------------------------------- //
 
-impl super::Circular<i32> for Suit {
+impl super::Circular<isize> for Suit {
     /// Cycles over the elements of `Suit`, starting at `self`.
     /// Returns the n'th neighbor.
     /// # Examples
@@ -153,8 +152,8 @@ impl super::Circular<i32> for Suit {
     /// assert_eq!(val.step(13), Ace);
     /// assert_eq!(val.step(-13), Ace);
     /// ```
-    fn step(self, n: i32) -> Self {
-        Suit::from(((self as i32 + n) % 4) as u8)
+    fn step(self, n: isize) -> Self {
+        Suit::from(((self as isize + n) % 4) as u8)
     }
 }
 
@@ -174,7 +173,7 @@ impl From<u8> for Suit {
 impl TryFrom<char> for Suit {
     type Error = String;
 
-    /// Tries to convert `ASCII char` to `Suit`, 
+    /// Tries to convert `ASCII char` to `Suit`,
     /// by mapping each enum to a upper character.
     /// Can take lower characters.
     fn try_from(c: char) -> Result<Self, Self::Error> {
@@ -204,7 +203,7 @@ impl Into<char> for Suit {
 // Impl Value enums                                                           //
 // -------------------------------------------------------------------------- //
 
-impl super::Circular<i32> for Rank {
+impl super::Circular<isize> for Rank {
     /// Cycles over the elements of `Rank`, starting at `self`.
     /// Returns the n'th neighbor.
     /// # Examples
@@ -224,11 +223,11 @@ impl super::Circular<i32> for Rank {
     /// assert_eq!(val.step(13), Ace);
     /// assert_eq!(val.step(-13), Ace);
     /// ```
-    fn step(self, i: i32) -> Self {
+    fn step(self, i: isize) -> Self {
         if self == Wild {
             self
         } else {
-            Rank::try_from((((self as i32 + i - 1) % 13) + 1) as u8).unwrap()
+            Rank::try_from((((self as isize + i - 1) % 13) + 1) as u8).unwrap()
         }
     }
 }
@@ -262,7 +261,6 @@ impl TryFrom<u8> for Rank {
 }
 
 impl Into<char> for Rank {
-
     /// Converts `self` to `char` by mapping.
     fn into(self) -> char {
         match self {
@@ -280,7 +278,7 @@ impl Into<char> for Rank {
 impl TryFrom<char> for Rank {
     type Error = String;
 
-    /// Tries to convert `ASCII char` to `Rank`, 
+    /// Tries to convert `ASCII char` to `Rank`,
     /// by mapping each enum to a upper character.
     /// Can take lower characters.
     fn try_from(c: char) -> Result<Self, Self::Error> {

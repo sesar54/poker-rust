@@ -100,7 +100,7 @@ impl Hand {
 
             macro_rules! carrd {
                 ($i:expr) => {
-                    into_array![cards.drain(..); $i].unwrap()
+                    to_array![cards.drain(..); $i].unwrap()
                 };
             };
 
@@ -325,7 +325,7 @@ impl Hand {
     /// Extract it's 5 most valuable cards (last cards).
     fn extract_last_cards(groupings: &[Vec<CardRef>]) -> Option<[CardRef; 5]> {
         if let Some(cards) = groupings.iter().rev().find(|v| v.len() >= 5) {
-            let cards = into_array![cards[cards.len()-5..].iter().cloned(); 5];
+            let cards = to_array![cards[cards.len()-5..].iter().cloned(); 5];
 
             if cards.is_some() {
                 cards

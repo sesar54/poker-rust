@@ -17,7 +17,7 @@ enum ActionInner {
     /// It will automatically match any bid if 0 is provided and
     /// automatically raise value if not 0.
     ///
-    /// Mind that the table might not accept any small raise.
+    /// Mind that the table might ignore small raises.
     Call(u32),
 }
 
@@ -58,7 +58,7 @@ impl Player {
         }
     }
 
-    pub fn hand_is_empty(&self) -> bool {
+    pub fn hand_is_none(&self) -> bool {
         self.hand.is_none()
     }
 }

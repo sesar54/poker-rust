@@ -3,6 +3,7 @@
 //!
 
 #![feature(proc_macro_hygiene)]
+#![feature(drain_filter)]
 #![warn(unused_import_braces, unused_qualifications, trivial_casts)]
 #![warn(trivial_numeric_casts, private_in_public, variant_size_differences)]
 #![warn(stable_features, unreachable_pub, non_shorthand_field_patterns)]

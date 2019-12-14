@@ -86,7 +86,7 @@ impl Deck {
     /// ```
     /// # use aces_high::prelude::*;
     /// # use card::face::*;
-    /// let mut deck = Deck::new_custom(&card!(King, Hearts; Ace, Spades));
+    /// let mut deck = Deck::new_custom(&cards!(King, Hearts; Ace, Spades));
     /// assert_eq!(deck.draw().unwrap(), card!(Ace, Spades));
     /// ```
     pub fn new_custom(cards: &[Card]) -> Deck {

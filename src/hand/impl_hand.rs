@@ -1,4 +1,4 @@
-use super::{Hand, Rank, RankErr};
+use super::{Hand, Rank, RankErr, RankInner};
 use crate::card::{self, Card, Circular};
 
 use std::fmt;
@@ -56,7 +56,9 @@ impl Hand {
             };
 
             // TODO
-            let kickers = cards;
+            let mut cards = cards;
+            let kickers = cards.drain_filter(|c| rank.as_slice().contains(c)).collect();
+
             Ok((rank, kickers))
         }
     }

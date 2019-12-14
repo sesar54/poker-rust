@@ -7,7 +7,7 @@ mod deck {
 
     #[test]
     fn test() {
-        let cards = card!(Ace, Spades; King, Hearts);
+        let cards = cards!(Ace, Spades; King, Hearts);
         let deck = Deck::new_custom(&cards);
         println!("{:?}", deck);
         println!("{:X}", cards[1]);

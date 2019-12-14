@@ -10,5 +10,5 @@ name = "aces_high" # Final name of library
 [dependencies]
 rand = "0.7"
 log = "0.4"
-arrayref = "0.3.5"
+# arrayref = "0.3.5"
 seq-macro = "0.1"

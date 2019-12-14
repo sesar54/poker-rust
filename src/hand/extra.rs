@@ -40,7 +40,7 @@ pub fn pair_cards() -> [CardRef; 2] {
     let suits = suits!(&mut rng);
 
     // Suit's must differ so to not make the same card.
-    let mut pair = card!(rank, suits[0]; rank, suits[1]);
+    let mut pair = cards!(rank, suits[0]; rank, suits[1]);
     pair.sort();
     to_array![pair.iter().map(|c| Rc::new(*c)); 2].unwrap()
 }
@@ -85,7 +85,7 @@ pub fn trips_cards() -> [CardRef; 3] {
     let suits = suits!(&mut rng);
 
     // Suit's must differ so to not make the same card.
-    let mut trips = card!(
+    let mut trips = cards!(
         rank, suits[0];
         rank, suits[1];
         rank, suits[2]
@@ -115,7 +115,7 @@ pub fn straight_cards() -> [CardRef; 5] {
 
     // Make sure that 2 cards don't share a suit,
     // as it prevents creating a straight flush
-    let cards = card!(
+    let cards = cards!(
         rank,         suits[0];
         rank.step(1), suits[1];
         rank.step(2), suits[rng()];
@@ -148,7 +148,7 @@ pub fn flush_cards() -> [CardRef; 5] {
 
     let suit = suits!(&mut rng)[0];
 
-    let cards = card!(
+    let cards = cards!(
         ranks[0], suit;
         ranks[1], suit;
         ranks[2], suit;
@@ -187,7 +187,7 @@ pub fn quad_cards() -> [CardRef; 4] {
     let suits = suits!();
 
     // Suit's must differ so to not make the same card.
-    let cards = card!(
+    let cards = cards!(
         rank, suits[0];
         rank, suits[1];
         rank, suits[2];
@@ -211,12 +211,14 @@ pub fn five_cards() -> [CardRef; 5] {
     let rank = Rank::try_from(rng.gen_range(0, 12)).unwrap();
     let suits = suits!();
 
-    let mut cards = card!(
-        rank, *suits.choose(&mut rng).unwrap();
-        rank, *suits.choose(&mut rng).unwrap();
-        rank, *suits.choose(&mut rng).unwrap();
-        rank, *suits.choose(&mut rng).unwrap();
-        rank, *suits.choose(&mut rng).unwrap()
+    let mut rng = || rng.gen_range(0, 3);
+
+    let mut cards = cards!(
+        rank, suits[rng()];
+        rank, suits[rng()];
+        rank, suits[rng()];
+        rank, suits[rng()];
+        rank, suits[rng()]
     );
     cards.sort();
     to_array![cards.iter().map(|c| Rc::new(*c)); 5].unwrap()

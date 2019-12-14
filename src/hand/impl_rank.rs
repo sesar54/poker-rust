@@ -3,13 +3,29 @@ use crate::card::{Card, Rank::Ace, Rank::King};
 
 use std::cmp::Ordering;
 use std::fmt;
+use std::slice::Iter;
 
 use std::rc::*;
 
 type ResultRank = Result<Rank, RankErr>;
 
 
-impl Rank {}
+impl Rank {
+    pub fn iter(&self) -> Iter<'_, CardRef> {
+        match self.0 {
+            RankInner::High(arr) => arr.iter(),
+            RankInner::Pair(arr) => arr.iter(),
+            RankInner::TwoPair(arr0, arr1) => arr0.iter().chain(arr1.iter()),
+            RankInner::Trips(arr) => arr.iter(),
+            RankInner::Straight(arr) =>  arr.iter(),
+            RankInner::Flush(arr) => arr.iter(),
+            RankInner::House(arr0, arr1) => arr0.iter().chain(arr1.iter()),
+            RankInner::Quads(arr) => arr.iter(),
+            RankInner::StraightFlush(arr) => arr.iter(),
+            RankInner::Fives(arr) =>  arr.iter(),
+        }
+    }
+}
 
 type CardRef = Rc<Card>;
 
@@ -252,7 +268,7 @@ impl Rank {
 
 #[allow(non_snake_case)] // Do not remove
 impl Rank {
-    /// Deconstructor
+    /// Deconstructors
 
     pub fn drop_High(self) -> [CardRef; 1] {
         match self.0 {

@@ -3,19 +3,23 @@
 /// > The Ace of Spades
 #[macro_export]
 macro_rules! card {
-    ($rand:expr) => {
-        card!(ranks!($rand)[0], suits!($rand)[0])
-    };
     ($value:expr, $suit:expr) => {
         $crate::card::Card::new($value, $suit)
     };
+    ($rand:expr) => {
+        card!(ranks!($rand)[0], suits!($rand)[0])
+    };
+}
+
+#[macro_export]
+macro_rules! cards {
     ($($value:expr, $suit:expr); +) => {
         [
             $(
-                 $crate::card::Card::new($value, $suit),
-            )*
+                card!($value, $suit),
+            )+
         ]
-    };
+    }
 }
 
 #[macro_export]
@@ -51,14 +55,19 @@ macro_rules! ranks {
 //TODO REDO ALL MACROS
 #[macro_export]
 macro_rules! deck {
-    ($rand:expr) => {{}};
+    ($($value:expr, $suit:expr); +) => {
+        $crate::deck::Deck::new_custom(
+            $(
+                card!($value, $suit)
+            )+
+        )
+    };
 }
 
 /// TODO
 #[macro_export]
 macro_rules! hand {
-
-    ( $( $card:expr ),* ) => {
+    ($($card:expr), +) => {
         {
             let mut cards = Vec::new();
             $(
@@ -67,7 +76,13 @@ macro_rules! hand {
             holdem::Hand::new(&cards)
         }
     };
-
+    ($($value:expr, $suit:expr); +) => {
+        hand![
+            $(
+                card!($value, $suit)
+            )+
+        ]
+    };
 }
 
 /// Creates an array from yielding a iterator.

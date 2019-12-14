@@ -3,28 +3,62 @@ use crate::card::{Card, Rank::Ace, Rank::King};
 
 use std::cmp::Ordering;
 use std::fmt;
-use std::slice::Iter;
+use std::ops::Index;
 
 use std::rc::*;
 
 type ResultRank = Result<Rank, RankErr>;
 
+impl Index<usize> for Rank {
+    type Output = CardRef;
 
-impl Rank {
-    pub fn iter(&self) -> Iter<'_, CardRef> {
-        match self.0 {
-            RankInner::High(arr) => arr.iter(),
-            RankInner::Pair(arr) => arr.iter(),
-            RankInner::TwoPair(arr0, arr1) => arr0.iter().chain(arr1.iter()),
-            RankInner::Trips(arr) => arr.iter(),
-            RankInner::Straight(arr) =>  arr.iter(),
-            RankInner::Flush(arr) => arr.iter(),
-            RankInner::House(arr0, arr1) => arr0.iter().chain(arr1.iter()),
-            RankInner::Quads(arr) => arr.iter(),
-            RankInner::StraightFlush(arr) => arr.iter(),
-            RankInner::Fives(arr) =>  arr.iter(),
+    fn index(&self, index: usize) -> &Self::Output {
+        use RankInner::*;
+
+        &match self.0 {
+            High(arr) => arr[index],
+            Pair(arr) => arr[index],
+            TwoPair(arr0, arr1) => {
+                if index < arr0.len() {
+                    arr0[index]
+                } else {
+                    arr1[index]
+                }
+            }
+            Trips(arr) => arr[index],
+            Straight(arr) => arr[index],
+            Flush(arr) => arr[index],
+            House(arr0, arr1) => {
+                if index < arr0.len() {
+                    arr0[index]
+                } else {
+                    arr1[index]
+                }
+            }
+            Quads(arr) => arr[index],
+            StraightFlush(arr) => arr[index],
+            Fives(arr) => arr[index],
         }
     }
+}
+
+impl IntoIterator for Rank {
+    type Item = CardRef;
+    type IntoIter = ::std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        use RankInner::*;
+
+        match self.0 {
+            High(arr) => arr.into_iter(),
+            unimplemented!()
+
+        }
+
+
+    }
+
+
 }
 
 type CardRef = Rc<Card>;

@@ -57,7 +57,9 @@ impl Hand {
 
             // TODO
             let mut cards = cards;
-            let kickers = cards.drain_filter(|c| rank.as_slice().contains(c)).collect();
+            let kickers = cards
+                .drain_filter(|c| rank.as_slice().contains(c))
+                .collect();
 
             Ok((rank, kickers))
         }

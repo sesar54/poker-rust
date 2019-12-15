@@ -1,5 +1,5 @@
 use crate::card::Card;
-use crate::hand::{Hand, RankErr};
+use crate::hand::{Hand, rank::Error};
 
 pub struct Player {
     pub pot: u32,
@@ -34,7 +34,7 @@ impl Action {
 }
 
 impl Player {
-    pub fn take(&mut self, cards: Vec<Card>) -> Result<(), RankErr> {
+    pub fn take(&mut self, cards: Vec<Card>) -> Result<(), Error> {
         match &mut self.hand {
             None => {
                 self.hand = Some(Hand::new(cards)?);

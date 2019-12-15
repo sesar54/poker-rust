@@ -1,3 +1,4 @@
+use super::CardRef;
 use crate::card::{face::*, Circular};
 use crate::{card, ranks, suits};
 
@@ -9,16 +10,14 @@ extern crate rand;
 use rand::seq::SliceRandom;
 use rand::Rng;
 
-type CardRef = Rc<Card>;
-
 /// Creates a random, valid high card.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// Rank::High(high_card())?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn high_card() -> [CardRef; 1] {
     [Rc::new(card!(&mut rand::thread_rng()))]
@@ -27,11 +26,11 @@ pub fn high_card() -> [CardRef; 1] {
 /// Creates a random, valid pair of cards.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// Rank::Pair(pair_cards())?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn pair_cards() -> [CardRef; 2] {
     let mut rng = rand::thread_rng();
@@ -48,12 +47,12 @@ pub fn pair_cards() -> [CardRef; 2] {
 /// Creates a random, valid 2 pairs of cards.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// let pairs = two_pairs_cards();
 /// Rank::TwoPair(pairs.0, pairs.1)?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn two_pairs_cards() -> ([CardRef; 2], [CardRef; 2]) {
     loop {
@@ -72,11 +71,11 @@ pub fn two_pairs_cards() -> ([CardRef; 2], [CardRef; 2]) {
 /// Creates a random, valid trips of cards.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// Rank::Trips(trips_cards())?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn trips_cards() -> [CardRef; 3] {
     let mut rng = rand::thread_rng();
@@ -98,11 +97,11 @@ pub fn trips_cards() -> [CardRef; 3] {
 /// Creates a random, valid straight.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// Rank::Straight(straight_cards())?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn straight_cards() -> [CardRef; 5] {
     let mut rng = rand::thread_rng();
@@ -128,11 +127,11 @@ pub fn straight_cards() -> [CardRef; 5] {
 /// Creates a random, valid flush.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// Rank::Flush(flush_cards())?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn flush_cards() -> [CardRef; 5] {
     let mut rng = rand::thread_rng();
@@ -161,12 +160,12 @@ pub fn flush_cards() -> [CardRef; 5] {
 /// Creates a random, valid house of cards.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// let (trips, pair) = house_cards();
 /// Rank::House(trips, pair)?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn house_cards() -> ([CardRef; 3], [CardRef; 2]) {
     (trips_cards(), pair_cards())
@@ -175,11 +174,11 @@ pub fn house_cards() -> ([CardRef; 3], [CardRef; 2]) {
 /// Creates a random, valid quad.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// Rank::Quads(quad_cards())?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn quad_cards() -> [CardRef; 4] {
     let mut rng = rand::thread_rng();
@@ -199,11 +198,11 @@ pub fn quad_cards() -> [CardRef; 4] {
 /// Creates a random, valid five cards pair.
 /// # Example
 /// ```
-/// # use aces_high::hand::*;
+/// # use aces_high::prelude::*;
 /// # for _ in 0..1_000 {
 /// Rank::Fives(five_cards())?;
 /// # }
-/// # Ok::<(), RankErr>(())
+/// # Ok::<(), Error>(())
 /// ```
 pub fn five_cards() -> [CardRef; 5] {
     let mut rng = rand::thread_rng();

@@ -1,4 +1,4 @@
-use super::CardRef;
+use crate::card::CardRef;
 use crate::card::{face::*, Circular};
 use crate::{card, ranks, suits};
 

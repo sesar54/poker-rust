@@ -1,5 +1,5 @@
-use super::super::CardRef;
-use super::{Rank, Error, RankInner, r#type};
+use super::{r#type, Error, Rank, RankInner};
+use crate::card::CardRef;
 use crate::card::{Rank::Ace, Rank::King};
 
 use std::cmp::Ordering;

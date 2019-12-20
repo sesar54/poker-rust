@@ -1,6 +1,10 @@
+use std::rc::Rc;
+
+pub type CardRef = Rc<Card>;
+
+pub mod face;
 mod fmt;
 mod r#impl;
-pub mod face;
 
 /// Basic Card struct.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]

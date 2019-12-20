@@ -1,7 +1,5 @@
-use crate::card::Card;
-use std::rc::Rc;
+use crate::card::CardRef;
 
-type CardRef = Rc<Card>;
 
 mod r#impl;
 pub mod rank;

@@ -1,7 +1,7 @@
-use crate::card::{self, Card, Circular};
+use super::rank::{Error, Rank};
 use super::Hand;
-use super::rank::{Rank, Error};
-use super::CardRef;
+use crate::card::CardRef;
+use crate::card::{self, Card, Circular};
 
 use std::fmt;
 use std::rc::Rc;

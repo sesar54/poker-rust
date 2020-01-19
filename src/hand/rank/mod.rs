@@ -1,46 +1,44 @@
-use crate::hand::CardRef;
+use std::error::Error;
+use std::fmt;
 
 mod r#impl;
-/**
- * A Rank consist of a number of cards in a specific configuration. They are
- * sorted by the lowest value first and greatest value last (actually in what
- * order they are written).
- */
-#[derive(Debug, PartialEq, Eq, PartialOrd)]
-pub struct Rank(RankInner);
+mod inner;
+mod medier;
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-enum RankInner {
-    High(r#type::High),
-    Pair(r#type::Pair),
-    TwoPair([CardRef; 2], [CardRef; 2]),
-    Trips(r#type::Trips),
-    Straight(r#type::Straight),
-    Flush(r#type::Flush),
-    House([CardRef; 3], [CardRef; 2]),
-    Quads(r#type::Quads),
-    StraightFlush(r#type::StraightFlush),
-    Fives(r#type::Fives),
+// Note: Make Invalid States Unrepresentable
+/// This is
+/// TODO: Document
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Rank {
+    High(inner::High),
+    Pair(inner::Pair),
+    TwoPair(inner::TwoPair),
+    Trips(inner::Trips),
+    Straight(inner::Straight),
+    Flush(inner::Flush),
+    House(inner::House),
+    Quads(inner::Quads),
+    StraightFlush(inner::StraightFlush),
+    Fives(inner::Fives),
 }
 
 #[derive(Debug)]
-pub enum Error {
-    Explained(String),
-    Invalid(Rank),
-    Unsorted(Rank),
+pub struct ConvertRankError<E>(pub E);
+
+impl<E> Error for ConvertRankError<E>
+where
+    E: Error + 'static,
+{
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        Some(&self.0)
+    }
 }
 
-pub mod r#type {
-    use super::CardRef;
-
-    pub type High = [CardRef; 1];
-    pub type Pair = [CardRef; 2];
-    pub type TwoPair = (Pair, Pair);
-    pub type Trips = [CardRef; 3];
-    pub type Straight = [CardRef; 5];
-    pub type Flush = [CardRef; 5];
-    pub type House = (Trips, Pair);
-    pub type Quads = [CardRef; 4];
-    pub type StraightFlush = [CardRef; 5];
-    pub type Fives = [CardRef; 5];
+impl<E> fmt::Display for ConvertRankError<E>
+where
+    E: Error,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "(TODO: Error at hand/rank/mod.rs, {})", self.0)
+    }
 }

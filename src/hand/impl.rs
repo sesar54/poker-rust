@@ -1,20 +1,18 @@
-use super::rank::{Error, Rank};
+use super::rank::{ConvertRankError, Rank};
 use super::Hand;
-use crate::card::CardRef;
-use crate::card::{self, Card, Circular};
+use crate::card::{self, Card};
 
 use std::fmt;
-use std::rc::Rc;
 
 extern crate log;
 use log::error;
 
+type Error = ConvertRankError<String>;
+
 impl Hand {
-    /// Iron rule: Map Vec<Card> to Vec<CardRef>
     /// Creating a new hand will cause all given cards to be automatically
     /// evaluated into a rank
     pub fn new(cards: Vec<Card>) -> Result<Hand, Error> {
-        let cards = cards.into_iter().map(Rc::new).collect::<Vec<CardRef>>();
         match Hand::ranking(&cards, &Vec::new()) {
             // 2nd arg is a placeholder
             Ok((rank, kickers)) => Ok(Hand {
@@ -28,20 +26,17 @@ impl Hand {
 
     // Iron rule: Map cards to Vec<Card>
     pub fn discard(self) -> Vec<Card> {
-        self.cards.iter().map(|c| **c).collect()
+        self.cards
     }
 
     /// Takes a slice of community cards and return the best card rank
     ///
     /// If given a slice of length 0, return immediately with an error.
-    pub fn ranking(
-        cards: &[CardRef],
-        community: &[CardRef],
-    ) -> Result<(Rank, Vec<CardRef>), Error> {
-        let cards: Vec<CardRef> = cards.iter().chain(community.iter()).cloned().collect();
+    pub fn ranking(cards: &[Card], community: &[Card]) -> Result<(Rank, Vec<Card>), Error> {
+        let cards: Vec<Card> = cards.iter().chain(community.iter()).cloned().collect();
 
         if cards.is_empty() {
-            Err(Error::Explained(format!(
+            Err(ConvertRankError(format!(
                 "No cards were given. Cards: {:?}",
                 cards
             )))
@@ -73,7 +68,7 @@ impl Hand {
         self.cards.is_empty()
     }
 
-    pub fn update(&mut self, community: &[CardRef]) -> Result<(), Error> {
+    pub fn update(&mut self, community: &[Card]) -> Result<(), Error> {
         let (rank, kickers) = Hand::ranking(&self.cards, community)?;
 
         self.rank = rank;
@@ -88,7 +83,7 @@ impl Hand {
     /// This function will always return High, if no other pair was found.
     /// The exception to the rule is if the slice of cards have a size of 0
     /// or something internally went wrong.
-    pub fn pair_rank(cards: &[CardRef]) -> Result<Rank, Error> {
+    pub fn pair_rank(cards: &[Card]) -> Result<Rank, Error> {
         let mut pair_groups = Hand::pair_groups(cards);
         let pair_iter = pair_groups.iter_mut().rev();
 
@@ -139,7 +134,7 @@ impl Hand {
 
     /// Maybe returns one rank after checking in order:
     /// **[StraightFlush, Flush, Straight]**
-    pub fn straight_flush_rank(cards: &[CardRef]) -> Option<Result<Rank, Error>> {
+    pub fn straight_flush_rank(cards: &[Card]) -> Option<Result<Rank, Error>> {
         // Copy, sort and const.
         let mut cards = cards.to_vec();
         cards.sort();
@@ -177,7 +172,7 @@ impl Hand {
     /// 1. Cards are sorted by it's rank first.
     /// 1.1 Ace Cards are sorted last (more valuable)
     /// 2. Cards are grouped together if their neighbor has the same rank.
-    pub fn pair_groups(cards: &[CardRef]) -> Vec<Vec<CardRef>> {
+    pub fn pair_groups(cards: &[Card]) -> Vec<Vec<Card>> {
         let mut cards = cards.to_vec();
         cards.sort_by(|a, b| a.cmp_rank_first(**b));
 
@@ -186,10 +181,10 @@ impl Hand {
         cards.rotate_right(rotate);
 
         // Value to be returned
-        let mut pairs: Vec<Vec<CardRef>> = Vec::new();
+        let mut pairs: Vec<Vec<Card>> = Vec::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned().peekable(); // TODO Should not need peekable()
-        let mut temp_vec: Vec<CardRef> = Vec::new();
+        let mut temp_vec: Vec<Card> = Vec::new();
         let mut prev_rank = iter.peek().unwrap().rank;
 
         for card in iter {
@@ -209,12 +204,12 @@ impl Hand {
     /// Returns cards grouped together by these rules:
     /// 1. Cards are sorted by it's suit first.
     /// 2. Cards are grouped together if their neighbor has the same suit.
-    pub fn flush_groups(cards: &[CardRef]) -> Vec<Vec<CardRef>> {
+    pub fn flush_groups(cards: &[Card]) -> Vec<Vec<Card>> {
         let mut cards = cards.to_vec();
         cards.sort_by(|a, b| a.cmp_suit_first(**b));
 
         // Value to be returned
-        let mut flush_groupings: Vec<Vec<CardRef>> = Vec::new();
+        let mut flush_groupings: Vec<Vec<Card>> = Vec::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned();
         let mut temp_vec;
@@ -254,12 +249,12 @@ impl Hand {
     ///     it along the other groups.
     ///     This is done to simulating the ace rule in straights.
     ///
-    pub fn straight_groups(cards: &[CardRef]) -> Vec<Vec<CardRef>> {
+    pub fn straight_groups(cards: &[Card]) -> Vec<Vec<Card>> {
         let mut cards = cards.to_vec();
         cards.sort_by(|a, b| a.cmp_rank_first(**b));
 
         // Value to be returned
-        let mut straight_groupings = Vec::<Vec<CardRef>>::new();
+        let mut straight_groupings = Vec::<Vec<Card>>::new();
         // Main Sequence Generator
         let mut iter = cards.iter().cloned();
         let mut temp_vec;
@@ -315,7 +310,7 @@ impl Hand {
     ///
     /// This function extends `flush_groups(..)` as it's output is assumed to be
     /// this functions input.
-    fn straight_flush_cards(flush_grouping: &[Vec<CardRef>]) -> Option<[CardRef; 5]> {
+    fn straight_flush_cards(flush_grouping: &[Vec<Card>]) -> Option<[Card; 5]> {
         for group in flush_grouping.iter().rev().filter(|v| v.len() >= 5) {
             if let Some(cards) = Hand::extract_last_cards(&Hand::straight_groups(&group)) {
                 return Some(cards);
@@ -327,7 +322,7 @@ impl Hand {
 
     /// Iterate, in reverse, over groupings that has size 5 or over.
     /// Extract it's 5 most valuable cards (last cards).
-    fn extract_last_cards(groupings: &[Vec<CardRef>]) -> Option<[CardRef; 5]> {
+    fn extract_last_cards(groupings: &[Vec<Card>]) -> Option<[Card; 5]> {
         if let Some(cards) = groupings.iter().rev().find(|v| v.len() >= 5) {
             let cards = to_array![cards[cards.len()-5..].iter().cloned(); 5];
 

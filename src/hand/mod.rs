@@ -1,5 +1,4 @@
-use crate::card::CardRef;
-
+use crate::card::Card;
 
 mod r#impl;
 pub mod rank;
@@ -17,7 +16,7 @@ pub use extra::*;
  */
 #[derive(Debug)]
 pub struct Hand {
-    cards: Vec<CardRef>,
+    cards: Vec<Card>,
     rank: rank::Rank,
-    kickers: Vec<CardRef>,
+    kickers: Vec<Card>,
 }

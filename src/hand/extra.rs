@@ -1,10 +1,9 @@
-use crate::card::CardRef;
-use crate::card::{face::*, Circular};
-use crate::{card, ranks, suits};
+use crate::card::{face::*, Card};
+use crate::r#trait::Circular;
+use crate::{ranks, suits};
 
 use std::convert::TryFrom;
 use std::convert::TryInto;
-use std::rc::Rc;
 
 extern crate rand;
 use rand::seq::SliceRandom;
@@ -19,8 +18,8 @@ use rand::Rng;
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn high_card() -> [CardRef; 1] {
-    [Rc::new(card!(&mut rand::thread_rng()))]
+pub fn high_card() -> [Card; 1] {
+    [card!(&mut rand::thread_rng())]
 }
 
 /// Creates a random, valid pair of cards.
@@ -32,7 +31,7 @@ pub fn high_card() -> [CardRef; 1] {
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn pair_cards() -> [CardRef; 2] {
+pub fn pair_cards() -> [Card; 2] {
     let mut rng = rand::thread_rng();
 
     let rank = Rank::try_from(rng.gen_range(1, 13)).unwrap();
@@ -41,7 +40,7 @@ pub fn pair_cards() -> [CardRef; 2] {
     // Suit's must differ so to not make the same card.
     let mut pair = cards!(rank, suits[0]; rank, suits[1]);
     pair.sort();
-    to_array![pair.iter().map(|c| Rc::new(*c)); 2].unwrap()
+    to_array![pair.iter().map(|c| *c); 2].unwrap()
 }
 
 /// Creates a random, valid 2 pairs of cards.
@@ -54,7 +53,7 @@ pub fn pair_cards() -> [CardRef; 2] {
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn two_pairs_cards() -> ([CardRef; 2], [CardRef; 2]) {
+pub fn two_pairs_cards() -> ([Card; 2], [Card; 2]) {
     loop {
         let cards = (pair_cards(), pair_cards());
 
@@ -77,7 +76,7 @@ pub fn two_pairs_cards() -> ([CardRef; 2], [CardRef; 2]) {
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn trips_cards() -> [CardRef; 3] {
+pub fn trips_cards() -> [Card; 3] {
     let mut rng = rand::thread_rng();
 
     let rank = ranks!(&mut rng)[0];
@@ -91,7 +90,7 @@ pub fn trips_cards() -> [CardRef; 3] {
     );
 
     trips.sort();
-    to_array![trips.iter().map(|c| Rc::new(*c)); 3].unwrap()
+    to_array![trips.iter().map(|c| *c); 3].unwrap()
 }
 
 /// Creates a random, valid straight.
@@ -103,7 +102,7 @@ pub fn trips_cards() -> [CardRef; 3] {
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn straight_cards() -> [CardRef; 5] {
+pub fn straight_cards() -> [Card; 5] {
     let mut rng = rand::thread_rng();
 
     // Generate one value in range: [Ace - Ten]
@@ -121,7 +120,7 @@ pub fn straight_cards() -> [CardRef; 5] {
         rank.step(3), suits[rng()];
         rank.step(4), suits[rng()]
     );
-    to_array![cards.iter().map(|c| Rc::new(*c)); 5].unwrap()
+    to_array![cards.iter().map(|c| *c); 5].unwrap()
 }
 
 /// Creates a random, valid flush.
@@ -133,7 +132,7 @@ pub fn straight_cards() -> [CardRef; 5] {
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn flush_cards() -> [CardRef; 5] {
+pub fn flush_cards() -> [Card; 5] {
     let mut rng = rand::thread_rng();
 
     let ranks: [Rank; 5] = loop {
@@ -154,7 +153,7 @@ pub fn flush_cards() -> [CardRef; 5] {
         ranks[3], suit;
         ranks[4], suit
     );
-    to_array![cards.iter().map(|c| Rc::new(*c)); 5].unwrap()
+    to_array![cards.iter().map(|c| *c); 5].unwrap()
 }
 
 /// Creates a random, valid house of cards.
@@ -167,7 +166,7 @@ pub fn flush_cards() -> [CardRef; 5] {
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn house_cards() -> ([CardRef; 3], [CardRef; 2]) {
+pub fn house_cards() -> ([Card; 3], [Card; 2]) {
     (trips_cards(), pair_cards())
 }
 
@@ -181,7 +180,7 @@ pub fn house_cards() -> ([CardRef; 3], [CardRef; 2]) {
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn quad_cards() -> [CardRef; 4] {
+pub fn quad_cards() -> [Card; 4] {
     let mut rng = rand::thread_rng();
     let rank = Rank::try_from(rng.gen_range(0, 12)).unwrap();
     let suits = suits!();
@@ -193,7 +192,7 @@ pub fn quad_cards() -> [CardRef; 4] {
         rank, suits[2];
         rank, suits[3]
     );
-    to_array![cards.iter().map(|c| Rc::new(*c)); 4].unwrap()
+    to_array![cards.iter().map(|c| *c); 4].unwrap()
 }
 
 /// Creates a random, valid five cards pair.
@@ -205,7 +204,7 @@ pub fn quad_cards() -> [CardRef; 4] {
 /// # }
 /// # Ok::<(), Error>(())
 /// ```
-pub fn five_cards() -> [CardRef; 5] {
+pub fn five_cards() -> [Card; 5] {
     let mut rng = rand::thread_rng();
 
     let rank = Rank::try_from(rng.gen_range(0, 12)).unwrap();
@@ -221,5 +220,5 @@ pub fn five_cards() -> [CardRef; 5] {
         rank, suits[rng()]
     );
     cards.sort();
-    to_array![cards.iter().map(|c| Rc::new(*c)); 5].unwrap()
+    to_array![cards.iter().map(|c| *c); 5].unwrap()
 }

@@ -12,7 +12,13 @@
 #![warn(unused_comparisons, bare_trait_objects, unused_must_use, const_err)]
 #![forbid(unsafe_code)]
 
+#[macro_use]
+extern crate num_derive;
+extern crate num_traits;
 extern crate seq_macro;
+extern crate variant_count;
+#[macro_use]
+extern crate mimpl;
 
 // Help Modules
 #[macro_use]
@@ -28,3 +34,6 @@ pub mod player;
 pub mod table;
 
 pub mod prelude;
+
+// Private Modules
+mod r#trait;

@@ -21,7 +21,8 @@ mod hand {
                         Deck::new_shuffled()
                             .deal(rand::thread_rng().gen_range(1, 52))
                             .unwrap(),
-                    ).ok();
+                    )
+                    .ok();
                 }
             }));
         }
@@ -30,5 +31,4 @@ mod hand {
             thread.join().expect("Thread crashed");
         }
     }
-
 }

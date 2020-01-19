@@ -1,7 +1,6 @@
 use super::face::*;
 
 use std::char;
-use std::cmp::Ordering::*;
 use std::convert::TryFrom;
 
 // -------------------------------------------------------------------------- //
@@ -20,19 +19,6 @@ impl Card {
         Card { rank, suit }
     }
 
-    pub fn cmp_suit_first(self, other: Self) -> std::cmp::Ordering {
-        match self.suit.cmp(&other.suit) {
-            Equal => self.rank.cmp(&other.rank),
-            ord => ord,
-        }
-    }
-
-    pub fn cmp_rank_first(self, other: Self) -> std::cmp::Ordering {
-        match self.rank.cmp(&other.rank) {
-            Equal => self.suit.cmp(&other.suit),
-            ord => ord,
-        }
-    }
 }
 
 impl Into<u8> for Card {
@@ -105,7 +91,7 @@ impl TryFrom<[char; 2]> for Card {
 // Impl Suit enums                                                            //
 // -------------------------------------------------------------------------- //
 
-impl super::Circular<isize> for Suit {
+impl crate::r#trait::Circular<isize> for Suit {
     /// Cycles over the elements of `Suit`, starting at `self`.
     /// Returns the n'th neighbor.
     /// # Examples
@@ -127,6 +113,12 @@ impl super::Circular<isize> for Suit {
     /// ```
     fn step(self, n: isize) -> Self {
         Suit::from(((self as isize + n) % 4) as u8)
+    }
+}
+
+impl Default for Suit {
+    fn default() -> Self {
+        Self::Spades
     }
 }
 
@@ -176,7 +168,7 @@ impl Into<char> for Suit {
 // Impl Value enums                                                           //
 // -------------------------------------------------------------------------- //
 
-impl super::Circular<isize> for Rank {
+impl crate::r#trait::Circular<isize> for Rank {
     /// Cycles over the elements of `Rank`, starting at `self`.
     /// Returns the n'th neighbor.
     /// # Examples
@@ -202,6 +194,12 @@ impl super::Circular<isize> for Rank {
         } else {
             Rank::try_from((((self as isize + i - 1) % 13) + 1) as u8).unwrap()
         }
+    }
+}
+
+impl Default for Rank {
+    fn default() -> Self {
+        Self::Ace
     }
 }
 

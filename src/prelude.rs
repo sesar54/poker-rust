@@ -4,7 +4,7 @@ pub use crate::*;
 pub use card::Card;
 pub use deck::Deck;
 pub use hand::{
-    rank::{Error, Rank},
+    rank::{ConvertRankError, Rank},
     Hand,
 };
-pub use macros::*;
+pub use r#macros::*;

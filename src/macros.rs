@@ -3,8 +3,8 @@
 /// > The Ace of Spades
 #[macro_export]
 macro_rules! card {
-    ($value:expr, $suit:expr) => {
-        $crate::card::Card::new($value, $suit)
+    ($rank:expr, $suit:expr) => {
+        $crate::card::Card::new($rank, $suit)
     };
     ($rand:expr) => {
         card!(ranks!($rand)[0], suits!($rand)[0])
@@ -13,10 +13,10 @@ macro_rules! card {
 
 #[macro_export]
 macro_rules! cards {
-    ($($value:expr, $suit:expr); +) => {
+    ($($rank:expr, $suit:expr); +) => {
         [
             $(
-                card!($value, $suit),
+                card!($rank, $suit),
             )+
         ]
     }
@@ -55,10 +55,10 @@ macro_rules! ranks {
 //TODO REDO ALL MACROS
 #[macro_export]
 macro_rules! deck {
-    ($($value:expr, $suit:expr); +) => {
+    ($($rank:expr, $suit:expr); +) => {
         $crate::deck::Deck::new_custom(
             $(
-                card!($value, $suit)
+                card!($rank, $suit)
             )+
         )
     };
@@ -76,10 +76,10 @@ macro_rules! hand {
             holdem::Hand::new(&cards)
         }
     };
-    ($($value:expr, $suit:expr); +) => {
+    ($($rank:expr, $suit:expr); +) => {
         hand![
             $(
-                card!($value, $suit)
+                card!($rank, $suit)
             )+
         ]
     };

@@ -12,3 +12,7 @@ rand = "0.7"
 log = "0.4"
 # arrayref = "0.3.5"
 seq-macro = "0.1"
+num-derive = "0.3.0"
+num-traits = "0.2.11"
+variant_count = "1.0.0"
+mimpl = { path = "D:/nils/Repositories/mimpl" }

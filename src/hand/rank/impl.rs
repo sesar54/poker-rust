@@ -39,7 +39,7 @@ impl Rank {
     pub fn Pair(cards: r#type::Pair) -> ResultRank {
         let rank = |cards| Rank(RankInner::Pair(cards));
 
-        if cards[0].rank != cards[1].rank {
+        if cards[0].get_rank() != cards[1].get_rank() {
             invalid!(rank(cards))
         } else if cards[0] > cards[1] {
             unsorted!(rank(cards))
@@ -85,7 +85,7 @@ impl Rank {
     pub fn Trips(cards: r#type::Trips) -> ResultRank {
         let rank = |cards| Rank(RankInner::Trips(cards));
 
-        if cards[0].rank != cards[1].rank || cards[1].rank != cards[2].rank {
+        if cards[0].get_rank() != cards[1].get_rank() || cards[1].get_rank() != cards[2].get_rank() {
             invalid!(rank(cards))
         } else if cards[0] > cards[1] || cards[1] > cards[2] {
             unsorted!(rank(cards))
@@ -98,8 +98,8 @@ impl Rank {
     pub fn Straight(cards: r#type::Straight) -> ResultRank {
         let rank = |cards| Rank(RankInner::Straight(cards));
 
-        let ranks = if cards[3].rank == King {
-            if cards[4].rank != Ace {
+        let ranks = if cards[3].get_rank() == King {
+            if cards[4].get_rank() != Ace {
                 return explained!(
                     "In Rank::Straight with rank: {:?} King not followed by Ace",
                     rank(cards)
@@ -115,7 +115,7 @@ impl Rank {
         // Also check if cards are in order.
         // Ace is not included in this range. See above
         for i in 0..ranks.len() {
-            if ranks[0].rank as u8 + i as u8 != ranks[i].rank as u8 {
+            if ranks[0].get_rank() as u8 + i as u8 != ranks[i].get_rank() as u8 {
                 return Err(Error::Invalid(rank(cards)));
             }
         }
@@ -129,7 +129,7 @@ impl Rank {
 
         // See if all suits match
         for card in &cards {
-            if cards[0].suit != card.suit {
+            if cards[0].get_suit() != card.get_suit() {
                 return Err(Error::Invalid(rank(cards)));
             }
         }
@@ -174,7 +174,7 @@ impl Rank {
         let rank = |cards| Rank(RankInner::Quads(cards));
         // See if all ranks match
         for card in &cards {
-            if cards[0].rank != card.rank {
+            if cards[0].get_rank() != card.get_rank() {
                 return invalid!(rank(cards));
             }
         }
@@ -212,7 +212,7 @@ impl Rank {
             }
         };
 
-        let cards = if cards[4].rank == Ace {
+        let cards = if cards[4].get_rank() == Ace {
             cards.rotate_right(1);
             let mut cards = flush_check(cards)?;
             cards.rotate_left(1);
@@ -229,7 +229,7 @@ impl Rank {
 
         // See if all values match
         for card in &cards {
-            if cards[0].rank != card.rank {
+            if cards[0].get_rank() != card.get_rank() {
                 return invalid!(rank(cards));
             }
         }
@@ -362,7 +362,7 @@ impl fmt::Display for Rank {
             Flush(..) => write!(f, "Flush"),
             House(..) => write!(f, "Full house"),
             Quads(..) => write!(f, "Four of a kind"),
-            StraightFlush(cards) => match cards[4].rank {
+            StraightFlush(cards) => match cards[4].get_rank() {
                 Ace => write!(f, "Royal flush"),
                 _ => write!(f, "Straight flush"),
             },
@@ -377,11 +377,11 @@ impl Ord for Rank {
         use RankInner::*;
 
         if let (High(high0), High(high1)) = (&self.0, &other.0) {
-            if high0[0].rank == high1[0].rank {
+            if high0[0].get_rank() == high1[0].get_rank() {
                 self.cmp(other)
-            } else if high0[0].rank == Ace {
+            } else if high0[0].get_rank() == Ace {
                 Ordering::Greater
-            } else if high1[0].rank == Ace {
+            } else if high1[0].get_rank() == Ace {
                 Ordering::Less
             } else {
                 self.cmp(other)

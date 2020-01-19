@@ -182,7 +182,7 @@ impl Hand {
         cards.sort_by(|a, b| a.cmp_rank_first(**b));
 
         // Ace rule
-        let rotate = cards.len() - cards.iter().filter(|c| c.rank == card::Rank::Ace).count();
+        let rotate = cards.len() - cards.iter().filter(|c| c.get_rank() == card::Rank::Ace).count();
         cards.rotate_right(rotate);
 
         // Value to be returned
@@ -190,14 +190,14 @@ impl Hand {
         // Main Sequence Generator
         let mut iter = cards.iter().cloned().peekable(); // TODO Should not need peekable()
         let mut temp_vec: Vec<CardRef> = Vec::new();
-        let mut prev_rank = iter.peek().unwrap().rank;
+        let mut prev_rank = iter.peek().unwrap().get_rank();
 
         for card in iter {
-            if prev_rank == card.rank {
+            if prev_rank == card.get_rank() {
                 temp_vec.push(card);
             } else {
                 pairs.push(temp_vec);
-                prev_rank = card.rank;
+                prev_rank = card.get_rank();
                 temp_vec = vec![card];
             }
         }
@@ -222,7 +222,7 @@ impl Hand {
 
         // First card initiates things
         if let Some(first_card) = iter.next() {
-            prev_suit = first_card.suit;
+            prev_suit = first_card.get_suit();
             temp_vec = vec![first_card];
 
         // No cards in cards
@@ -232,11 +232,11 @@ impl Hand {
 
         // Iterate over rest of cards
         for card in iter {
-            if prev_suit == card.suit {
+            if prev_suit == card.get_suit() {
                 temp_vec.push(card);
             } else {
                 flush_groupings.push(temp_vec);
-                prev_suit = card.suit;
+                prev_suit = card.get_suit();
                 temp_vec = vec![card];
             }
         }
@@ -267,7 +267,7 @@ impl Hand {
 
         // First card initiates things
         if let Some(first_card) = iter.next() {
-            prev_rank = first_card.rank;
+            prev_rank = first_card.get_rank();
             temp_vec = vec![first_card];
         } else {
             // No cards in cards
@@ -276,13 +276,13 @@ impl Hand {
 
         // Iterate over rest of cards
         for card in iter {
-            if card.rank == prev_rank.step(1) {
-                prev_rank = card.rank;
+            if card.get_rank() == prev_rank.step(1) {
+                prev_rank = card.get_rank();
                 temp_vec.push(card);
             // Drop temp_vec into straight_groupings and start a new one
             } else {
                 straight_groupings.push(temp_vec);
-                prev_rank = card.rank;
+                prev_rank = card.get_rank();
                 temp_vec = vec![card];
             }
         }
@@ -292,7 +292,7 @@ impl Hand {
         // Ace rule
         match (cards.first(), cards.last(), straight_groupings.last()) {
             (Some(ace), Some(king), Some(broadway))
-                if ace.rank == card::Rank::Ace && king.rank == card::Rank::King =>
+                if ace.get_rank() == card::Rank::Ace && king.get_rank() == card::Rank::King =>
             {
                 let mut broadway = broadway.clone();
                 broadway.push(ace.clone());

@@ -9,6 +9,8 @@ mod deck {
     fn test() {
         let cards = cards!(Ace, Spades; King, Hearts);
         let deck = Deck::new_custom(&cards);
+        println!("{:?}", Card {__inner: 0x31});
+        println!("CARD:  {:X}", cards!(Ace, Spades)[0]);
         println!("{:?}", deck);
         println!("{:X}", cards[1]);
     }

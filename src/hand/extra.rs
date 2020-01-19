@@ -58,7 +58,7 @@ pub fn two_pairs_cards() -> ([CardRef; 2], [CardRef; 2]) {
     loop {
         let cards = (pair_cards(), pair_cards());
 
-        if cards.0[0].rank != cards.1[0].rank {
+        if cards.0[0].get_rank() != cards.1[0].get_rank() {
             return if cards.0[0] > cards.1[0] {
                 (cards.1, cards.0)
             } else {

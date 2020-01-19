@@ -17,22 +17,35 @@ impl Card {
     /// let card = Card::new(Rank::King, Suit::Hearts);
     /// ```
     pub fn new(rank: Rank, suit: Suit) -> Card {
-        Card { rank, suit }
+        Card {
+            __inner: rank as u8 + suit as u8,
+        }
+    }
+
+    pub fn get_rank(self) -> Rank {
+        Rank::try_from(self.__inner).unwrap()
+    }
+
+    pub fn get_suit(self) -> Suit {
+        Suit::from(self.__inner)
     }
 
     pub fn cmp_suit_first(self, other: Self) -> std::cmp::Ordering {
-        match self.suit.cmp(&other.suit) {
-            Equal => self.rank.cmp(&other.rank),
+        match self.get_suit().cmp(&other.get_suit()) {
+            Equal => self.get_rank().cmp(&other.get_rank()),
             ord => ord,
         }
     }
 
     pub fn cmp_rank_first(self, other: Self) -> std::cmp::Ordering {
-        match self.rank.cmp(&other.rank) {
-            Equal => self.suit.cmp(&other.suit),
+        match self.get_rank().cmp(&other.get_rank()) {
+            Equal => self.get_suit().cmp(&other.get_suit()),
             ord => ord,
         }
     }
+
+    pub const __RANK_FIELD: u8 = 0x0F;
+    pub const __SUIT_FIELD: u8 = 0x30;
 }
 
 impl Into<u8> for Card {
@@ -46,7 +59,7 @@ impl Into<u8> for Card {
     /// assert_eq!(u, 0x13);
     /// ```
     fn into(self) -> u8 {
-        ((self.rank as u8) << 4) + (self.suit as u8)
+        self.__inner
     }
 }
 
@@ -64,7 +77,7 @@ impl TryFrom<u8> for Card {
     /// assert_eq!(Card::try_from(0x13).unwrap(), Card::new(Ace, Spades));
     /// ```
     fn try_from(u: u8) -> Result<Self, Self::Error> {
-        Ok(Card::new(Rank::try_from(u >> 4)?, Suit::from(u)))
+        Ok(Card::new(Rank::try_from(u)?, Suit::from(u)))
     }
 }
 
@@ -79,7 +92,7 @@ impl Into<[char; 2]> for Card {
     /// assert_eq!(chars, ['Q', 'H']);
     /// ```
     fn into(self) -> [char; 2] {
-        [self.rank.into(), self.suit.into()]
+        [self.get_rank().into(), self.get_suit().into()]
     }
 }
 
@@ -131,13 +144,13 @@ impl super::Circular<isize> for Suit {
 }
 
 impl From<u8> for Suit {
-    /// Converts `u8` into `Suit` by looking at the last 3 bits.
+    /// Converts `u8` into `Suit` by looking at 0011000.
     fn from(u: u8) -> Suit {
-        match u & 0x03 {
-            0 => Clubs,
-            1 => Diamonds,
-            2 => Hearts,
-            3 => Spades,
+        match u & 0x30 {
+            0x00 => Clubs,
+            0x10 => Diamonds,
+            0x20 => Hearts,
+            0x30 => Spades,
             _ => unreachable!(),
         }
     }
@@ -211,22 +224,22 @@ impl TryFrom<u8> for Rank {
     /// Tries to convert `u8` to `Rank` by mapping 0 to 13 to a Rank.
     /// All other numbers will result in an error.
     fn try_from(u: u8) -> Result<Self, Self::Error> {
-        let rank = match u {
-            0 => Wild,
-            1 => Ace,
-            2 => Two,
-            3 => Three,
-            4 => Four,
-            5 => Five,
-            6 => Six,
-            7 => Seven,
-            8 => Eight,
-            9 => Nine,
-            10 => Ten,
-            11 => Jack,
-            12 => Queen,
-            13 => King,
-            u => return Err(format!("card::Rank can't be converted from u8 '{}'.", u)),
+        let rank = match u & Card::__RANK_FIELD {
+            0x0 => Wild,
+            0x1 => Ace,
+            0x2 => Two,
+            0x3 => Three,
+            0x4 => Four,
+            0x5 => Five,
+            0x6 => Six,
+            0x7 => Seven,
+            0x8 => Eight,
+            0x9 => Nine,
+            0xA => Ten,
+            0xB => Jack,
+            0xC => Queen,
+            0xD => King,
+            u => return Err(format!("card::Rank can't be converted from u8: {}.", u)),
         };
 
         Ok(rank)
@@ -258,14 +271,14 @@ impl TryFrom<char> for Rank {
         use rand::Rng;
 
         let u: u8 = match c.to_ascii_uppercase() {
-            'W' => 0,
-            'A' => 1,
-            '1' => 10,
-            'J' => 11,
-            'Q' => 12,
-            'K' => 13,
-            '.' => rand::thread_rng().gen_range(0, 13),
-            c if c.is_digit(10) && c != '0' => c.to_digit(9).unwrap() as u8,
+            'W' => 0x0,
+            'A' => 0x1,
+            '1' => 0xA,
+            'J' => 0xB,
+            'Q' => 0xC,
+            'K' => 0xD,
+            '.' => rand::thread_rng().gen_range(0x0, 0xD),
+            c if c.is_digit(0xA) && c != '0' => c.to_digit(0x9).unwrap() as u8,
             c => return Err(format!("card::Rank can't be converted from char '{}'.", c)),
         };
 

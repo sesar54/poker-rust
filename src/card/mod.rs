@@ -9,8 +9,7 @@ mod r#impl;
 /// Basic Card struct.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Card {
-    pub rank: Rank,
-    pub suit: Suit,
+    pub __inner: u8,
 }
 
 /// Enum used by `card::Card`.

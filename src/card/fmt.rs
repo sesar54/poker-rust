@@ -9,7 +9,7 @@ impl fmt::Display for Card {
     /// assert_eq!(format!("{}", card!(Ace, Spades)), "Ace of Spades");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?} of {:?}", self.rank, self.suit)
+        write!(f, "{:?} of {:?}", self.get_rank(), self.get_suit())
     }
 }
 
@@ -23,14 +23,14 @@ impl fmt::Debug for Card {
     /// assert_eq!(format!("{:?}", card!(King, Diamonds)), "KD");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let chars: [char; 2] = [self.rank.into(), self.suit.into()];
+        let chars: [char; 2] = [self.get_rank().into(), self.get_suit().into()];
         write!(f, "{}{}", chars[0], chars[1])
     }
 }
 
 impl fmt::UpperHex for Card {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:X}{:X}", self.rank, self.suit)
+        write!(f, "{:X}", self.__inner)
     }
 }
 
@@ -48,7 +48,7 @@ impl fmt::UpperHex for Suit {
 
 impl fmt::LowerHex for Card {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:x}{:x}", self.rank, self.suit)
+        write!(f, "{:x}", self.__inner)
     }
 }
 

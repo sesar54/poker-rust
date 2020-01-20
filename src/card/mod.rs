@@ -3,7 +3,7 @@ mod fmt;
 mod r#impl;
 
 /// Basic Card struct.
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Card {
     pub rank: Rank,
     pub suit: Suit,
@@ -18,7 +18,7 @@ pub struct Card {
 /// | Diamonds | 1  | A    |
 /// | Hearts   | 2  | 2    |
 /// | Spades   | 3  | 3    |
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Suit {
     Clubs,
     Diamonds,
@@ -45,7 +45,7 @@ pub enum Suit {
 /// | Jack  | 11 | J    |
 /// | Queen | 12 | Q    |
 /// | King  | 13 | K    |
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
     Wild,
     Ace,

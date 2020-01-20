@@ -1,17 +1,17 @@
-use super::{inner, medier, ConvertRankError, Rank};
+use super::{inner, mediator, ConvertRankError, Rank};
 
 use std::convert::{From, TryFrom};
 use std::fmt;
 
 macro_rules! derive_try_from {
     ($rank:tt) => {
-        impl TryFrom<medier::$rank> for Rank {
+        impl TryFrom<mediator::$rank> for Rank {
             type Error = ConvertRankError<()>; // TODO
 
-            fn try_from(cards: medier::$rank) -> Result<Self, Self::Error> {
+            fn try_from(cards: mediator::$rank) -> Result<Self, Self::Error> {
                 let raw_rank = inner::$rank::from(cards);
 
-                if cards == medier::$rank::from(raw_rank) {
+                if cards == mediator::$rank::from(raw_rank) {
                     Ok(Rank::$rank(raw_rank))
                 } else {
                     Err(ConvertRankError(()))
@@ -22,8 +22,8 @@ macro_rules! derive_try_from {
 }
 
 /// Constructors
-impl From<medier::High> for Rank {
-    fn from(card: medier::High) -> Self {
+impl From<mediator::High> for Rank {
+    fn from(card: mediator::High) -> Self {
         Rank::High(card.into())
     }
 }
@@ -32,9 +32,9 @@ derive_try_from!(Pair);
 derive_try_from!(TwoPair);
 derive_try_from!(Trips);
 
-impl TryFrom<medier::Straight> for Rank {
+impl TryFrom<mediator::Straight> for Rank {
     type Error = ConvertRankError<String>;
-    fn try_from(cards: medier::Straight) -> Result<Self, Self::Error> {
+    fn try_from(cards: mediator::Straight) -> Result<Self, Self::Error> {
         Ok(Self::Straight(
             inner::Straight::try_from(cards).map_err(ConvertRankError)?,
         ))
@@ -45,9 +45,9 @@ derive_try_from!(Flush);
 derive_try_from!(House);
 derive_try_from!(Quads);
 
-impl TryFrom<medier::StraightFlush> for Rank {
+impl TryFrom<mediator::StraightFlush> for Rank {
     type Error = ConvertRankError<String>;
-    fn try_from(cards: medier::StraightFlush) -> Result<Self, Self::Error> {
+    fn try_from(cards: mediator::StraightFlush) -> Result<Self, Self::Error> {
         Ok(Self::StraightFlush(
             inner::StraightFlush::try_from(cards).map_err(ConvertRankError)?,
         ))
@@ -70,7 +70,7 @@ impl Rank {
     /// * StraightFlush   => 5
     /// * Fives           => 5
     pub fn len(&self) -> usize {
-        match &self {
+        match self {
             High => 1,
             Pair => 2,
             TwoPair => 4,
@@ -81,6 +81,29 @@ impl Rank {
             Quads => 4,
             StraightFlush => 5,
             Fives => 5,
+        }
+    }
+
+    /// Consumes the rank
+    pub fn to_boxed_slice(self) -> Box<[mediator::RCard]> {
+        use mediator::*;
+        match self {
+            Self::High(high) => Box::new([High::from(high).0]),
+            Self::Pair(pair) => Box::new(Pair::from(pair).0),
+            Self::TwoPair(two_pair) => {
+                let TwoPair(arr0, arr1) = TwoPair::from(two_pair);
+                arr0.0.iter().chain(arr1.0.iter()).map(|&c| c).collect()
+            }
+            Self::Trips(trips) => Box::new(Trips::from(trips).0),
+            Self::Straight(straight) => Box::new(Straight::from(straight).0),
+            Self::Flush(flush) => Box::new(Flush::from(flush).0),
+            Self::House(house) => {
+                let House { trips, pair } = House::from(house);
+                trips.0.iter().chain(pair.0.iter()).map(|&c| c).collect()
+            }
+            Self::Quads(quads) => Box::new(Quads::from(quads).0),
+            Self::StraightFlush(sf) => Box::new(StraightFlush::from(sf).0),
+            Self::Fives(fives) => Box::new(Fives::from(fives).0),
         }
     }
 }
@@ -102,31 +125,6 @@ impl fmt::Display for Rank {
                 _ => write!(f, "Straight flush"),
             },*/
             Fives => write!(f, "Five of a kind"),
-        }
-    }
-}
-
-impl Rank {
-    /// Consumes the rank
-    pub fn to_boxed_slice(self) -> Box<[medier::RCard]> {
-        use medier::*;
-        match self {
-            Self::High(high) => Box::new([High::from(high).0]),
-            Self::Pair(pair) => Box::new(Pair::from(pair).0),
-            Self::TwoPair(two_pair) => {
-                let TwoPair(arr0, arr1) = TwoPair::from(two_pair);
-                arr0.0.iter().chain(arr1.0.iter()).map(|&c| c).collect()
-            }
-            Self::Trips(trips) => Box::new(Trips::from(trips).0),
-            Self::Straight(straight) => Box::new(Straight::from(straight).0),
-            Self::Flush(flush) => Box::new(Flush::from(flush).0),
-            Self::House(house) => {
-                let House { trips, pair } = House::from(house);
-                trips.0.iter().chain(pair.0.iter()).map(|&c| c).collect()
-            }
-            Self::Quads(quads) => Box::new(Quads::from(quads).0),
-            Self::StraightFlush(sf) => Box::new(StraightFlush::from(sf).0),
-            Self::Fives(fives) => Box::new(Fives::from(fives).0),
         }
     }
 }

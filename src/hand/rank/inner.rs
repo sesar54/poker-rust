@@ -1,6 +1,6 @@
-use super::medier::{self, RRank};
+use super::mediator::{self, RRank};
 use crate::card::Suit;
-use mimpl::*;
+use mimpl::mimpl;
 use num_traits::FromPrimitive;
 use seq_macro::seq;
 use std::cmp::Ordering;
@@ -126,141 +126,69 @@ pub struct Fives {
     pub suits: [Suit; 5],
 }
 
-impl From<medier::High> for High {
-    fn from(card: medier::High) -> Self {
-        High {
-            rank: card.0.rank,
-            suit: card.0.suit,
-        }
-    }
-}
-
-impl From<medier::Pair> for Pair {
-    fn from(cards: medier::Pair) -> Self {
-        Pair {
-            crank: cards.0[0].rank,
-            suits: seq!(n in 0..2{[#(cards.0[n].suit,)*]}),
-        }
-    }
-}
-
-impl From<medier::TwoPair> for TwoPair {
-    fn from(cards: medier::TwoPair) -> Self {
-        TwoPair {
-            pair0: Pair::from(cards.0),
-            pair1: Pair::from(cards.1),
-        }
-    }
-}
-
-///
-impl From<medier::Trips> for Trips {
-    fn from(cards: medier::Trips) -> Self {
-        Trips {
-            crank: cards.0[0].rank,
-            suits: seq!(n in 0..3{[#(cards.0[n].suit,)*]}),
-        }
-    }
-}
-///
-impl TryFrom<medier::Straight> for Straight {
-    type Error = String;
-
-    fn try_from(cards: medier::Straight) -> Result<Self, Self::Error> {
-        Ok(Straight {
-            srank: SRank::try_from(cards.0[0].rank)?,
-            suits: seq!(n in 0..5{[#(cards.0[n].suit,)*]}),
-        })
-    }
-}
-
-///
-impl From<medier::Flush> for Flush {
-    fn from(cards: medier::Flush) -> Self {
-        Flush {
-            csuit: cards.0[0].suit,
-            ranks: seq!(n in 0..5{[#(cards.0[n].rank,)*]}),
-        }
-    }
-}
-
-impl From<medier::House> for House {
-    fn from(house: medier::House) -> Self {
-        House {
-            trips: Trips::from(house.trips),
-            pair: Pair::from(house.pair),
-        }
-    }
-}
-
-impl From<medier::Quads> for Quads {
-    fn from(cards: medier::Quads) -> Self {
-        Quads {
-            crank: cards.0[0].rank,
-            suits: seq!(n in 0..4{[#(cards.0[n].suit,)*]}),
-        }
-    }
-}
-
-impl TryFrom<medier::StraightFlush> for StraightFlush {
-    type Error = String;
-    fn try_from(cards: medier::StraightFlush) -> Result<Self, Self::Error> {
-        Ok(StraightFlush {
-            srank: SRank::try_from(cards.0[0].rank)?,
-            csuit: cards.0[0].suit,
-        })
-    }
-}
-
-impl From<medier::Fives> for Fives {
-    fn from(cards: medier::Fives) -> Self {
-        Fives {
-            crank: cards.0[0].rank,
-            suits: seq!(n in 0..5{[#(cards.0[n].suit,)*]}),
-        }
-    }
-}
+mimpl!(From; mediator::High, High, |card: mediator::High| 
+    High {rank: card.0.rank, suit: card.0.suit}
+);
+mimpl!(From; mediator::Pair, Pair, |pair: mediator::Pair| 
+    Pair {crank: pair.0[0].rank, suits: seq!(n in 0..2{[#(pair.0[n].suit,)*]})}
+);
+mimpl!(From; mediator::TwoPair, TwoPair, |cards: mediator::TwoPair| 
+    TwoPair {pair0: Pair::from(cards.0), pair1: Pair::from(cards.1)}
+);
+mimpl!(From; mediator::Trips, Trips, |cards: mediator::Trips| 
+    Trips {crank: cards.0[0].rank, suits: seq!(n in 0..3{[#(cards.0[n].suit,)*]})}
+);
+mimpl!(TryFrom; mediator::Straight, Straight, String, |cards: mediator::Straight| 
+    Ok(Straight {srank: SRank::try_from(cards.0[0].rank)?,suits: seq!(n in 0..5{[#(cards.0[n].suit,)*]})})
+);
+mimpl!(From; mediator::Flush, Flush, |cards: mediator::Flush| 
+    Flush {csuit: cards.0[0].suit, ranks: seq!(n in 0..5{[#(cards.0[n].rank,)*]})}
+);
+mimpl!(From; mediator::House, House, |house: mediator::House|
+    House {trips: Trips::from(house.trips), pair: Pair::from(house.pair)}
+);
+mimpl!(From; mediator::Quads, Quads, |cards: mediator::Quads|
+    Quads {crank: cards.0[0].rank,suits: seq!(n in 0..4{[#(cards.0[n].suit,)*]})}  
+);
+mimpl!(TryFrom; mediator::StraightFlush, StraightFlush, String, |cards: mediator::StraightFlush|
+    Ok(StraightFlush {srank: SRank::try_from(cards.0[0].rank)?, csuit: cards.0[0].suit})
+);
+mimpl!(From; mediator::Fives, Fives, |cards: mediator::Fives|
+    Fives {crank: cards.0[0].rank, suits: seq!(n in 0..5{[#(cards.0[n].suit,)*]})}
+);
 
 mimpl!(PartialOrd; High, USE_CMP);
-mimpl!(Ord; High, Box::new(|this: &High, that: &High| this.rank.cmp(&that.rank)));
-
 mimpl!(PartialOrd; Pair, USE_CMP);
-mimpl!(Ord; Pair, Box::new(|this: &Pair, that: &Pair| this.crank.cmp(&that.crank)));
-
 mimpl!(PartialOrd; TwoPair, USE_CMP);
-mimpl!(Ord; TwoPair, Box::new(|this: &TwoPair, that: &TwoPair| {
+mimpl!(PartialOrd; Trips, USE_CMP);
+mimpl!(PartialOrd; Straight, USE_CMP);
+mimpl!(PartialOrd; Flush, USE_CMP);
+mimpl!(PartialOrd; House, USE_CMP);
+mimpl!(PartialOrd; Quads, USE_CMP);
+mimpl!(PartialOrd; StraightFlush, USE_CMP);
+mimpl!(PartialOrd; Fives, USE_CMP);
+
+mimpl!(Ord; High, |this: &High, that: &High| this.rank.cmp(&that.rank));
+mimpl!(Ord; Pair, |this: &Pair, that: &Pair| this.crank.cmp(&that.crank));
+mimpl!(Ord; TwoPair, |this: &TwoPair, that: &TwoPair| {
     let order = this.pair0.cmp(&that.pair0);
     if order == Ordering::Equal {
         this.pair1.cmp(&that.pair1)
     } else {
         order
     }
-}));
-
-mimpl!(PartialOrd; Trips, USE_CMP);
-mimpl!(Ord; Trips, Box::new(|this: &Trips, that: &Trips| this.crank.cmp(&that.crank)));
-
-mimpl!(PartialOrd; Straight, USE_CMP);
-mimpl!(Ord; Straight, Box::new(|this: &Straight, that: &Straight| this.srank.cmp(&that.srank)));
-
-mimpl!(PartialOrd; Flush, USE_CMP);
-mimpl!(Ord; Flush, Box::new(|this: &Flush, that: &Flush| this.ranks[0].cmp(&that.ranks[0])));
-
-mimpl!(PartialOrd; House, USE_CMP);
-mimpl!(Ord; House, Box::new(|this: &House, that: &House| {
+});
+mimpl!(Ord; Trips, |this: &Trips, that: &Trips| this.crank.cmp(&that.crank));
+mimpl!(Ord; Straight, |this: &Straight, that: &Straight| this.srank.cmp(&that.srank));
+mimpl!(Ord; Flush, |this: &Flush, that: &Flush| this.ranks[0].cmp(&that.ranks[0]));
+mimpl!(Ord; House, |this: &House, that: &House| {
     let order = this.trips.cmp(&that.trips);
     if order == Ordering::Equal {
         this.pair.cmp(&that.pair)
     } else {
         order
     }
-}));
-
-mimpl!(PartialOrd; Quads, USE_CMP);
-mimpl!(Ord; Quads, Box::new(|this: &Quads, that: &Quads| this.crank.cmp(&that.crank)));
-
-mimpl!(PartialOrd; StraightFlush, USE_CMP);
-mimpl!(Ord; StraightFlush, Box::new(|this: &StraightFlush, that: &StraightFlush| this.srank.cmp(&that.srank)));
-
-mimpl!(PartialOrd; Fives, USE_CMP);
-mimpl!(Ord; Fives, Box::new(|this: &Fives, that: &Fives| this.crank.cmp(&that.crank)));
+});
+mimpl!(Ord; Quads, |this: &Quads, that: &Quads| this.crank.cmp(&that.crank));
+mimpl!(Ord; StraightFlush, |this: &StraightFlush, that: &StraightFlush| this.srank.cmp(&that.srank));
+mimpl!(Ord; Fives, |this: &Fives, that: &Fives| this.crank.cmp(&that.crank));

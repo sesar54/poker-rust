@@ -53,7 +53,7 @@ impl Hand {
             // TODO
             let mut cards = cards;
             let kickers = cards
-                .drain_filter(|card0| rank.iter().any(|card1| card1 == card0))
+                .drain_filter(|card0| rank.to_boxed_slice().iter().any(|card1| card1 == card0))
                 .collect();
 
             Ok((rank, kickers))

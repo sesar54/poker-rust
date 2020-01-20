@@ -3,7 +3,7 @@ use std::fmt;
 
 mod r#impl;
 mod inner;
-mod medier;
+mod mediator;
 
 // Note: Make Invalid States Unrepresentable
 /// This is

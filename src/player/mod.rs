@@ -1,5 +1,5 @@
 use crate::card::Card;
-use crate::hand::{rank::Error, Hand};
+use crate::hand::Hand;
 
 pub struct Player {
     pub pot: u32,

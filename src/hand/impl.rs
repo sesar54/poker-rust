@@ -105,7 +105,7 @@ impl Hand {
 
             match len {
                 // Return immediately since Fives can't be beaten
-                5 => return Rank::Fives(carrd!(5)),
+                5 => return Ok(Rank::Fives(carrd!(5))),
                 4 if quads.is_none() => quads = Some(carrd!(4)),
                 3 if trips.is_none() => trips = Some(carrd!(3)),
                 2 => {
@@ -122,12 +122,12 @@ impl Hand {
 
         // Get some
         match (quads, trips, pairs, high) {
-            (Some(quads), _, _, _) => Rank::Quads(quads),
-            (_, Some(trips), (Some(pair), _), _) => Rank::House(trips, pair),
-            (_, Some(trips), _, _) => Rank::Trips(trips),
-            (_, _, (Some(pair0), Some(pair1)), _) => Rank::TwoPair(pair0, pair1),
-            (_, _, (Some(pair), _), _) => Rank::Pair(pair),
-            (_, _, _, Some(high)) => Rank::High(high),
+            (Some(quads), _, _, _) => Ok(Rank::Quads(quads)),
+            (_, Some(trips), (Some(pair), _), _) => Ok(Rank::House(trips, pair)),
+            (_, Some(trips), _, _) => Ok(Rank::Trips(trips)),
+            (_, _, (Some(pair0), Some(pair1)), _) => Ok(Rank::TwoPair(pair0, pair1)),
+            (_, _, (Some(pair), _), _) => Ok(Rank::Pair(pair)),
+            (_, _, _, Ok(Some(high)) => Rank::High(high)),
             _ => Err(Error::Explained(format!("TODO Error: {:#?}", cards))),
         }
     }

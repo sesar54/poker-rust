@@ -34,7 +34,7 @@ impl Action {
 }
 
 impl Player {
-    pub fn take(&mut self, cards: Vec<Card>) -> Result<(), Error> {
+    pub fn take(&mut self, cards: Vec<Card>) -> Result<(), Error> {'
         match &mut self.hand {
             None => {
                 self.hand = Some(Hand::new(cards)?);

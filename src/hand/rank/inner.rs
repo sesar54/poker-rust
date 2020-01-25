@@ -1,5 +1,6 @@
-use super::mediator::{self, RRank};
-use crate::card::Suit;
+use super::mediator;
+use crate::card::{Rank, Suit};
+
 use mimpl::mimpl;
 use num_traits::FromPrimitive;
 use seq_macro::seq;
@@ -26,6 +27,10 @@ pub enum SRank {
     Ten,
 }
 
+fn test() {
+    SRank::default();
+}
+
 impl crate::r#trait::Circular<isize> for SRank {
     /// Cycles over the elements of `SRank`, starting at `self`.
     /// Returns the n'th neighbor.
@@ -38,29 +43,40 @@ impl crate::r#trait::Circular<isize> for SRank {
     }
 }
 
-impl Default for SRank {
-    fn default() -> Self {
-        Self::Ace
+mimpl!(Default; SRank, || SRank::Ace);
+
+impl From<SRank> for Rank {
+    fn from(srank: SRank) -> Self {
+        match srank {
+            SRank::Ace => Rank::Ace,
+            SRank::Two => Rank::Two,
+            SRank::Three => Rank::Three,
+            SRank::Four => Rank::Four,
+            SRank::Five => Rank::Five,
+            SRank::Six => Rank::Six,
+            SRank::Seven => Rank::Seven,
+            SRank::Eight => Rank::Eight,
+            SRank::Nine => Rank::Nine,
+            SRank::Ten => Rank::Ten,
+        }
     }
 }
 
-impl TryFrom<RRank> for SRank {
+impl TryFrom<Rank> for SRank {
     type Error = String;
 
-    fn try_from(rank: RRank) -> Result<Self, Self::Error> {
+    fn try_from(rank: Rank) -> Result<Self, Self::Error> {
         match rank {
-            Wildcard => Err("Wildcards are unambigious".into()),
-            Ace => Ok(SRank::Ace),
-            Two => Ok(SRank::Two),
-            Two => Ok(SRank::Two),
-            Three => Ok(SRank::Three),
-            Four => Ok(SRank::Four),
-            Five => Ok(SRank::Five),
-            Six => Ok(SRank::Six),
-            Seven => Ok(SRank::Seven),
-            Eight => Ok(SRank::Eight),
-            Nine => Ok(SRank::Nine),
-            Ten => Ok(SRank::Ten),
+            Rank::Ace => Ok(SRank::Ace),
+            Rank::Two => Ok(SRank::Two),
+            Rank::Three => Ok(SRank::Three),
+            Rank::Four => Ok(SRank::Four),
+            Rank::Five => Ok(SRank::Five),
+            Rank::Six => Ok(SRank::Six),
+            Rank::Seven => Ok(SRank::Seven),
+            Rank::Eight => Ok(SRank::Eight),
+            Rank::Nine => Ok(SRank::Nine),
+            Rank::Ten => Ok(SRank::Ten),
             rank => Err(format!("A Straight can't start on rank {:?}.", rank)),
         }
     }
@@ -68,13 +84,13 @@ impl TryFrom<RRank> for SRank {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct High {
-    pub rank: RRank,
+    pub rank: Rank,
     pub suit: Suit,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Pair {
-    pub crank: RRank,
+    pub crank: Rank,
     pub suits: [Suit; 2],
 }
 
@@ -86,7 +102,7 @@ pub struct TwoPair {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Trips {
-    pub crank: RRank,
+    pub crank: Rank,
     pub suits: [Suit; 3],
 }
 
@@ -98,7 +114,7 @@ pub struct Straight {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Flush {
-    pub ranks: [RRank; 5],
+    pub ranks: [Rank; 5],
     pub csuit: Suit,
 }
 
@@ -110,7 +126,7 @@ pub struct House {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Quads {
-    pub crank: RRank,
+    pub crank: Rank,
     pub suits: [Suit; 4],
 }
 
@@ -122,7 +138,7 @@ pub struct StraightFlush {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Fives {
-    pub crank: RRank,
+    pub crank: Rank,
     pub suits: [Suit; 5],
 }
 

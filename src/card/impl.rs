@@ -1,5 +1,7 @@
 use super::face::*;
 
+use mimpl::mimpl;
+
 use std::char;
 use std::convert::TryFrom;
 
@@ -18,8 +20,10 @@ impl Card {
     pub fn new(rank: Rank, suit: Suit) -> Card {
         Card { rank, suit }
     }
-
 }
+
+/// Testing
+mimpl!(Default; Card, || Card {rank: Ace, suit: Spades});
 
 impl Into<u8> for Card {
     /// Converts `Card` into `u8`.

@@ -31,23 +31,21 @@ pub enum Suit {
 ///
 /// | enum  | u8 | char |
 /// | ----- | -- | ---- |
-/// | Wild  | 0  | W    |
-/// | Ace   | 1  | A    |
-/// | Two   | 2  | 2    |
-/// | Three | 3  | 3    |
-/// | Four  | 4  | 4    |
-/// | Five  | 5  | 5    |
-/// | Six   | 6  | 6    |
-/// | Seven | 7  | 7    |
-/// | Eight | 8  | 8    |
-/// | Nine  | 9  | 9    |
-/// | Ten   | 10 | 1    |
-/// | Jack  | 11 | J    |
-/// | Queen | 12 | Q    |
-/// | King  | 13 | K    |
+/// | Ace   | 0  | A    |
+/// | Two   | 1  | 2    |
+/// | Three | 2  | 3    |
+/// | Four  | 3  | 4    |
+/// | Five  | 4  | 5    |
+/// | Six   | 5  | 6    |
+/// | Seven | 6  | 7    |
+/// | Eight | 7  | 8    |
+/// | Nine  | 8  | 9    |
+/// | Ten   | 9  | 1    |
+/// | Jack  | 10 | J    |
+/// | Queen | 11 | Q    |
+/// | King  | 12 | K    |
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
-    Wild,
     Ace,
     Two,
     Three,

@@ -1,5 +1,7 @@
 use super::{inner, mediator, ConvertRankError, Rank};
 
+use crate::card::Card;
+
 use std::convert::{From, TryFrom};
 use std::fmt;
 
@@ -57,7 +59,6 @@ impl TryFrom<mediator::StraightFlush> for Rank {
 derive_try_from!(Fives);
 
 impl Rank {
-    
     /// Will return number of cards in Rank. This is constant.
     /// * High            => 1
     /// * Pair            => 2
@@ -85,7 +86,7 @@ impl Rank {
     }
 
     /// Consumes the rank
-    pub fn to_boxed_slice(self) -> Box<[mediator::RCard]> {
+    pub fn to_boxed_slice(self) -> Box<[Card]> {
         use mediator::*;
         match self {
             Self::High(high) => Box::new([High::from(high).0]),

@@ -114,11 +114,11 @@ pub fn straight_cards() -> [Card; 5] {
     // Make sure that 2 cards don't share a suit,
     // as it prevents creating a straight flush
     let cards = cards!(
-        rank,         suits[0];
-        rank.step(1), suits[1];
-        rank.step(2), suits[rng()];
-        rank.step(3), suits[rng()];
-        rank.step(4), suits[rng()]
+        rank, suits[0];
+        rank.next().unwrap(), suits[1];
+        rank.next().unwrap(), suits[rng()];
+        rank.next().unwrap(), suits[rng()];
+        rank.next().unwrap(), suits[rng()]
     );
     to_array![cards.iter().map(|c| *c); 5].unwrap()
 }
@@ -139,7 +139,7 @@ pub fn flush_cards() -> [Card; 5] {
         let mut ranks: [Rank; 5] = ranks!(&mut rng)[..5].try_into().unwrap();
         ranks.sort();
 
-        if ranks[0].step(4) != ranks[4] {
+        if ranks[0].nth(4).unwrap() != ranks[4] {
             break ranks;
         }
     };

@@ -34,6 +34,3 @@ pub mod player;
 pub mod table;
 
 pub mod prelude;
-
-// Private Modules
-mod r#trait;

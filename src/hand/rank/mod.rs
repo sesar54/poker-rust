@@ -1,9 +1,7 @@
-use std::error::Error;
-use std::fmt;
-
+mod fmt;
 mod r#impl;
 mod inner;
-mod mediator;
+pub mod mediator;
 
 // Note: Make Invalid States Unrepresentable
 /// This is
@@ -24,21 +22,3 @@ pub enum Rank {
 
 #[derive(Debug)]
 pub struct ConvertRankError<E>(pub E);
-
-impl<E> Error for ConvertRankError<E>
-where
-    E: Error + 'static,
-{
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(&self.0)
-    }
-}
-
-impl<E> fmt::Display for ConvertRankError<E>
-where
-    E: Error,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "(TODO: Error at hand/rank/mod.rs, {})", self.0)
-    }
-}

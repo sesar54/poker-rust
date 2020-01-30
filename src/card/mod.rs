@@ -1,9 +1,11 @@
+use crate::r#trait::Circular;
+
 pub mod face;
 mod fmt;
 mod r#impl;
 
 /// Basic Card struct.
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Card {
     pub rank: Rank,
     pub suit: Suit,
@@ -18,7 +20,7 @@ pub struct Card {
 /// | Diamonds | 1  | A    |
 /// | Hearts   | 2  | 2    |
 /// | Spades   | 3  | 3    |
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Suit {
     Clubs,
     Diamonds,
@@ -44,7 +46,7 @@ pub enum Suit {
 /// | Jack  | 10 | J    |
 /// | Queen | 11 | Q    |
 /// | King  | 12 | K    |
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
     Ace,
     Two,

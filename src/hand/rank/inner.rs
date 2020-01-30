@@ -1,86 +1,15 @@
 use super::mediator;
 use crate::card::{Rank, Suit};
-
 use mimpl::mimpl;
 use num_traits::FromPrimitive;
 use seq_macro::seq;
 use std::cmp::Ordering;
-use std::convert::{From, Into, TryFrom};
+use std::convert::{From, TryFrom};
 use variant_count::VariantCount;
 
-/// Consist of Ranks which can be the first card in a straight.
-/// Example:
-///     Ace can be both first and last Rank in a straight.
-///         [Ace, Two, Three, Four, Five]
-///         [Ten, Jack, Queen, King, Ace]     
-#[derive(Clone, Copy, Debug, PartialEq, Eq, FromPrimitive, PartialOrd, Ord, VariantCount)]
-pub enum SRank {
-    Ace,
-    Two,
-    Three,
-    Four,
-    Five,
-    Six,
-    Seven,
-    Eight,
-    Nine,
-    Ten,
-}
-
-fn test() {
-    SRank::default();
-}
-
-impl crate::r#trait::Circular<isize> for SRank {
-    /// Cycles over the elements of `SRank`, starting at `self`.
-    /// Returns the n'th neighbor.
-    /// # Examples
-    /// ```rust
-    ///
-    /// ```
-    fn step(self, i: isize) -> Self {
-        FromPrimitive::from_isize(self as isize + i % SRank::VARIANT_COUNT as isize).unwrap()
-    }
-}
-
-mimpl!(Default; SRank, || SRank::Ace);
-
-impl From<SRank> for Rank {
-    fn from(srank: SRank) -> Self {
-        match srank {
-            SRank::Ace => Rank::Ace,
-            SRank::Two => Rank::Two,
-            SRank::Three => Rank::Three,
-            SRank::Four => Rank::Four,
-            SRank::Five => Rank::Five,
-            SRank::Six => Rank::Six,
-            SRank::Seven => Rank::Seven,
-            SRank::Eight => Rank::Eight,
-            SRank::Nine => Rank::Nine,
-            SRank::Ten => Rank::Ten,
-        }
-    }
-}
-
-impl TryFrom<Rank> for SRank {
-    type Error = String;
-
-    fn try_from(rank: Rank) -> Result<Self, Self::Error> {
-        match rank {
-            Rank::Ace => Ok(SRank::Ace),
-            Rank::Two => Ok(SRank::Two),
-            Rank::Three => Ok(SRank::Three),
-            Rank::Four => Ok(SRank::Four),
-            Rank::Five => Ok(SRank::Five),
-            Rank::Six => Ok(SRank::Six),
-            Rank::Seven => Ok(SRank::Seven),
-            Rank::Eight => Ok(SRank::Eight),
-            Rank::Nine => Ok(SRank::Nine),
-            Rank::Ten => Ok(SRank::Ten),
-            rank => Err(format!("A Straight can't start on rank {:?}.", rank)),
-        }
-    }
-}
+/* -------------------------------------------------------------------------- */
+/*                          Declaration of inner Rank                         */
+/* -------------------------------------------------------------------------- */
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct High {
@@ -142,6 +71,10 @@ pub struct Fives {
     pub suits: [Suit; 5],
 }
 
+/* -------------------------------------------------------------------------- */
+/*                        Implementation from mediator                        */
+/* -------------------------------------------------------------------------- */
+
 mimpl!(From; mediator::High, High, |card: mediator::High| 
     High {rank: card.0.rank, suit: card.0.suit}
 );
@@ -173,6 +106,10 @@ mimpl!(From; mediator::Fives, Fives, |cards: mediator::Fives|
     Fives {crank: cards.0[0].rank, suits: seq!(n in 0..5{[#(cards.0[n].suit,)*]})}
 );
 
+/* -------------------------------------------------------------------------- */
+/*                           Implementation of Order                          */
+/* -------------------------------------------------------------------------- */
+
 mimpl!(PartialOrd; High, USE_CMP);
 mimpl!(PartialOrd; Pair, USE_CMP);
 mimpl!(PartialOrd; TwoPair, USE_CMP);
@@ -184,8 +121,8 @@ mimpl!(PartialOrd; Quads, USE_CMP);
 mimpl!(PartialOrd; StraightFlush, USE_CMP);
 mimpl!(PartialOrd; Fives, USE_CMP);
 
-mimpl!(Ord; High, |this: &High, that: &High| this.rank.cmp(&that.rank));
-mimpl!(Ord; Pair, |this: &Pair, that: &Pair| this.crank.cmp(&that.crank));
+mimpl!(Ord; High, |this: &High, that: &High| this.rank.cmp(that.rank));
+mimpl!(Ord; Pair, |this: &Pair, that: &Pair| this.crank.cmp(that.crank));
 mimpl!(Ord; TwoPair, |this: &TwoPair, that: &TwoPair| {
     let order = this.pair0.cmp(&that.pair0);
     if order == Ordering::Equal {
@@ -194,9 +131,9 @@ mimpl!(Ord; TwoPair, |this: &TwoPair, that: &TwoPair| {
         order
     }
 });
-mimpl!(Ord; Trips, |this: &Trips, that: &Trips| this.crank.cmp(&that.crank));
-mimpl!(Ord; Straight, |this: &Straight, that: &Straight| this.srank.cmp(&that.srank));
-mimpl!(Ord; Flush, |this: &Flush, that: &Flush| this.ranks[0].cmp(&that.ranks[0]));
+mimpl!(Ord; Trips, |this: &Trips, that: &Trips| this.crank.cmp(that.crank));
+mimpl!(Ord; Straight, |this: &Straight, that: &Straight| this.srank.cmp(that.srank));
+mimpl!(Ord; Flush, |this: &Flush, that: &Flush| this.ranks[0].cmp(that.ranks[0]));
 mimpl!(Ord; House, |this: &House, that: &House| {
     let order = this.trips.cmp(&that.trips);
     if order == Ordering::Equal {
@@ -205,6 +142,75 @@ mimpl!(Ord; House, |this: &House, that: &House| {
         order
     }
 });
-mimpl!(Ord; Quads, |this: &Quads, that: &Quads| this.crank.cmp(&that.crank));
-mimpl!(Ord; StraightFlush, |this: &StraightFlush, that: &StraightFlush| this.srank.cmp(&that.srank));
-mimpl!(Ord; Fives, |this: &Fives, that: &Fives| this.crank.cmp(&that.crank));
+mimpl!(Ord; Quads, |this: &Quads, that: &Quads| this.crank.cmp(that.crank));
+mimpl!(Ord; StraightFlush, |this: &StraightFlush, that: &StraightFlush| this.srank.cmp(that.srank));
+mimpl!(Ord; Fives, |this: &Fives, that: &Fives| this.crank.cmp(that.crank));
+
+/* -------------------------------------------------------------------------- */
+/*                  Declaration and implementations of SRank                  */
+/* -------------------------------------------------------------------------- */
+
+/// Consist of Ranks which can be the first card in a straight.
+/// Example:
+///     Ace can be both first and last Rank in a straight.
+///         [Ace, Two, Three, Four, Five]
+///         [Ten, Jack, Queen, King, Ace]     
+#[derive(Clone, Copy, Debug, PartialEq, Eq, FromPrimitive, PartialOrd, Ord, VariantCount)]
+pub enum SRank {
+    Ace,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+}
+
+mimpl!(Default; SRank, || SRank::Ace);
+
+impl From<SRank> for Rank {
+    fn from(srank: SRank) -> Self {
+        match srank {
+            SRank::Ace => Rank::Ace,
+            SRank::Two => Rank::Two,
+            SRank::Three => Rank::Three,
+            SRank::Four => Rank::Four,
+            SRank::Five => Rank::Five,
+            SRank::Six => Rank::Six,
+            SRank::Seven => Rank::Seven,
+            SRank::Eight => Rank::Eight,
+            SRank::Nine => Rank::Nine,
+            SRank::Ten => Rank::Ten,
+        }
+    }
+}
+
+impl TryFrom<Rank> for SRank {
+    type Error = String;
+
+    fn try_from(rank: Rank) -> Result<Self, Self::Error> {
+        match rank {
+            Rank::Ace => Ok(SRank::Ace),
+            Rank::Two => Ok(SRank::Two),
+            Rank::Three => Ok(SRank::Three),
+            Rank::Four => Ok(SRank::Four),
+            Rank::Five => Ok(SRank::Five),
+            Rank::Six => Ok(SRank::Six),
+            Rank::Seven => Ok(SRank::Seven),
+            Rank::Eight => Ok(SRank::Eight),
+            Rank::Nine => Ok(SRank::Nine),
+            Rank::Ten => Ok(SRank::Ten),
+            rank => Err(format!("A Straight can't start on rank {:?}.", rank)),
+        }
+    }
+}
+
+impl Iterator for SRank {
+    type Item = SRank;
+    fn next(&mut self) -> Option<Self::Item> {
+        Self::from_u32(*self as u32 + 1 % 10)
+    }
+}

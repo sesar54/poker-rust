@@ -1,13 +1,12 @@
-use super::rank::{ConvertRankError, Rank};
+use super::rank::{mediator, ConvertRankError, Rank};
 use super::Hand;
 use crate::card::{self, Card};
-
+use std::convert::TryFrom;
 use std::fmt;
-
 extern crate log;
 use log::error;
 
-type Error = ConvertRankError<String>;
+type Error = ConvertRankError<()>;
 
 impl Hand {
     /// Creating a new hand will cause all given cards to be automatically
@@ -105,30 +104,33 @@ impl Hand {
 
             match len {
                 // Return immediately since Fives can't be beaten
-                5 => return Ok(Rank::Fives(carrd!(5))),
-                4 if quads.is_none() => quads = Some(carrd!(4)),
-                3 if trips.is_none() => trips = Some(carrd!(3)),
+                5 => return Rank::try_from(mediator::Fives(carrd!(5))),
+                4 if quads.is_none() => quads = Some(mediator::Quads(carrd!(4))),
+                3 if trips.is_none() => trips = Some(mediator::Trips(carrd!(3))),
                 2 => {
                     if pairs.0.is_none() {
-                        pairs.0 = Some(carrd!(2))
+                        pairs.0 = Some(mediator::Pair(carrd!(2)))
                     } else if pairs.1.is_none() {
-                        pairs.1 = Some(carrd!(2))
+                        pairs.1 = Some(mediator::Pair(carrd!(2)))
                     }
                 }
-                1 if high.is_none() => high = Some(carrd!(1)),
+                1 if high.is_none() => high = Some(mediator::High(cards[1])),
                 _ => (),
             }
         }
 
         // Get some
         match (quads, trips, pairs, high) {
-            (Some(quads), _, _, _) => Ok(Rank::Quads(quads)),
-            (_, Some(trips), (Some(pair), _), _) => Ok(Rank::House(trips, pair)),
-            (_, Some(trips), _, _) => Ok(Rank::Trips(trips)),
-            (_, _, (Some(pair0), Some(pair1)), _) => Ok(Rank::TwoPair(pair0, pair1)),
-            (_, _, (Some(pair), _), _) => Ok(Rank::Pair(pair)),
-            (_, _, _, Ok(Some(high)) => Rank::High(high)),
-            _ => Err(Error::Explained(format!("TODO Error: {:#?}", cards))),
+            (Some(quads), _, _, _) => Rank::try_from(quads),
+            (_, Some(trips), (Some(pair), _), _) => Rank::try_from(mediator::House { trips, pair }),
+            (_, Some(trips), _, _) => Rank::try_from(trips),
+            (_, _, (Some(pair0), Some(pair1)), _) => {
+                Rank::try_from(mediator::TwoPair(pair0, pair1))
+            }
+            (_, _, (Some(pair), _), _) => Rank::try_from(pair),
+            (_, _, _, Some(high)) => Ok(Rank::from(high)),
+            _ => unimplemented!(),
+            //_ => Err(Error::Explained(format!("TODO Error: {:#?}", cards))),
         }
     }
 
@@ -169,9 +171,9 @@ impl Hand {
     }
 
     /// Returns cards grouped together by these rules:
-    /// 1. Cards are sorted by it's rank first.
-    /// 1.1 Ace Cards are sorted last (more valuable)
-    /// 2. Cards are grouped together if their neighbor has the same rank.
+    /// 1) Cards are sorted by it's rank first.
+    /// 1 a) Ace Cards are sorted last (more valuable)
+    /// 2) Cards are grouped together if their neighbor has the same rank.
     pub fn pair_groups(cards: &[Card]) -> Vec<Vec<Card>> {
         let mut cards = cards.to_vec();
         cards.sort_by(|a, b| a.cmp_rank_first(**b));
@@ -272,6 +274,7 @@ impl Hand {
         // Iterate over rest of cards
         for card in iter {
             if card.rank == prev_rank.step(1) {
+                // More TODO
                 prev_rank = card.rank;
                 temp_vec.push(card);
             // Drop temp_vec into straight_groupings and start a new one

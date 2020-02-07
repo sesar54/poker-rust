@@ -1,6 +1,11 @@
-use super::{inner, mediator, ConvertRankError, Rank};
+use super::{
+    inner,
+    mediator, InvalidStraightError, Rank, TryFromMediatorError,
+};
 use crate::card::Card;
 use std::convert::{From, TryFrom};
+use std::error;
+use std::fmt;
 
 impl Rank {
     /// Will return number of cards in Rank. These are constant.
@@ -54,8 +59,13 @@ impl Rank {
 
 macro_rules! try_from_mediator {
     ($type:ident) => {
+
+        impl error::Error for mediator::$type {
+            // TODO https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/boxing_errors.html
+        }
+
         impl TryFrom<mediator::$type> for Rank {
-            type Error = ConvertRankError<()>; // TODO Decide something to put in
+            type Error = TryFromMediatorError;
 
             fn try_from(cards: mediator::$type) -> Result<Self, Self::Error> {
                 let inner_rank = inner::$type::from(cards);
@@ -63,7 +73,7 @@ macro_rules! try_from_mediator {
                 if cards == mediator::$type::from(inner_rank) {
                     Ok(Rank::$type(inner_rank))
                 } else {
-                    Err(ConvertRankError(()))
+                    Err(TryFromMediatorError(cards.into()))
                 }
             }
         }
@@ -94,20 +104,33 @@ impl From<mediator::High> for Rank {
     }
 }
 
+impl<T> fmt::Display for InvalidStraightError<T>
+where
+    T: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl<T> error::Error for InvalidStraightError<T> where T: error::Error {}
+
 impl TryFrom<mediator::Straight> for Rank {
-    type Error = ConvertRankError<String>;
+    type Error = InvalidStraightError<mediator::Straight>;
     fn try_from(cards: mediator::Straight) -> Result<Self, Self::Error> {
         Ok(Self::Straight(
-            inner::Straight::try_from(cards).map_err(ConvertRankError)?,
+            inner::Straight::try_from(cards).map_err(|e| InvalidStraightError(e, cards))?,
         ))
     }
 }
 
 impl TryFrom<mediator::StraightFlush> for Rank {
-    type Error = ConvertRankError<String>;
+    type Error = InvalidStraightError<mediator::StraightFlush>;
     fn try_from(cards: mediator::StraightFlush) -> Result<Self, Self::Error> {
         Ok(Self::StraightFlush(
-            inner::StraightFlush::try_from(cards).map_err(ConvertRankError)?,
+            inner::StraightFlush::try_from(cards).map_err(|e| InvalidStraightError(e, cards))?,
         ))
     }
 }
+
+impl error::Error for TryFromMediatorError {}

@@ -15,4 +15,4 @@ seq-macro = "0.1"
 num-derive = "0.3.0"
 num-traits = "0.2.11"
 variant_count = "1.0.0"
-mimpl = { path = "C:/Users/nils/Repositories/mimpl" }
+mimpl = { path = "C:/Users/nils/Development/mimpl" }

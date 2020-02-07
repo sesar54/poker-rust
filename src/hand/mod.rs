@@ -1,9 +1,9 @@
 use crate::card::Card;
 
+pub mod extra;
+mod fmt;
 mod r#impl;
 pub mod rank;
-
-pub mod extra;
 pub use extra::*;
 
 /**
@@ -20,3 +20,5 @@ pub struct Hand {
     rank: rank::Rank,
     kickers: Vec<Card>,
 }
+
+pub struct EmptyHandError;

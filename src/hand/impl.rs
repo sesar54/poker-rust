@@ -1,17 +1,20 @@
-use super::rank::{mediator, ConvertRankError, Rank};
-use super::Hand;
+use super::{
+    rank::{mediator, Rank},
+    EmptyHandError, Hand,
+};
 use crate::card::{self, Card};
 use std::convert::TryFrom;
+use std::error;
 use std::fmt;
 extern crate log;
 use log::error;
 
-type Error = ConvertRankError<()>;
+pub type Result<R> = std::result::Result<R, Box<dyn error::Error>>;
 
 impl Hand {
     /// Creating a new hand will cause all given cards to be automatically
     /// evaluated into a rank
-    pub fn new(cards: Vec<Card>) -> Result<Hand, Error> {
+    pub fn new(cards: Vec<Card>) -> Result<Hand> {
         match Hand::ranking(&cards, &Vec::new()) {
             // 2nd arg is a placeholder
             Ok((rank, kickers)) => Ok(Hand {
@@ -31,14 +34,11 @@ impl Hand {
     /// Takes a slice of community cards and return the best card rank
     ///
     /// If given a slice of length 0, return immediately with an error.
-    pub fn ranking(cards: &[Card], community: &[Card]) -> Result<(Rank, Vec<Card>), Error> {
+    pub fn ranking(cards: &[Card], community: &[Card]) -> Result<(Rank, Vec<Card>)> {
         let cards: Vec<Card> = cards.iter().chain(community.iter()).cloned().collect();
 
         if cards.is_empty() {
-            Err(ConvertRankError(format!(
-                "No cards were given. Cards: {:?}",
-                cards
-            )))
+            Err(EmptyHandError {}.into())
         } else {
             let pair_rank = Hand::pair_rank(&cards)?;
             let option_sf = Hand::straight_flush_rank(&cards);
@@ -67,7 +67,7 @@ impl Hand {
         self.cards.is_empty()
     }
 
-    pub fn update(&mut self, community: &[Card]) -> Result<(), Error> {
+    pub fn update(&mut self, community: &[Card]) -> Result<()> {
         let (rank, kickers) = Hand::ranking(&self.cards, community)?;
 
         self.rank = rank;
@@ -82,7 +82,7 @@ impl Hand {
     /// This function will always return High, if no other pair was found.
     /// The exception to the rule is if the slice of cards have a size of 0
     /// or something internally went wrong.
-    pub fn pair_rank(cards: &[Card]) -> Result<Rank, Error> {
+    pub fn pair_rank(cards: &[Card]) -> Result<Rank> {
         let mut pair_groups = Hand::pair_groups(cards);
         let pair_iter = pair_groups.iter_mut().rev();
 
@@ -104,7 +104,7 @@ impl Hand {
 
             match len {
                 // Return immediately since Fives can't be beaten
-                5 => return Rank::try_from(mediator::Fives(carrd!(5))),
+                5 => return Rank::try_from(mediator::Fives(carrd!(5))).map_err(|e| e.into()),
                 4 if quads.is_none() => quads = Some(mediator::Quads(carrd!(4))),
                 3 if trips.is_none() => trips = Some(mediator::Trips(carrd!(3))),
                 2 => {
@@ -132,11 +132,12 @@ impl Hand {
             _ => unimplemented!(),
             //_ => Err(Error::Explained(format!("TODO Error: {:#?}", cards))),
         }
+        .map_err(|e| e.into())
     }
 
     /// Maybe returns one rank after checking in order:
     /// **[StraightFlush, Flush, Straight]**
-    pub fn straight_flush_rank(cards: &[Card]) -> Option<Result<Rank, Error>> {
+    pub fn straight_flush_rank(cards: &[Card]) -> Option<Result<Rank>> {
         // Copy, sort and const.
         let mut cards = cards.to_vec();
         cards.sort();
@@ -148,19 +149,19 @@ impl Hand {
 
         let result = if let Some(straight_flush) = Hand::straight_flush_cards(&flush_grouping) {
             match Rank::StraightFlush(straight_flush) {
-                Err(e) => Err(Error::Explained(format!("Function straight_cards() with grouping from flush_groups() generated a false positive. Error: {:?}", e))),
+                Err(e) => Err(SomeError::Explained(format!("Function straight_cards() with grouping from flush_groups() generated a false positive. Error: {:?}", e))),
                 sf => sf
             }
         } else if let Some(flush) = Hand::extract_last_cards(&flush_grouping) {
             match Rank::Flush(flush) {
-                Err(e) => Err(Error::Explained(format!("Function flush_cards() with grouping from flush_groups() generated a false positive. Error: {:?}", e))),
+                Err(e) => Err(SomeError::Explained(format!("Function flush_cards() with grouping from flush_groups() generated a false positive. Error: {:?}", e))),
                 flush => flush
             }
         } else if let Some(straight) =
             Hand::extract_last_cards(&Hand::straight_groups(cards.as_slice()))
         {
             match Rank::Straight(straight) {
-                Err(e) => Err(Error::Explained(format!("Function straight_cards() with grouping from straight_groups() generated a false positive. Error: {:?}", e))),
+                Err(e) => Err(SomeError::Explained(format!("Function straight_cards() with grouping from straight_groups() generated a false positive. Error: {:?}", e))),
                 straight => straight
             }
         } else {
@@ -340,8 +341,4 @@ impl Hand {
     }
 }
 
-impl fmt::Display for Hand {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.cards)
-    }
-}
+impl error::Error for EmptyHandError {}

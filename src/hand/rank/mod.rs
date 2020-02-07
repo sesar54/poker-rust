@@ -1,3 +1,6 @@
+use inner::srank;
+use std::error;
+
 mod fmt;
 mod r#impl;
 mod inner;
@@ -21,4 +24,7 @@ pub enum Rank {
 }
 
 #[derive(Debug)]
-pub struct ConvertRankError<E>(pub E);
+pub struct TryFromMediatorError(pub Box<dyn error::Error>);
+
+#[derive(Debug)] // TEMPORARY
+pub struct InvalidStraightError<E>(pub srank::TryFromRankError, pub E);

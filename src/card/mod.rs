@@ -1,5 +1,3 @@
-use crate::r#trait::Circular;
-
 pub mod face;
 mod fmt;
 mod r#impl;

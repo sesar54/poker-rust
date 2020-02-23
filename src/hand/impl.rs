@@ -7,7 +7,9 @@ use std::convert::TryFrom;
 use std::error;
 use std::fmt;
 extern crate log;
-use log::error;
+use std::convert::TryInto;
+use std::ops::Range;
+use std::thread;
 
 pub type Result<R> = std::result::Result<R, Box<dyn error::Error>>;
 
@@ -83,9 +85,6 @@ impl Hand {
     /// The exception to the rule is if the slice of cards have a size of 0
     /// or something internally went wrong.
     pub fn pair_rank(cards: &[Card]) -> Result<Rank> {
-        let mut pair_groups = Hand::pair_groups(cards);
-        let pair_iter = pair_groups.iter_mut().rev();
-
         // Define some
         let mut quads = None;
         let mut trips = None;
@@ -93,25 +92,23 @@ impl Hand {
         let mut high = None;
 
         // Build some
-        for cards in pair_iter {
+        for cards in Hand::pair_pattern(cards.clone().into()).iter() {
+            let cards: &[Card] = &cards;
             let len = cards.len();
-
-            macro_rules! carrd {
-                ($i:expr) => {
-                    to_array![cards.drain(..); $i].unwrap()
-                };
-            };
 
             match len {
                 // Return immediately since Fives can't be beaten
-                5 => return Rank::try_from(mediator::Fives(carrd!(5))).map_err(|e| e.into()),
-                4 if quads.is_none() => quads = Some(mediator::Quads(carrd!(4))),
-                3 if trips.is_none() => trips = Some(mediator::Trips(carrd!(3))),
+                5 => {
+                    return Rank::try_from(mediator::Fives(cards.try_into().unwrap()))
+                        .map_err(|e| e.into())
+                }
+                4 if quads.is_none() => quads = Some(mediator::Quads(cards.try_into().unwrap())),
+                3 if trips.is_none() => trips = Some(mediator::Trips(cards.try_into().unwrap())),
                 2 => {
                     if pairs.0.is_none() {
-                        pairs.0 = Some(mediator::Pair(carrd!(2)))
+                        pairs.0 = Some(mediator::Pair(cards.try_into().unwrap()))
                     } else if pairs.1.is_none() {
-                        pairs.1 = Some(mediator::Pair(carrd!(2)))
+                        pairs.1 = Some(mediator::Pair(cards.try_into().unwrap()))
                     }
                 }
                 1 if high.is_none() => high = Some(mediator::High(cards[1])),
@@ -138,109 +135,87 @@ impl Hand {
     /// Maybe returns one rank after checking in order:
     /// **[StraightFlush, Flush, Straight]**
     pub fn straight_flush_rank(cards: &[Card]) -> Option<Result<Rank>> {
-        // Copy, sort and const.
-        let mut cards = cards.to_vec();
-        cards.sort();
-        let cards = cards;
-
         // Look where flush_grouping is used and draw some conclusions on what
         // is happening and in which order.
-        let flush_grouping = Hand::flush_groups(cards.as_slice());
+        let cards: Box<[Card]> = cards.clone().into();
 
+        let flush_candidates = cards.clone();
+        let flush_thread = thread::spawn(move || {
+            let flush_cards = Hand::flush_pattern(flush_candidates);
+            let flush_iter = flush_cards.iter().rev().filter(|cards| cards.len() >= 5);
+
+            if let Some(straight_flush) = flush_iter
+                .cloned()
+                .flat_map(|cards| Hand::straight_pattern(cards).iter())
+                .find_map(|&cards| if cards.len() >= 5 { Some(cards) } else { None })
+            {
+                Some(Rank::try_from(mediator::Straight::try_from(
+                    straight_flush,
+                )?))
+            //} else if let Some(flush) = flush_iter.next() {
+            //    Some(flush)
+            } else {
+                None
+            }
+        });
+
+        let straight_candidates = cards.clone();
+
+        let straigh_thread = thread::spawn(move || {
+            let straight_pattern = Hand::straight_pattern(straight_candidates);
+        });
+
+        flush_thread.join();
+        straigh_thread.join();
+        None
+
+        /*
         let result = if let Some(straight_flush) = Hand::straight_flush_cards(&flush_grouping) {
             match Rank::StraightFlush(straight_flush) {
-                Err(e) => Err(SomeError::Explained(format!("Function straight_cards() with grouping from flush_groups() generated a false positive. Error: {:?}", e))),
-                sf => sf
-            }
+                    Err(e) => Err(SomeError::Explained(format!("Function straight_cards() with grouping from flush_groups() generated a false positive. Error: {:?}", e))),
+                    sf => sf
+                }
         } else if let Some(flush) = Hand::extract_last_cards(&flush_grouping) {
             match Rank::Flush(flush) {
-                Err(e) => Err(SomeError::Explained(format!("Function flush_cards() with grouping from flush_groups() generated a false positive. Error: {:?}", e))),
-                flush => flush
-            }
+                    Err(e) => Err(SomeError::Explained(format!("Function flush_cards() with grouping from flush_groups() generated a false positive. Error: {:?}", e))),
+                    flush => flush
+                }
         } else if let Some(straight) =
             Hand::extract_last_cards(&Hand::straight_groups(cards.as_slice()))
         {
             match Rank::Straight(straight) {
-                Err(e) => Err(SomeError::Explained(format!("Function straight_cards() with grouping from straight_groups() generated a false positive. Error: {:?}", e))),
-                straight => straight
-            }
+                    Err(e) => Err(SomeError::Explained(format!("Function straight_cards() with grouping from straight_groups() generated a false positive. Error: {:?}", e))),
+                    straight => straight
+                }
         } else {
             return None;
         };
 
-        Some(result)
+        Some(result)*/
     }
 
     /// Returns cards grouped together by these rules:
-    /// 1) Cards are sorted by it's rank first.
-    /// 1 a) Ace Cards are sorted last (more valuable)
-    /// 2) Cards are grouped together if their neighbor has the same rank.
-    pub fn pair_groups(cards: &[Card]) -> Vec<Vec<Card>> {
-        let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_rank_first(**b));
+    pub fn pair_pattern(mut cards: Box<[Card]>) -> Box<[Box<[Card]>]> {
+        cards.sort();
 
-        // Ace rule
-        let rotate = cards.len() - cards.iter().filter(|c| c.rank == card::Rank::Ace).count();
-        cards.rotate_right(rotate);
+        let mut ranges = vec![];
+        {
+            let mut start = 0;
+            let mut iter = cards.iter();
 
-        // Value to be returned
-        let mut pairs: Vec<Vec<Card>> = Vec::new();
-        // Main Sequence Generator
-        let mut iter = cards.iter().cloned().peekable(); // TODO Should not need peekable()
-        let mut temp_vec: Vec<Card> = Vec::new();
-        let mut prev_rank = iter.peek().unwrap().rank;
-
-        for card in iter {
-            if prev_rank == card.rank {
-                temp_vec.push(card);
-            } else {
-                pairs.push(temp_vec);
-                prev_rank = card.rank;
-                temp_vec = vec![card];
+            while let Some(rank) = iter.by_ref().map(|card| card.rank).next() {
+                let counter = iter.clone().filter(|card| card.rank == rank).count();
+                iter.by_ref().skip(counter);
+                let end = start + counter;
+                ranges.push(Range { start, end });
+                start = end;
             }
         }
 
-        pairs.push(temp_vec);
-        pairs
-    }
-
-    /// Returns cards grouped together by these rules:
-    /// 1. Cards are sorted by it's suit first.
-    /// 2. Cards are grouped together if their neighbor has the same suit.
-    pub fn flush_groups(cards: &[Card]) -> Vec<Vec<Card>> {
-        let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_suit_first(**b));
-
-        // Value to be returned
-        let mut flush_groupings: Vec<Vec<Card>> = Vec::new();
-        // Main Sequence Generator
-        let mut iter = cards.iter().cloned();
-        let mut temp_vec;
-        let mut prev_suit;
-
-        // First card initiates things
-        if let Some(first_card) = iter.next() {
-            prev_suit = first_card.suit;
-            temp_vec = vec![first_card];
-
-        // No cards in cards
-        } else {
-            return flush_groupings;
-        }
-
-        // Iterate over rest of cards
-        for card in iter {
-            if prev_suit == card.suit {
-                temp_vec.push(card);
-            } else {
-                flush_groupings.push(temp_vec);
-                prev_suit = card.suit;
-                temp_vec = vec![card];
-            }
-        }
-
-        flush_groupings.push(temp_vec);
-        flush_groupings
+        ranges
+            .into_iter()
+            .map(move |range| cards[range].to_vec().into_boxed_slice())
+            .collect()
     }
 
     /// Returns cards grouped together by these rules:
@@ -252,93 +227,72 @@ impl Hand {
     ///     it along the other groups.
     ///     This is done to simulating the ace rule in straights.
     ///
-    pub fn straight_groups(cards: &[Card]) -> Vec<Vec<Card>> {
-        let mut cards = cards.to_vec();
-        cards.sort_by(|a, b| a.cmp_rank_first(**b));
+    pub fn straight_pattern(mut cards: Box<[Card]>) -> Box<[Box<[Card]>]> {
+        cards.sort_by(|a, b| a.rank.cmp(&b.rank));
 
-        // Value to be returned
-        let mut straight_groupings = Vec::<Vec<Card>>::new();
-        // Main Sequence Generator
-        let mut iter = cards.iter().cloned();
-        let mut temp_vec;
-        let mut prev_rank;
+        let mut ranges = vec![];
+        {
+            let mut iter = cards.iter();
 
-        // First card initiates things
-        if let Some(first_card) = iter.next() {
-            prev_rank = first_card.rank;
-            temp_vec = vec![first_card];
-        } else {
-            // No cards in cards
-            return straight_groupings;
-        }
-
-        // Iterate over rest of cards
-        for card in iter {
-            if card.rank == prev_rank.step(1) {
-                // More TODO
-                prev_rank = card.rank;
-                temp_vec.push(card);
-            // Drop temp_vec into straight_groupings and start a new one
-            } else {
-                straight_groupings.push(temp_vec);
-                prev_rank = card.rank;
-                temp_vec = vec![card];
+            let mut start = 0;
+            while let Some(mut rank) = iter.by_ref().map(|card| card.rank).next() {
+                let counter = iter
+                    .clone()
+                    .filter(|card| card.rank == rank || card.rank == rank.next())
+                    .count();
+                iter.by_ref().skip(counter);
+                let end = start + counter;
+                ranges.push(Range { start, end });
+                start = end;
             }
         }
 
-        straight_groupings.push(temp_vec);
-
-        // Ace rule
-        match (cards.first(), cards.last(), straight_groupings.last()) {
-            (Some(ace), Some(king), Some(broadway))
-                if ace.rank == card::Rank::Ace && king.rank == card::Rank::King =>
+        let broadway = match (cards.first(), cards.last()) {
+            (Some(first), Some(last))
+                if first.rank == card::Rank::Ace && last.rank == card::Rank::King =>
             {
-                let mut broadway = broadway.clone();
-                broadway.push(ace.clone());
-                straight_groupings.push(broadway);
+                let mut broadway = cards[ranges.pop().unwrap()].to_vec();
+                broadway.push(*first);
+                Some(broadway.into_boxed_slice())
             }
-            (Some(_), Some(_), None) => {
-                error!(
-                    "Card Ace and King found, but no element was appended to straight_groupings"
-                );
-                unreachable!();
-            }
-            _ => {}
-        }
+            _ => None,
+        };
 
-        straight_groupings
+        ranges
+            .into_iter()
+            .map(|range| cards[range].into())
+            .chain(broadway)
+            .collect()
     }
 
-    /// Returns 5 cards that was successfully filtered through both
-    /// `flush_groups(..)` and `straight_groups(..)`.
-    ///
-    /// This function extends `flush_groups(..)` as it's output is assumed to be
-    /// this functions input.
-    fn straight_flush_cards(flush_grouping: &[Vec<Card>]) -> Option<[Card; 5]> {
-        for group in flush_grouping.iter().rev().filter(|v| v.len() >= 5) {
-            if let Some(cards) = Hand::extract_last_cards(&Hand::straight_groups(&group)) {
-                return Some(cards);
+    /// Returns cards grouped together by these rules:
+    /// 1. Cards are sorted by it's suit first.
+    /// 2. Cards are grouped together if their neighbor has the same suit.
+    pub fn flush_pattern(mut cards: Box<[Card]>) -> Box<[Box<[Card]>]> {
+        cards.sort_by(|a, b| a.suit.cmp(&b.suit));
+
+        let mut ranges = vec![];
+        {
+            let mut iter = cards.iter();
+            let mut start = 0;
+            while let Some(suit) = iter.by_ref().map(|card| card.suit).next() {
+                let counter = iter.clone().take_while(|card| card.suit == suit).count();
+                iter.by_ref().skip(counter);
+                let end = start + counter;
+                ranges.push(Range { start, end });
+                start = end;
             }
         }
 
-        None
-    }
-
-    /// Iterate, in reverse, over groupings that has size 5 or over.
-    /// Extract it's 5 most valuable cards (last cards).
-    fn extract_last_cards(groupings: &[Vec<Card>]) -> Option<[Card; 5]> {
-        if let Some(cards) = groupings.iter().rev().find(|v| v.len() >= 5) {
-            let cards = to_array![cards[cards.len()-5..].iter().cloned(); 5];
-
-            if cards.is_some() {
-                cards
-            } else {
-                unreachable!();
-            }
-        } else {
-            None
-        }
+        ranges
+            .into_iter()
+            .map(|range| cards[range].into())
+            .collect()
     }
 }
+
+mimpl!(Display; EmptyHandError, |this: &EmptyHandError, f: &mut fmt::Formatter|
+    write!(f, "{:?}", this)
+);
 
 impl error::Error for EmptyHandError {}

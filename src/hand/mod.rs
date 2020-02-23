@@ -21,4 +21,5 @@ pub struct Hand {
     kickers: Vec<Card>,
 }
 
+#[derive(Debug)]
 pub struct EmptyHandError;

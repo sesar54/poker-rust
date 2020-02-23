@@ -1,10 +1,10 @@
-use inner::srank;
 use std::error;
 
 mod fmt;
 mod r#impl;
 mod inner;
 pub mod mediator;
+pub mod srank;
 
 // Note: Make Invalid States Unrepresentable
 /// This is
@@ -25,6 +25,9 @@ pub enum Rank {
 
 #[derive(Debug)]
 pub struct TryFromMediatorError(pub Box<dyn error::Error>);
+
+#[derive(Debug)]
+pub struct TryFromSliceError(pub Box<dyn error::Error>);
 
 #[derive(Debug)] // TEMPORARY
 pub struct InvalidStraightError<E>(pub srank::TryFromRankError, pub E);

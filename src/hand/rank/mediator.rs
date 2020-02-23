@@ -1,6 +1,7 @@
-use super::{inner, Rank};
+use super::{inner, Rank, TryFromSliceError};
 use crate::card::Card;
 use seq_macro::seq;
+use std::convert::TryFrom;
 
 /* -------------------------------------------------------------------------- */
 /*                        Declaration of rank Mediators                       */
@@ -43,7 +44,7 @@ mimpl!(From; inner::Pair, Pair, |pair: inner::Pair|
 );
 
 mimpl!(From; inner::TwoPair, TwoPair, |twoPair: inner::TwoPair|
-    Self(twoPair.pair0.into(), twoPair.pair1.into())  
+    Self(twoPair.pair0.into(), twoPair.pair1.into())
 );
 
 mimpl!(From; inner::Trips, Trips, |trips: inner::Trips|
@@ -55,10 +56,10 @@ mimpl!(From; inner::Straight, Straight, |straight: inner::Straight|
         // Dont iterate on first
         Card{rank: straight.srank.into(), suit: straight.suits[0]},
         #(Card{rank: straight.srank.next().unwrap().into(), suit:  straight.suits[n]},)*
-    ]}))  
+    ]}))
 );
 
-mimpl!(From; inner::Flush, Flush, |flush: inner::Flush| 
+mimpl!(From; inner::Flush, Flush, |flush: inner::Flush|
     Self(seq!(n in 0..5{[#(Card{rank: flush.ranks[n], suit:  flush.csuit},)*]}))
 );
 
@@ -74,7 +75,7 @@ mimpl!(From; inner::StraightFlush, StraightFlush, |sf: inner::StraightFlush|
     Self(seq!(n in 0..4{[
         Card{rank: sf.srank.into(), suit: sf.csuit}, // Dont iterate on first
         #(Card{rank: sf.srank.next().unwrap().into(), suit: sf.csuit},)*
-    ]}))    
+    ]}))
 );
 
 mimpl!(From; inner::Fives, Fives, |fives: inner::Fives|
@@ -109,3 +110,18 @@ from_Rank!(
     StraightFlush,
     Fives
 );
+
+/* -------------------------------------------------------------------------- */
+/*                         Implement try_from &[Card]                         */
+/* -------------------------------------------------------------------------- */
+
+impl TryFrom<&[Card]> for StraightFlush {
+    type Error = TryFromSliceError;
+    fn try_from(sf: &[Card]) -> Result<Self, Self::Error> {
+        if sf.len() != 5 {
+            Err(TryFromSliceError(sf.into()))
+        } else {
+            Ok(Self(array_ref!(sf, 0, 5).clone()))
+        }
+    }
+}

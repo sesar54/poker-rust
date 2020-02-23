@@ -1,7 +1,6 @@
 //! A library for poker games
 //!
 //!
-
 #![feature(proc_macro_hygiene)]
 #![feature(drain_filter)]
 #![warn(unused_import_braces, unused_qualifications, trivial_casts)]
@@ -13,13 +12,24 @@
 #![forbid(unsafe_code)]
 
 #[macro_use]
+extern crate strum;
+#[macro_use]
+extern crate strum_macros;
+#[macro_use]
 extern crate num_derive;
+#[macro_use]
 extern crate num_traits;
+#[macro_use]
+extern crate custom_derive;
+#[macro_use]
+extern crate enum_derive;
 extern crate seq_macro;
 extern crate variant_count;
 #[macro_use]
 extern crate mimpl;
-
+extern crate adjacent_pair_iterator;
+#[macro_use]
+extern crate arrayref;
 // Help Modules
 #[macro_use]
 pub mod macros;

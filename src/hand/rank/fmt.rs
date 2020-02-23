@@ -1,4 +1,4 @@
-use super::{inner::srank, mediator, Rank, TryFromMediatorError};
+use super::{mediator, srank, Rank, TryFromMediatorError};
 use std::fmt;
 
 impl fmt::Display for Rank {

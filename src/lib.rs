@@ -6,9 +6,10 @@
 #![warn(unused_import_braces, unused_qualifications, trivial_casts)]
 #![warn(trivial_numeric_casts, private_in_public, variant_size_differences)]
 #![warn(stable_features, unreachable_pub, non_shorthand_field_patterns)]
-#![warn(unused_attributes, unused_imports, unused_mut)] // missing_docs
+//#![warn(unused_attributes, unused_imports, unused_mut)] // missing_docs
 #![warn(renamed_and_removed_lints, stable_features, unused_allocation)]
 #![warn(unused_comparisons, bare_trait_objects, unused_must_use, const_err)]
+#![allow(unused_imports)]
 #![forbid(unsafe_code)]
 
 #[macro_use]

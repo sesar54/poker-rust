@@ -27,7 +27,7 @@ pub enum Rank {
 pub struct TryFromMediatorError(pub Box<dyn error::Error>);
 
 #[derive(Debug)]
-pub struct TryFromSliceError(pub Box<dyn error::Error>);
+pub struct TryFromSliceError<T>(T);
 
 #[derive(Debug)] // TEMPORARY
-pub struct InvalidStraightError<E>(pub srank::TryFromRankError, pub E);
+pub struct InvalidStraightError<T>(pub srank::TryFromRankError, pub T);

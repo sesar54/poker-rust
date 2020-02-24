@@ -116,7 +116,7 @@ from_Rank!(
 /* -------------------------------------------------------------------------- */
 
 impl TryFrom<&[Card]> for StraightFlush {
-    type Error = TryFromSliceError;
+    type Error = TryFromSliceError<Box<[Card]>>;
     fn try_from(sf: &[Card]) -> Result<Self, Self::Error> {
         if sf.len() != 5 {
             Err(TryFromSliceError(sf.into()))

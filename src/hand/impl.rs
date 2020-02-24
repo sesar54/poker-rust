@@ -147,11 +147,11 @@ impl Hand {
             if let Some(straight_flush) = flush_iter
                 .cloned()
                 .flat_map(|cards| Hand::straight_pattern(cards).iter())
-                .find_map(|&cards| if cards.len() >= 5 { Some(cards) } else { None })
+                .find_map(|cards| if cards.len() >= 5 { Some(cards) } else { None })
             {
-                Some(Rank::try_from(mediator::Straight::try_from(
-                    straight_flush,
-                )?))
+                Some(Rank::try_from(
+                    mediator::Straight::try_from(straight_flush.to_vec()).map_err(|e| Some(Err(e))),
+                ))
             //} else if let Some(flush) = flush_iter.next() {
             //    Some(flush)
             } else {

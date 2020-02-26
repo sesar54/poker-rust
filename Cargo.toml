@@ -21,5 +21,3 @@ mimpl = { git = "https://github.com/sesar54/mimpl.git" }
 rayon = "1.3.0"
 strum = "0.17.1"
 strum_macros = "0.17.1"
-adjacent-pair-iterator = "0.1.2"
-arrayref = "0.3.6"

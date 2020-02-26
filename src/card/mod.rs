@@ -1,6 +1,10 @@
 pub mod face;
 mod fmt;
 mod r#impl;
+#[macro_use]
+pub mod macros;
+
+use num_derive::FromPrimitive;
 
 /// Basic Card struct.
 #[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]

@@ -1,5 +1,4 @@
-use super::mediator;
-use super::srank;
+use super::{mediator, srank, Error};
 use crate::card::{Rank, Suit};
 use mimpl::mimpl;
 use seq_macro::seq;
@@ -73,32 +72,32 @@ pub struct Fives {
 /*                        Implementation from mediator                        */
 /* -------------------------------------------------------------------------- */
 
-mimpl!(From; mediator::High, High, |card: mediator::High| 
-    High {rank: card.0.rank, suit: card.0.suit}
+mimpl!(From; mediator::High, High, |card: mediator::High|
+    High {rank: card.0[0].rank, suit: card.0[0].suit}
 );
-mimpl!(From; mediator::Pair, Pair, |pair: mediator::Pair| 
+mimpl!(From; mediator::Pair, Pair, |pair: mediator::Pair|
     Pair {crank: pair.0[0].rank, suits: seq!(n in 0..2{[#(pair.0[n].suit,)*]})}
 );
-mimpl!(From; mediator::TwoPair, TwoPair, |cards: mediator::TwoPair| 
+mimpl!(From; mediator::TwoPair, TwoPair, |cards: mediator::TwoPair|
     TwoPair {pair0: Pair::from(cards.0), pair1: Pair::from(cards.1)}
 );
-mimpl!(From; mediator::Trips, Trips, |cards: mediator::Trips| 
+mimpl!(From; mediator::Trips, Trips, |cards: mediator::Trips|
     Trips {crank: cards.0[0].rank, suits: seq!(n in 0..3{[#(cards.0[n].suit,)*]})}
 );
-mimpl!(TryFrom; mediator::Straight, Straight, srank::TryFromRankError, |cards: mediator::Straight| 
-    Ok(Straight {srank: srank::SRank::try_from(cards.0[0].rank)?, suits: seq!(n in 0..5{[#(cards.0[n].suit,)*]})})
+mimpl!(TryFrom; mediator::Straight, Straight, Error, |cards: mediator::Straight|
+    Ok(Straight {srank: srank::SRank::try_from(cards.0[0])?, suits: seq!(n in 0..5{[#(cards.0[n].suit,)*]})})
 );
-mimpl!(From; mediator::Flush, Flush, |cards: mediator::Flush| 
+mimpl!(From; mediator::Flush, Flush, |cards: mediator::Flush|
     Flush {csuit: cards.0[0].suit, ranks: seq!(n in 0..5{[#(cards.0[n].rank,)*]})}
 );
 mimpl!(From; mediator::House, House, |house: mediator::House|
     House {trips: Trips::from(house.trips), pair: Pair::from(house.pair)}
 );
 mimpl!(From; mediator::Quads, Quads, |cards: mediator::Quads|
-    Quads {crank: cards.0[0].rank,suits: seq!(n in 0..4{[#(cards.0[n].suit,)*]})}  
+    Quads {crank: cards.0[0].rank,suits: seq!(n in 0..4{[#(cards.0[n].suit,)*]})}
 );
-mimpl!(TryFrom; mediator::StraightFlush, StraightFlush, srank::TryFromRankError, |cards: mediator::StraightFlush|
-    Ok(StraightFlush {srank: srank::SRank::try_from(cards.0[0].rank)?, csuit: cards.0[0].suit})
+mimpl!(TryFrom; mediator::StraightFlush, StraightFlush, Error, |cards: mediator::StraightFlush|
+    Ok(StraightFlush {srank: srank::SRank::try_from(cards.0[0])?, csuit: cards.0[0].suit})
 );
 mimpl!(From; mediator::Fives, Fives, |cards: mediator::Fives|
     Fives {crank: cards.0[0].rank, suits: seq!(n in 0..5{[#(cards.0[n].suit,)*]})}

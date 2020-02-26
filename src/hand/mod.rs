@@ -1,9 +1,16 @@
-use crate::card::Card;
-
+#[macro_use]
+pub mod rank;
+#[macro_use]
+pub mod macros;
+pub mod error;
 pub mod extra;
 mod fmt;
 mod r#impl;
-pub mod rank;
+
+extern crate rand;
+
+use crate::card::Card;
+pub use error::Error;
 pub use extra::*;
 
 /**
@@ -20,6 +27,3 @@ pub struct Hand {
     rank: rank::Rank,
     kickers: Vec<Card>,
 }
-
-#[derive(Debug)]
-pub struct EmptyHandError;

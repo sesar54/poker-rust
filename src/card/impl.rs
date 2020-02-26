@@ -1,6 +1,7 @@
 use super::face::*;
-use crate::num_traits::FromPrimitive;
 use mimpl::mimpl;
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use std::char;
 use std::convert::*;
 // -------------------------------------------------------------------------- //
@@ -73,7 +74,7 @@ impl Rank {
 mimpl!(Default; Suit, || Spades);
 mimpl!(Default; Rank, || Ace);
 
-mimpl!(From; Suit, char, |suit: Suit| 
+mimpl!(From; Suit, char, |suit: Suit|
     match suit {
         Clubs => 'C',
         Diamonds => 'D',
@@ -113,7 +114,7 @@ impl TryFrom<u8> for Rank {
     }
 }
 
-mimpl!(From; Rank, char, |rank: Rank| 
+mimpl!(From; Rank, char, |rank: Rank|
     match rank {
         Ace => 'A',
         Ten => '1',

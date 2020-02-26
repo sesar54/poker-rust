@@ -1,23 +1,22 @@
-use super::{mediator, srank, Rank, TryFromMediatorError};
+use super::{mediator, srank::SRank, Rank};
 use std::fmt;
 
 impl fmt::Display for Rank {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self {
-            High => write!(f, "High card"),
-            Pair => write!(f, "Pair"),
-            TwoPair => write!(f, "Two pairs"),
-            Trips => write!(f, "Three of a kind"),
-            Straight => write!(f, "Straight"),
-            Flush => write!(f, "Flush"),
-            House => write!(f, "Full house"),
-            Quads => write!(f, "Four of a kind"),
-            /*
-            StraightFlush(straight_flush) => match straight_flush.srank {
+            Rank::High(..) => write!(f, "High card"),
+            Rank::Pair(..) => write!(f, "Pair"),
+            Rank::TwoPair(..) => write!(f, "Two pairs"),
+            Rank::Trips(..) => write!(f, "Three of a kind"),
+            Rank::Straight(..) => write!(f, "Straight"),
+            Rank::Flush(..) => write!(f, "Flush"),
+            Rank::House(..) => write!(f, "Full house"),
+            Rank::Quads(..) => write!(f, "Four of a kind"),
+            Rank::StraightFlush(straight_flush) => match straight_flush.srank {
                 SRank::Ten => write!(f, "Royal flush"),
                 _ => write!(f, "Straight flush"),
-            },*/
-            Fives => write!(f, "Five of a kind"),
+            },
+            Rank::Fives(..) => write!(f, "Five of a kind"),
         }
     }
 }
@@ -48,19 +47,3 @@ display_mediator!(
     StraightFlush,
     Fives
 );
-
-impl fmt::Display for srank::TryFromRankError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Rank: {:?}, lacks mapping to any SRank", self.0)
-    }
-}
-
-impl fmt::Display for TryFromMediatorError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Could not convert from Mediator to Rank. Reason: {}",
-            self.0
-        )
-    }
-}

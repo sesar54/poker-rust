@@ -1,11 +1,9 @@
-use super::Deck;
-use crate::card::Card;
-use crate::{card, ranks, suits};
-
-use std::fmt;
-
 extern crate rand;
+
+use super::Deck;
+use crate::card::{macros, Card};
 use rand::prelude::SliceRandom;
+use std::fmt;
 
 impl Deck {
     /// Draw the top card from the deck, or return None if empty

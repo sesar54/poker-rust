@@ -1,14 +1,6 @@
-use crate::card::{face::*, Card};
-use crate::r#trait::Circular;
-use crate::{ranks, suits};
-
-use std::convert::TryFrom;
-use std::convert::TryInto;
-
-extern crate rand;
-use rand::seq::SliceRandom;
-use rand::Rng;
-
+use crate::card::{face::*, macros, Card};
+use rand::{seq::SliceRandom, Rng};
+use std::convert::{TryFrom, TryInto};
 /// Creates a random, valid high card.
 /// # Example
 /// ```
@@ -38,9 +30,9 @@ pub fn pair_cards() -> [Card; 2] {
     let suits = suits!(&mut rng);
 
     // Suit's must differ so to not make the same card.
-    let mut pair = cards!(rank, suits[0]; rank, suits[1]);
-    pair.sort();
-    to_array![pair.iter().map(|c| *c); 2].unwrap()
+    let mut cards = cards!(rank, suits[0]; rank, suits[1]);
+    cards.sort();
+    cards
 }
 
 /// Creates a random, valid 2 pairs of cards.
@@ -83,14 +75,14 @@ pub fn trips_cards() -> [Card; 3] {
     let suits = suits!(&mut rng);
 
     // Suit's must differ so to not make the same card.
-    let mut trips = cards!(
+    let mut cards = cards!(
         rank, suits[0];
         rank, suits[1];
-        rank, suits[2]
+        rank, suits[2];
     );
 
-    trips.sort();
-    to_array![trips.iter().map(|c| *c); 3].unwrap()
+    cards.sort();
+    cards
 }
 
 /// Creates a random, valid straight.
@@ -106,7 +98,7 @@ pub fn straight_cards() -> [Card; 5] {
     let mut rng = rand::thread_rng();
 
     // Generate one value in range: [Ace - Ten]
-    let rank = ranks!()[rng.gen_range(1, 10)];
+    let mut rank = ranks!()[rng.gen_range(1, 10)];
     let suits = suits!(&mut rng);
 
     let mut rng = || rng.gen_range(0, 3);
@@ -118,9 +110,9 @@ pub fn straight_cards() -> [Card; 5] {
         rank.next(), suits[1];
         rank.next(), suits[rng()];
         rank.next(), suits[rng()];
-        rank.next(), suits[rng()]
+        rank.next(), suits[rng()];
     );
-    to_array![cards.iter().map(|c| *c); 5].unwrap()
+    cards
 }
 
 /// Creates a random, valid flush.
@@ -153,7 +145,7 @@ pub fn flush_cards() -> [Card; 5] {
         ranks[3], suit;
         ranks[4], suit
     );
-    to_array![cards.iter().map(|c| *c); 5].unwrap()
+    cards
 }
 
 /// Creates a random, valid house of cards.
@@ -192,7 +184,7 @@ pub fn quad_cards() -> [Card; 4] {
         rank, suits[2];
         rank, suits[3]
     );
-    to_array![cards.iter().map(|c| *c); 4].unwrap()
+    cards
 }
 
 /// Creates a random, valid five cards pair.
@@ -220,5 +212,5 @@ pub fn five_cards() -> [Card; 5] {
         rank, suits[rng()]
     );
     cards.sort();
-    to_array![cards.iter().map(|c| *c); 5].unwrap()
+    cards
 }

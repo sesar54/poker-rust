@@ -1,136 +1,126 @@
-use super::{
-    inner,
-    mediator, InvalidStraightError, Rank, TryFromMediatorError,
-};
+use super::{inner, mediator as med, Error as E, Rank};
 use crate::card::Card;
 use std::convert::{From, TryFrom};
-use std::error;
 use std::fmt;
 
 impl Rank {
-    /// Will return number of cards in Rank. These are constant.
-    /// * High            => 1
-    /// * Pair            => 2
-    /// * TwoPair         => 4
-    /// * Trips           => 3
-    /// * Straight        => 5
-    /// * Flush           => 5
-    /// * House           => 5
-    /// * Quads           => 4
-    /// * StraightFlush   => 5
-    /// * Fives           => 5
-    pub fn len(&self) -> usize {
+    fn to_vec(self) -> Vec<Card> {
         match self {
-            High => 1,
-            Pair => 2,
-            TwoPair => 4,
-            Trips => 3,
-            Straight => 5,
-            Flush => 5,
-            House => 5,
-            Quads => 4,
-            StraightFlush => 5,
-            Fives => 5,
-        }
-    }
-
-    pub fn to_boxed_slice(self) -> Box<[Card]> {
-        use mediator::*;
-        match self {
-            Self::High(high) => Box::new([High::from(high).0]),
-            Self::Pair(pair) => Box::new(Pair::from(pair).0),
-            Self::TwoPair(two_pair) => {
-                let TwoPair(arr0, arr1) = TwoPair::from(two_pair);
-                arr0.0.iter().chain(arr1.0.iter()).map(|&c| c).collect()
-            }
-            Self::Trips(trips) => Box::new(Trips::from(trips).0),
-            Self::Straight(straight) => Box::new(Straight::from(straight).0),
-            Self::Flush(flush) => Box::new(Flush::from(flush).0),
-            Self::House(house) => {
-                let House { trips, pair } = House::from(house);
-                trips.0.iter().chain(pair.0.iter()).map(|&c| c).collect()
-            }
-            Self::Quads(quads) => Box::new(Quads::from(quads).0),
-            Self::StraightFlush(sf) => Box::new(StraightFlush::from(sf).0),
-            Self::Fives(fives) => Box::new(Fives::from(fives).0),
+            Self::High(high) => med::High::from(high).to_vec(),
+            Self::Pair(pair) => med::Pair::from(pair).to_vec(),
+            Self::TwoPair(two_pair) => med::TwoPair::from(two_pair).to_vec(),
+            Self::Trips(trips) => med::Trips::from(trips).to_vec(),
+            Self::Straight(straight) => med::Straight::from(straight).to_vec(),
+            Self::Flush(flush) => med::Flush::from(flush).to_vec(),
+            Self::House(house) => med::House::from(house).to_vec(),
+            Self::Quads(quads) => med::Quads::from(quads).to_vec(),
+            Self::StraightFlush(sf) => med::StraightFlush::from(sf).to_vec(),
+            Self::Fives(fives) => med::Fives::from(fives).to_vec(),
         }
     }
 }
 
-macro_rules! try_from_mediator {
+macro_rules! impl_TryFrom_mediator {
     ($type:ident) => {
+        impl TryFrom<med::$type> for Rank {
+            type Error = E;
 
-        impl error::Error for mediator::$type {
-            // TODO https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/boxing_errors.html
-        }
-
-        impl TryFrom<mediator::$type> for Rank {
-            type Error = TryFromMediatorError;
-
-            fn try_from(cards: mediator::$type) -> Result<Self, Self::Error> {
+            fn try_from(cards: med::$type) -> Result<Self, Self::Error> {
                 let inner_rank = inner::$type::from(cards);
 
-                if cards == mediator::$type::from(inner_rank) {
-                    Ok(Rank::$type(inner_rank))
-                } else {
-                    Err(TryFromMediatorError(cards.into()))
+                match med::$type::from(inner_rank) {
+
+                    built if cards == built => Ok(Rank::$type(inner_rank)),
+                    built => Err(E::TryFromMediator(box E::BuildForgery{
+                        original: cards.to_vec().into_boxed_slice(),
+                        forged:  built.to_vec().into_boxed_slice(),
+                        components: format!("{:?}", inner_rank),
+                    })),
                 }
             }
         }
     };
-    ($type0:ident, $($type1:ident),+) => {
-        try_from_mediator!($type0);
-        $(try_from_mediator!($type1);)*
+    ($type0:ident, $($type1:ident),+ $(,)*) => {
+        impl_TryFrom_mediator!($type0);
+        $(impl_TryFrom_mediator!($type1);)*
     };
 }
 
 #[rustfmt::skip]
-try_from_mediator!(
-    /* High */ 
-    Pair, 
-    TwoPair, 
+impl_TryFrom_mediator!(
+    // High
+    Pair,
+    TwoPair,
     Trips, 
-    /* Straight */ 
+    // Straight 
     Flush, 
     House, 
-    Quads,
-    /* StraightFlush */ 
-    Fives
+    Quads, 
+    // StraightFlush
+    Fives,
 );
 
-impl From<mediator::High> for Rank {
-    fn from(card: mediator::High) -> Self {
+impl From<med::High> for Rank {
+    fn from(card: med::High) -> Self {
         Rank::High(card.into())
     }
 }
 
-impl<T> fmt::Display for InvalidStraightError<T>
-where
-    T: fmt::Debug,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+impl TryFrom<med::Straight> for Rank {
+    type Error = E;
+    fn try_from(cards: med::Straight) -> Result<Self, Self::Error> {
+        inner::Straight::try_from(cards)
+            .map(Self::Straight)
+            .map_err(|err| E::TryFromMediator(box E::InvalidStraight(box cards.0, box err)))
     }
 }
 
-impl<T> error::Error for InvalidStraightError<T> where T: error::Error {}
-
-impl TryFrom<mediator::Straight> for Rank {
-    type Error = InvalidStraightError<mediator::Straight>;
-    fn try_from(cards: mediator::Straight) -> Result<Self, Self::Error> {
-        Ok(Self::Straight(
-            inner::Straight::try_from(cards).map_err(|e| InvalidStraightError(e, cards))?,
-        ))
+impl TryFrom<med::StraightFlush> for Rank {
+    type Error = E;
+    fn try_from(cards: med::StraightFlush) -> Result<Self, Self::Error> {
+        inner::StraightFlush::try_from(cards)
+            .map(Self::StraightFlush)
+            .map_err(|err| E::TryFromMediator(box E::InvalidStraight(box cards.0, box err)))
     }
 }
 
-impl TryFrom<mediator::StraightFlush> for Rank {
-    type Error = InvalidStraightError<mediator::StraightFlush>;
-    fn try_from(cards: mediator::StraightFlush) -> Result<Self, Self::Error> {
-        Ok(Self::StraightFlush(
-            inner::StraightFlush::try_from(cards).map_err(|e| InvalidStraightError(e, cards))?,
-        ))
-    }
+macro_rules! try_macro {
+    ($type:ident, $fn_name:ident) => {
+        impl Rank {
+            pub fn $fn_name(cards: &[Card]) -> Result<Self, super::Error> {
+                med::$type::try_from(cards).map(Rank::try_from)?
+            }
+        }
+    };
+    ($type0:ident, $fn_name0:ident; $($type1:ident, $fn_name1:ident;)* $(;)*) => {
+        try_macro!($type0, $fn_name0);
+        $(try_macro!($type1, $fn_name1);)*
+    };
 }
 
-impl error::Error for TryFromMediatorError {}
+try_macro!(
+    Pair, try_from_pair;
+    Trips, try_from_trips;
+    Straight, try_from_straight;
+    Flush, try_from_flush;
+    Quads, try_from_quads;
+    StraightFlush, try_from_straight_flush;
+    Fives, try_from_fives;
+);
+
+impl Rank {
+    pub fn from_high(card: &Card) -> Self {
+        Rank::from(med::High([*card]))
+    }
+
+    pub fn try_from_two_pair(pair0: [Card; 2], pair1: [Card; 2]) -> Result<Self, super::Error> {
+        Rank::try_from(med::TwoPair(med::Pair(pair0), med::Pair(pair1)))
+    }
+
+    pub fn try_from_house(trips: [Card; 3], pair: [Card; 2]) -> Result<Self, super::Error> {
+        Rank::try_from(med::House {
+            trips: med::Trips(trips),
+            pair: med::Pair(pair),
+        })
+    }
+}

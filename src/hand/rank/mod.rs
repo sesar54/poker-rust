@@ -1,10 +1,10 @@
-use std::error;
-
 mod fmt;
 mod r#impl;
 mod inner;
 pub mod mediator;
 pub mod srank;
+
+pub use super::Error;
 
 // Note: Make Invalid States Unrepresentable
 /// This is
@@ -22,12 +22,3 @@ pub enum Rank {
     StraightFlush(inner::StraightFlush),
     Fives(inner::Fives),
 }
-
-#[derive(Debug)]
-pub struct TryFromMediatorError(pub Box<dyn error::Error>);
-
-#[derive(Debug)]
-pub struct TryFromSliceError<T>(T);
-
-#[derive(Debug)] // TEMPORARY
-pub struct InvalidStraightError<T>(pub srank::TryFromRankError, pub T);

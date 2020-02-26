@@ -33,7 +33,7 @@ pub struct StraightFlush(pub [Card; 5]);
 pub struct Fives(pub [Card; 5]);
 
 /* -------------------------------------------------------------------------- */
-/*                            Implement from inner                            */
+/*                        impl From<inner> for Mediator                       */
 /* -------------------------------------------------------------------------- */
 
 mimpl!(From; inner::High, High, |high: inner::High|
@@ -88,22 +88,28 @@ mimpl!(From; inner::Fives, Fives, |fives: inner::Fives|
 );
 
 /* -------------------------------------------------------------------------- */
-/*                             Implement from Rank                            */
+/*                    impl From<Rank> for Option<Mediator>                    */
 /* -------------------------------------------------------------------------- */
 
-macro_rules! from_Rank {
+macro_rules! impl_from_rank {
     ($type:ident) => {
-        mimpl!(From; Rank, Option<$type>, |rank: Rank|
-            if let Rank::$type(inner) = rank {Some(inner.into())} else {None}
-        );
+        impl From<Rank> for Option<$type> {
+            fn from(rank: Rank) -> Self {
+                if let Rank::$type(inner) = rank {
+                    Some(inner.into())
+                } else {
+                    None
+                }
+            }
+        }
     };
-    ($type0:ident, $($type1:ident),+) => {
-        from_Rank!($type0);
-        $(from_Rank!($type1);)*
+    ($type0:ident, $($type1:ident),+ $(,)*) => {
+        impl_from_rank!($type0);
+        $(impl_from_rank!($type1);)*
     }
 }
 
-from_Rank!(
+impl_from_rank!(
     High,
     Pair,
     TwoPair,
@@ -113,14 +119,14 @@ from_Rank!(
     House,
     Quads,
     StraightFlush,
-    Fives
+    Fives,
 );
 
 /* -------------------------------------------------------------------------- */
-/*                         Implement try_from &[Card]                         */
+/*                     impl TryFrom<&[Card]> for Mediator                     */
 /* -------------------------------------------------------------------------- */
 
-macro_rules! impl_TryFrom_slice {
+macro_rules! impl_try_from_slice {
     ($type:tt, $len:expr) => {
         impl TryFrom<&[Card]> for $type {
             type Error = Error;
@@ -140,13 +146,13 @@ macro_rules! impl_TryFrom_slice {
         }
     };
     ($type0:tt, $len0:expr; $($type1:tt, $len1:expr);+ $(;)*) => {
-        impl_TryFrom_slice!($type0, $len0);
-        $(impl_TryFrom_slice!($type1, $len1);)*
+        impl_try_from_slice!($type0, $len0);
+        $(impl_try_from_slice!($type1, $len1);)*
     }
 }
 
 // Cannot and will not implement for splitted ranks.
-impl_TryFrom_slice!(
+impl_try_from_slice!(
     High, 1;
     Pair, 2;
     //TwoPair, 4;
@@ -158,6 +164,10 @@ impl_TryFrom_slice!(
     StraightFlush, 5;
     Fives, 5;
 );
+
+/* -------------------------------------------------------------------------- */
+/*                          impl to_vec for Mediator                          */
+/* -------------------------------------------------------------------------- */
 
 macro_rules! impl_to_vec {
     ($type:tt) => {

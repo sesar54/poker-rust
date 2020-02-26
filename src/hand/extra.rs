@@ -1,4 +1,5 @@
-use crate::card::{face::*, macros, Card};
+use super::rank;
+use crate::card::{self, face::*, macros, Card};
 use rand::{seq::SliceRandom, Rng};
 use std::convert::{TryFrom, TryInto};
 /// Creates a random, valid high card.
@@ -6,12 +7,11 @@ use std::convert::{TryFrom, TryInto};
 /// ```
 /// # use aces_high::{prelude::*, hand::extra::*};
 /// # for _ in 0..1_000 {
-/// Rank::High(high_card())?;
+/// Rank::from_high(&high_card());
 /// # }
-/// # Ok::<(), Error>(())
 /// ```
-pub fn high_card() -> [Card; 1] {
-    [card!(&mut rand::thread_rng())]
+pub fn high_card() -> Card {
+    card!(&mut rand::thread_rng())
 }
 
 /// Creates a random, valid pair of cards.
@@ -19,9 +19,8 @@ pub fn high_card() -> [Card; 1] {
 /// ```
 /// # use aces_high::{prelude::*, hand::extra::*};
 /// # for _ in 0..1_000 {
-/// Rank::Pair(pair_cards())?;
+/// Rank::try_from_pair(pair_cards())?;
 /// # }
-/// # Ok::<(), Error>(())
 /// ```
 pub fn pair_cards() -> [Card; 2] {
     let mut rng = rand::thread_rng();

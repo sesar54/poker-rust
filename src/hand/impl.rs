@@ -1,7 +1,4 @@
-use super::{
-    rank::{mediator as med, Rank},
-    Error, Hand,
-};
+use super::{rank::Rank, Error, Hand};
 use crate::card::{
     Card,
     Rank::{Ace, King},
@@ -97,8 +94,8 @@ impl Hand {
         if let Some(largest_pair) = largest_pair {
             match largest_pair.len() {
                 // len if len >= 5 => Ok(try_fives!(largest_pair[..5])),
-                2 => Rank::try_from_pair(&largest_pair).map_err(Box::new),
-                1 => Ok(Rank::from_high(&largest_pair[0])),
+                2 => Rank::pair_try_from(&largest_pair).map_err(Box::new),
+                1 => Ok(Rank::high_from(&largest_pair[0])),
                 _ => unreachable!(),
             }
         } else {
@@ -139,8 +136,8 @@ impl Hand {
                 .filter(|cards| cards.len() >= 5)
                 .last()
                 .map_or_else(
-                    || flush_opt.map(|flush| Rank::try_from_flush(&flush)),
-                    |sf| Some(Rank::try_from_straight_flush(&sf)),
+                    || flush_opt.map(|flush| Rank::flush_try_from(&flush)),
+                    |sf| Some(Rank::straight_flush_try_from(&sf)),
                 )
         });
 
@@ -153,7 +150,7 @@ impl Hand {
             Hand::straight_pattern(straight_candidates)
                 .filter(|cards| cards.len() >= 5)
                 .last()
-                .map(|card| Rank::try_from_straight(&card))
+                .map(|card| Rank::straight_try_from(&card))
         });
 
         // Merges the result of threads.

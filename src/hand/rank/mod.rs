@@ -1,8 +1,8 @@
 mod fmt;
 mod r#impl;
 mod inner;
-pub mod mediator;
-pub mod srank;
+mod mediator;
+mod srank;
 
 pub use super::Error;
 

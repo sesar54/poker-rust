@@ -103,14 +103,39 @@ impl Rank {
         Rank::from(med::High([*card]))
     }
 
-    pub fn two_pair_try_from(pair0: [Card; 2], pair1: [Card; 2]) -> Result<Self, super::Error> {
-        Rank::try_from(med::TwoPair(med::Pair(pair0), med::Pair(pair1)))
+    pub fn two_pair_try_from(pair0: &[Card], pair1: &[Card]) -> Result<Self, super::Error> {
+        match (med::Pair::try_from(pair0), med::Pair::try_from(pair1)) {
+            (Ok(pair0), Ok(pair1)) => Ok((pair0, pair1)),
+            (Err(e0), Err(e1)) => Err(E::PairError([box e0, box e1])),
+            (pair0, pair1) => {
+                if let Err(pair0) = pair0 {
+                    Err(pair0)
+                } else if let Err(pair1) = pair1 {
+                    Err(pair1)
+                } else {
+                    unreachable!();
+                }
+            }
+        }
+        .map_or_else(Err, |(p0, p1)| Rank::try_from(med::TwoPair(p0, p1)))
     }
 
-    pub fn house_try_from(trips: [Card; 3], pair: [Card; 2]) -> Result<Self, super::Error> {
-        Rank::try_from(med::House {
-            trips: med::Trips(trips),
-            pair: med::Pair(pair),
+    pub fn house_try_from(trips: &[Card], pair: &[Card]) -> Result<Self, super::Error> {
+        match (med::Trips::try_from(trips), med::Pair::try_from(pair)) {
+            (Ok(trips), Ok(pair)) => Ok((trips, pair)),
+            (Err(e0), Err(e1)) => Err(E::PairError([box e0, box e1])),
+            (trips, pair) => {
+                if let Err(trips) = trips {
+                    Err(trips)
+                } else if let Err(pair) = pair {
+                    Err(pair)
+                } else {
+                    unreachable!();
+                }
+            }
+        }
+        .map_or_else(Err, |(trips, pair)| {
+            Rank::try_from(med::House { trips, pair })
         })
     }
 }

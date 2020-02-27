@@ -1,7 +1,8 @@
 //! A library for poker games
 //!
 //!
-
+#![feature(fn_traits)]
+#![feature(exclusive_range_pattern)]
 #![feature(box_syntax)]
 #![feature(proc_macro_hygiene)]
 #![feature(half_open_range_patterns)]

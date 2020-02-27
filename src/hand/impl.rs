@@ -88,19 +88,31 @@ impl Hand {
     /// The exception to the rule is if the slice of cards have a size of 0
     /// or something internally went wrong.
     pub fn pair_rank(cards: &[Card]) -> Result<Rank> {
-        let mut pair_pattern = Hand::pair_pattern(cards.clone().into());
-        let largest_pair = pair_pattern.by_ref().max_by_key(|pattern| pattern.len());
+        let mut pair_cards = Hand::pair_pattern(cards.clone().into()).collect::<Vec<_>>();
+        let largest_pair = pair_cards.pop();
 
         if let Some(largest_pair) = largest_pair {
             match largest_pair.len() {
-                // len if len >= 5 => Ok(try_fives!(largest_pair[..5])),
-                2 => Rank::pair_try_from(&largest_pair).map_err(Box::new),
+                5.. => Rank::fives_try_from(&largest_pair),
+                4 => Rank::quads_try_from(&largest_pair),
+                // Check house before trips
+                3 => if let Some(pair) = pair_cards.iter().filter(|cards| cards.len() == 2).last() {
+                    Rank::house_try_from(&largest_pair, &pair)
+                } else {
+                    Rank::trips_try_from(&largest_pair)
+                },
+                // Check Two Pair before Pair
+                2 => if let Some(pair) = pair_cards.iter().filter(|cards| cards.len() == 2).last() {
+                        Rank::two_pair_try_from(&largest_pair, &pair)
+                } else {        
+                    Rank::pair_try_from(&largest_pair)
+                },
                 1 => Ok(Rank::high_from(&largest_pair[0])),
                 _ => unreachable!(),
             }
         } else {
-            Err(box Error::EmptyHand)
-        }
+            Err(Error::EmptyHand)
+        }.map_err(Box::new)
     }
 
     /// Maybe returns one rank after checking in order:

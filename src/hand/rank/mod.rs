@@ -1,14 +1,16 @@
 mod fmt;
 mod r#impl;
 mod inner;
-mod mediator;
+pub mod mediator;
 mod srank;
 
 pub use super::Error;
 
-// Note: Make Invalid States Unrepresentable
+// Note: Make Invalid States Unpresentable
 /// This is
 /// TODO: Document
+///
+/// Only exposed interface. Implements try from
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Rank {
     High(inner::High),
@@ -21,4 +23,13 @@ pub enum Rank {
     Quads(inner::Quads),
     StraightFlush(inner::StraightFlush),
     Fives(inner::Fives),
+}
+
+#[test]
+fn rank_from() {
+    use crate::card::Card;
+    use mediator as med;
+
+    println!("{:?}", Rank::pair_try_from(&[Card::random(), Card::random()]))
+
 }

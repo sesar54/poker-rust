@@ -13,6 +13,10 @@ macro_rules! impl_try_from_mediator {
             fn try_from(cards: med::$type) -> Result<Self, Self::Error> {
                 let inner_rank = inner::$type::from(cards);
 
+                println!("{}", cards);
+                println!("{:?}",cards);
+                println!("{:?}", cards.to_vec().into_boxed_slice());
+
                 match med::$type::from(inner_rank) {
 
                     built if cards == built => Ok(Rank::$type(inner_rank)),
@@ -85,8 +89,9 @@ macro_rules! wrapper_mediator_try_from {
     };
 }
 
+// Complex try_from (or try) is implemented in the block below.
 wrapper_mediator_try_from!(
-    // High, high_from; // Huehuehuehue
+    //High, high_from; // Huehuehuehue
     Pair, pair_try_from;
     Trips, trips_try_from;
     // TwoPair, two_pair_try_from;
@@ -97,6 +102,7 @@ wrapper_mediator_try_from!(
     StraightFlush, straight_flush_try_from;
     Fives, fives_try_from;
 );
+
 
 impl Rank {
     pub fn high_from(card: &Card) -> Self {
@@ -143,18 +149,18 @@ impl Rank {
 /* -------------------------------------------------------------------------- */
 
 impl Rank {
-    fn to_vec(self) -> Vec<Card> {
+    pub fn to_vec(self) -> Vec<Card> {
         match self {
-            Self::High(inner) => med::High::from(inner).to_vec(),
-            Self::Pair(inner) => med::Pair::from(inner).to_vec(),
-            Self::TwoPair(inner) => med::TwoPair::from(inner).to_vec(),
-            Self::Trips(inner) => med::Trips::from(inner).to_vec(),
-            Self::Straight(inner) => med::Straight::from(inner).to_vec(),
-            Self::Flush(inner) => med::Flush::from(inner).to_vec(),
-            Self::House(inner) => med::House::from(inner).to_vec(),
-            Self::Quads(inner) => med::Quads::from(inner).to_vec(),
-            Self::StraightFlush(inner) => med::StraightFlush::from(inner).to_vec(),
-            Self::Fives(inner) => med::Fives::from(inner).to_vec(),
+            Self::High(inner)           => med::High::from(inner).to_vec(),
+            Self::Pair(inner)           => med::Pair::from(inner).to_vec(),
+            Self::TwoPair(inner)        => med::TwoPair::from(inner).to_vec(),
+            Self::Trips(inner)          => med::Trips::from(inner).to_vec(),
+            Self::Straight(inner)       => med::Straight::from(inner).to_vec(),
+            Self::Flush(inner)          => med::Flush::from(inner).to_vec(),
+            Self::House(inner)          => med::House::from(inner).to_vec(),
+            Self::Quads(inner)          => med::Quads::from(inner).to_vec(),
+            Self::StraightFlush(inner)  => med::StraightFlush::from(inner).to_vec(),
+            Self::Fives(inner)          => med::Fives::from(inner).to_vec(),
         }
     }
 }

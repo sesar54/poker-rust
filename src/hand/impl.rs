@@ -8,6 +8,7 @@ use std::convert::{TryFrom, TryInto};
 use std::error;
 use std::fmt;
 use std::ops::Range;
+use std::sync::Arc;
 use std::thread;
 
 type Result<R> = std::result::Result<R, Box<Error>>;
@@ -37,31 +38,22 @@ impl Hand {
     ///
     /// If given a slice of length 0, return immediately with an error.
     pub fn ranking(cards: &[Card], community: &[Card]) -> Result<(Rank, Vec<Card>)> {
-        let cards: Vec<Card> = cards.iter().chain(community.iter()).cloned().collect();
-
-        if cards.is_empty() {
-            Err(box Error::EmptyHand)
-        } else {
-            let pair_rank = Hand::pair_rank(&cards)?;
-            let option_sf = Hand::straight_flush_rank(&cards);
-
-            // Compare and return the biggest rank
-            let rank = match option_sf {
-                Some(sf) => std::cmp::max(pair_rank, sf?),
-                None => pair_rank,
-            };
-
-            unimplemented!();
-            /*
-                      // TODO
-                      let mut cards = cards;
-                      let kickers = cards
-                          .drain_filter(|card0| rank.into_boxed_slice().iter().any(|card1| card1 == card0))
-                          .collect();
-
-                      Ok((rank, kickers))
-            */
+        let cards: Arc<Vec<Card>> =
+            Arc::new(cards.iter().chain(community.iter()).cloned().collect());
+        let pair_thread;
+        let sf_thread;
+        {
+            let cards_ref = Arc::clone(&cards);
+            pair_thread = thread::spawn(move || crate::hand::Hand::pair_rank(&cards_ref));
         }
+        {
+            let cards_ref = Arc::clone(&cards);
+            sf_thread = thread::spawn(move || crate::hand::Hand::straight_flush_rank(&cards_ref));
+        }
+
+        pair_thread.join().expect("Thread sf crashed");
+
+        unimplemented!();
     }
 
     pub fn len(&self) -> usize {
@@ -96,23 +88,28 @@ impl Hand {
                 5.. => Rank::fives_try_from(&largest_pair),
                 4 => Rank::quads_try_from(&largest_pair),
                 // Check house before trips
-                3 => if let Some(pair) = pair_cards.iter().filter(|cards| cards.len() == 2).last() {
-                    Rank::house_try_from(&largest_pair, &pair)
-                } else {
-                    Rank::trips_try_from(&largest_pair)
-                },
+                3 => {
+                    if let Some(pair) = pair_cards.iter().filter(|cards| cards.len() == 2).last() {
+                        Rank::house_try_from(&largest_pair, &pair)
+                    } else {
+                        Rank::trips_try_from(&largest_pair)
+                    }
+                }
                 // Check Two Pair before Pair
-                2 => if let Some(pair) = pair_cards.iter().filter(|cards| cards.len() == 2).last() {
+                2 => {
+                    if let Some(pair) = pair_cards.iter().filter(|cards| cards.len() == 2).last() {
                         Rank::two_pair_try_from(&largest_pair, &pair)
-                } else {        
-                    Rank::pair_try_from(&largest_pair)
-                },
+                    } else {
+                        Rank::pair_try_from(&largest_pair)
+                    }
+                }
                 1 => Ok(Rank::high_from(&largest_pair[0])),
                 _ => unreachable!(),
             }
         } else {
             Err(Error::EmptyHand)
-        }.map_err(Box::new)
+        }
+        .map_err(Box::new)
     }
 
     /// Maybe returns one rank after checking in order:

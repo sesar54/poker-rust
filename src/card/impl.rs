@@ -2,6 +2,7 @@ use super::face::*;
 use mimpl::mimpl;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+use rand;
 use std::char;
 use std::convert::*;
 // -------------------------------------------------------------------------- //
@@ -9,6 +10,11 @@ use std::convert::*;
 // -------------------------------------------------------------------------- //
 
 impl Card {
+
+    pub fn default() -> Self {
+        Card { rank: Ace, suit: Spades }
+    }
+
     /// Constructs a new `Card`.
     ///
     /// # Example
@@ -16,8 +22,12 @@ impl Card {
     /// # use aces_high::card::face::*;
     /// let card = Card::new(Rank::King, Suit::Hearts);
     /// ```
-    pub fn new(rank: Rank, suit: Suit) -> Card {
+    pub fn new(rank: Rank, suit: Suit) -> Self {
         Card { rank, suit }
+    }
+
+    pub fn random() -> Self {
+        Card { rank: Rank::random(), suit: Suit::random() }
     }
 }
 
@@ -46,6 +56,10 @@ impl Suit {
         .unwrap();
         *self
     }
+
+    pub fn random() -> Self {
+        Clubs.step_by(rand::random::<isize>() % 4)
+    }
 }
 
 impl Rank {
@@ -68,6 +82,10 @@ impl Rank {
         ))
         .unwrap();
         *self
+    }
+
+    pub fn random() -> Rank {
+        Ace.step_by(rand::random::<isize>() % 4)
     }
 }
 
